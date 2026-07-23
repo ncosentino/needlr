@@ -4729,7 +4729,7 @@ the release script:</p>
 <tr>
 <td>Python + mkdocs (optional)</td>
 <td>Local docs validation</td>
-<td><code>pip install -r docs/requirements.txt</code></td>
+<td><code>python -m pip install -r docs/requirements.txt</code></td>
 </tr>
 </tbody>
 </table>
@@ -5084,18 +5084,25 @@ analyzers, fix those and re-run.</p>
 <li>Restore, build <code>src/NexusLabs.Needlr.slnx</code> with <code>-p:PublicRelease=true</code>.</li>
 <li>Run full test suite with coverage collection.</li>
 <li>Pack every <code>NexusLabs.Needlr*.csproj</code> except tests, benchmarks,
-   integration tests.</li>
+   integration tests, then validate every package version.</li>
+<li>Extract the release notes, provision an action-managed Python environment,
+   install <code>docs/requirements.txt</code>, build the versioned documentation site, and
+   provision Node.js for the Cloudflare deployment.</li>
 <li>Exchange the GitHub OIDC identity for a short-lived NuGet.org API key
    through <code>NuGet/login@v1</code>.</li>
 <li><code>dotnet nuget push</code> every <code>.nupkg</code> to NuGet.org with
    <code>--skip-duplicate</code>.</li>
 <li><code>dotnet nuget push</code> every <code>.nupkg</code> to GitHub Packages using
    <code>${{ secrets.GITHUB_TOKEN }}</code> with <code>--skip-duplicate</code>.</li>
-<li>Extract the matching <code>## [&lt;version&gt;]</code> section from <code>CHANGELOG.md</code>.</li>
+<li>Deploy the merged documentation site to GitHub Pages and Cloudflare Pages.</li>
 <li>Create a GitHub Release via <code>softprops/action-gh-release@v2</code>
    flagged as pre-release because the tag contains <code>-</code>, attaching
    every <code>.nupkg</code> and <code>.snupkg</code> file.</li>
 </ol>
+<p>The publish job defaults to the PitCrew self-hosted Linux runner and supports
+<code>CI_RUNNER=ubuntu-latest</code> as a manual fallback. <code>actions/setup-python</code> provides
+the isolated Python environment on either runner; do not install documentation
+dependencies into the runner's system Python or bypass PEP 668 protections.</p>
 <p>Watch the workflow run at
 <a href="https://github.com/ncosentino/needlr/actions/workflows/release.yml">Actions</a>
 while it runs. It typically takes 6-10 minutes.</p>
