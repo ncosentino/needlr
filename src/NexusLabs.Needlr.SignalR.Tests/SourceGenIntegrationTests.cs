@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.SignalR;
@@ -107,19 +108,22 @@ public sealed class SourceGenIntegrationTests
     [Fact]
     public void SignalR_ModuleInitializerRegistersPlugins()
     {
-        if (!NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginProvider))
-        {
-            Assert.Fail("NeedlrSourceGenBootstrap has no registered providers");
-            return;
-        }
+        var signalRPluginType = typeof(SignalRWebApplicationBuilderPlugin);
+        var signalRAssembly = signalRPluginType.Assembly;
+        RuntimeHelpers.RunModuleConstructor(signalRPluginType.Module.ModuleHandle);
+
+        var found = NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginProvider);
+        Assert.True(found, "Expected the SignalR module initializer to register Needlr providers");
 
         var allPluginTypes = pluginProvider().ToList();
         var signalRPluginTypes = allPluginTypes
-            .Where(p => p.PluginType.Assembly == typeof(SignalRWebApplicationBuilderPlugin).Assembly)
+            .Where(p => p.PluginType.Assembly == signalRAssembly)
             .Select(p => p.PluginType.Name)
             .ToList();
 
-        Assert.Contains(signalRPluginTypes, n => n == "SignalRWebApplicationBuilderPlugin");
+        Assert.Equal(2, signalRPluginTypes.Count);
+        Assert.Contains("SignalRHubRegistrationPlugin", signalRPluginTypes);
+        Assert.Contains("SignalRWebApplicationBuilderPlugin", signalRPluginTypes);
     }
 }
 

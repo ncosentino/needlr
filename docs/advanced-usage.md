@@ -962,30 +962,31 @@ The generator emits error `NDLRGEN002` if it detects internal plugin types in a 
 
 ### Automatic Assembly Loading
 
-When using source generation, Needlr automatically discovers all referenced assemblies that have `[GenerateTypeRegistry]` and ensures they are loaded at startup. This is critical because:
+When using source generation, Needlr automatically discovers all referenced assemblies that have `[GenerateTypeRegistry]` and ensures their module initializers complete at startup. This is critical because:
 
 
-- **Module initializers only run when an assembly is loaded** - If your code never directly references a type from an assembly, that assembly never loads
+- **Assembly metadata access is insufficient** - Obtaining a `Type` or `Assembly` does not guarantee the module initializer has completed
 - **Transitive dependencies** - Plugin assemblies referenced by your project but never directly used in code would be invisible to the type registry
 
-Needlr solves this by generating a `ForceLoadReferencedAssemblies()` method that uses `typeof()` to force assembly loading:
+Needlr solves this by generating a `ForceLoadReferencedAssemblies()` method that explicitly runs each referenced registry module's constructor:
 
 ```csharp
 // Generated in NeedlrSourceGenBootstrap.g.cs
-[MethodImpl(MethodImplOptions.NoInlining)]
 private static void ForceLoadReferencedAssemblies()
 {
-    _ = typeof(global::MyApp.Features.Logging.Generated.TypeRegistry).Assembly;
-    _ = typeof(global::MyApp.Features.Scheduling.Generated.TypeRegistry).Assembly;
+    RuntimeHelpers.RunModuleConstructor(
+        typeof(global::MyApp.Features.Logging.Generated.TypeRegistry).Module.ModuleHandle);
+    RuntimeHelpers.RunModuleConstructor(
+        typeof(global::MyApp.Features.Scheduling.Generated.TypeRegistry).Module.ModuleHandle);
     // ... all discovered assemblies with [GenerateTypeRegistry]
 }
 ```
 
-This is fully AOT-compatible - `typeof()` is resolved at compile time.
+`RunModuleConstructor` is idempotent, so dependencies that were already initialized are unaffected. The module handles are derived from statically known `typeof()` references, keeping this path AOT-compatible without runtime assembly scanning or name-based loading.
 
-### Controlling Assembly Load Order with [NeedlrAssemblyOrder]
+### Controlling Module Initialization Order with [NeedlrAssemblyOrder]
 
-By default, referenced assemblies are loaded in alphabetical order. If you need specific assemblies to load before or after others (e.g., when plugins have dependencies on other plugins being registered first), use the `[NeedlrAssemblyOrder]` attribute:
+By default, referenced module constructors run in assembly-name order. If you need specific registries initialized before or after others (e.g., when plugins have dependencies on other plugins being registered first), use the `[NeedlrAssemblyOrder]` attribute:
 
 ```csharp
 using NexusLabs.Needlr.Generators;
@@ -998,16 +999,16 @@ using NexusLabs.Needlr.Generators;
 ```
 
 **How ordering works:**
-1. Assemblies in `First` are loaded first, in the order specified
-2. All other discovered assemblies are loaded alphabetically
-3. Assemblies in `Last` are loaded last, in the order specified
+1. Module constructors for assemblies in `First` run first, in the order specified
+2. All other discovered module constructors run in assembly-name order
+3. Module constructors for assemblies in `Last` run last, in the order specified
 
 **Example scenario:** Your `AuthenticationPlugin` needs `ILogger` which is registered by `LoggingPlugin`:
 
 ```csharp
 [assembly: GenerateTypeRegistry]
 [assembly: NeedlrAssemblyOrder(
-    First = new[] { "MyApp.Features.Logging" })]  // Logging loads first
+    First = new[] { "MyApp.Features.Logging" })]  // Logging initializes first
 
 namespace MyApp.Bootstrap;
 
