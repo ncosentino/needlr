@@ -53,6 +53,10 @@ internal static class GeneratedConstructorCodeGenerator
         builder.AppendLine($"partial class {model.ContainingTypeName}{model.TypeParameterList}");
         builder.AppendLine("{");
 
+        var effectiveGuards = model.Fields
+            .Select(field => ComposeEffectiveGuards(model.NullGuardMode, field))
+            .ToArray();
+
         builder.AppendLine("    /// <summary>");
         builder.AppendLine($"    /// Initializes a new instance of the <see cref=\"{model.ContainingTypeName}{ToCrefTypeParameterList(model.TypeParameterList)}\"/> class.");
         builder.AppendLine("    /// </summary>");
@@ -62,15 +66,24 @@ internal static class GeneratedConstructorCodeGenerator
             builder.AppendLine($"    /// <param name=\"{field.ParameterName}\">The value used to initialize <c>{field.FieldName}</c>.</param>");
         }
 
+        WriteExceptionDocumentation(builder, model.Fields, effectiveGuards);
+
         var parameterList = string.Join(", ", model.Fields.Select(f => $"{f.ParameterTypeName} {f.ParameterName}"));
         builder.AppendLine($"    public {model.ContainingTypeName}({parameterList})");
         builder.AppendLine("    {");
 
         var emittedAnyGuard = false;
-        foreach (var field in model.Fields)
+        for (var i = 0; i < model.Fields.Length; i++)
         {
-            foreach (var guardCall in ComposeGuardCalls(model.NullGuardMode, field))
+            var field = model.Fields[i];
+            foreach (var guard in effectiveGuards[i])
             {
+                var guardCall = BuildGuardCall(
+                    guard.Kind,
+                    field.ParameterName,
+                    guard.CustomGuardTypeName,
+                    guard.CustomGuardMethodName,
+                    guard.ForwardedArgumentLiterals);
                 builder.AppendLine($"        {guardCall}");
                 emittedAnyGuard = true;
             }
@@ -100,17 +113,127 @@ internal static class GeneratedConstructorCodeGenerator
         return typeParameterList.Replace('<', '{').Replace('>', '}');
     }
 
-    private static List<string> ComposeGuardCalls(GeneratedConstructorNullGuardMode mode, EligibleConstructorField field)
+    private static void WriteExceptionDocumentation(
+        StringBuilder builder,
+        EligibleConstructorField[] fields,
+        List<ConstructorFieldGuard>[] effectiveGuards)
+    {
+        var nullParameters = new List<string>();
+        var emptyParameters = new List<string>();
+        var whiteSpaceParameters = new List<string>();
+
+        for (var i = 0; i < fields.Length; i++)
+        {
+            var documentsNullFailure = false;
+            var documentsEmptyFailure = false;
+            var documentsWhiteSpaceFailure = false;
+
+            foreach (var guard in effectiveGuards[i])
+            {
+                switch (guard.Kind)
+                {
+                    case GeneratedConstructorGuardKind.NotNull:
+                        documentsNullFailure = true;
+                        break;
+                    case GeneratedConstructorGuardKind.NotNullOrEmpty:
+                        documentsNullFailure = true;
+                        documentsEmptyFailure = true;
+                        break;
+                    case GeneratedConstructorGuardKind.NotNullOrWhiteSpace:
+                        documentsNullFailure = true;
+                        documentsWhiteSpaceFailure = true;
+                        break;
+                }
+            }
+
+            if (documentsNullFailure)
+            {
+                nullParameters.Add(fields[i].ParameterName);
+            }
+
+            if (documentsWhiteSpaceFailure)
+            {
+                whiteSpaceParameters.Add(fields[i].ParameterName);
+            }
+            else if (documentsEmptyFailure)
+            {
+                emptyParameters.Add(fields[i].ParameterName);
+            }
+        }
+
+        if (nullParameters.Count > 0)
+        {
+            var description = BuildParameterCondition(
+                nullParameters,
+                "is <see langword=\"null\"/>.");
+            WriteExceptionElement(builder, "global::System.ArgumentNullException", description);
+        }
+
+        if (emptyParameters.Count == 0 && whiteSpaceParameters.Count == 0)
+            return;
+
+        var argumentExceptionDescriptions = new List<string>();
+        if (emptyParameters.Count > 0)
+        {
+            argumentExceptionDescriptions.Add(BuildParameterCondition(
+                emptyParameters,
+                "is empty"));
+        }
+
+        if (whiteSpaceParameters.Count > 0)
+        {
+            argumentExceptionDescriptions.Add(BuildParameterCondition(
+                whiteSpaceParameters,
+                "is empty or consists only of white-space characters"));
+        }
+
+        var argumentExceptionDescription = string.Join("; or ", argumentExceptionDescriptions) + ".";
+        WriteExceptionElement(builder, "global::System.ArgumentException", argumentExceptionDescription);
+    }
+
+    private static string BuildParameterCondition(
+        IReadOnlyList<string> parameterNames,
+        string condition)
+    {
+        return $"{FormatParameterReferences(parameterNames)} {condition}";
+    }
+
+    private static string FormatParameterReferences(IReadOnlyList<string> parameterNames)
+    {
+        if (parameterNames.Count == 1)
+            return $"<paramref name=\"{parameterNames[0]}\"/>";
+
+        if (parameterNames.Count == 2)
+        {
+            return $"<paramref name=\"{parameterNames[0]}\"/> or <paramref name=\"{parameterNames[1]}\"/>";
+        }
+
+        var references = parameterNames
+            .Select(parameterName => $"<paramref name=\"{parameterName}\"/>")
+            .ToArray();
+        return string.Join(", ", references.Take(references.Length - 1)) + $", or {references[references.Length - 1]}";
+    }
+
+    private static void WriteExceptionElement(StringBuilder builder, string exceptionTypeName, string description)
+    {
+        builder.AppendLine($"    /// <exception cref=\"{exceptionTypeName}\">");
+        builder.AppendLine($"    /// {description}");
+        builder.AppendLine("    /// </exception>");
+    }
+
+    private static List<ConstructorFieldGuard> ComposeEffectiveGuards(
+        GeneratedConstructorNullGuardMode mode,
+        EligibleConstructorField field)
     {
         var suppressDefault = field.ExplicitGuards.Any(g => g.Kind == GeneratedConstructorGuardKind.None);
         var seen = new HashSet<(GeneratedConstructorGuardKind Kind, string? Type, string? Method, string ForwardedArguments)>();
-        var calls = new List<string>();
+        var guards = new List<ConstructorFieldGuard>();
 
         if (mode == GeneratedConstructorNullGuardMode.NonNullableReferences && field.IsNonNullableReferenceType && !suppressDefault)
         {
             if (seen.Add((GeneratedConstructorGuardKind.NotNull, null, null, string.Empty)))
             {
-                calls.Add(BuildGuardCall(GeneratedConstructorGuardKind.NotNull, field.ParameterName, null, null, Array.Empty<string>()));
+                guards.Add(new ConstructorFieldGuard(GeneratedConstructorGuardKind.NotNull));
             }
         }
 
@@ -123,10 +246,10 @@ internal static class GeneratedConstructorCodeGenerator
             if (!seen.Add(key))
                 continue;
 
-            calls.Add(BuildGuardCall(guard.Kind, field.ParameterName, guard.CustomGuardTypeName, guard.CustomGuardMethodName, guard.ForwardedArgumentLiterals));
+            guards.Add(guard);
         }
 
-        return calls;
+        return guards;
     }
 
     private static string BuildGuardCall(
@@ -169,4 +292,3 @@ internal static class GeneratedConstructorCodeGenerator
         return $"{customGuardTypeName}.{customGuardMethodName}({argumentList}, nameof({parameterName}));";
     }
 }
-
