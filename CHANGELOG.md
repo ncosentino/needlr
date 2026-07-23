@@ -7,6 +7,7 @@
 ### Fixed
 
 - Release documentation now uses an action-managed Python environment on self-hosted runners, avoiding PEP 668 system-Python failures. Python setup, documentation generation/build, and Node.js setup complete before package publication, while all documentation workflows share `docs/requirements.txt`.
+- Source-generated bootstraps now explicitly run referenced TypeRegistry module constructors instead of relying on `typeof(...).Assembly`, which does not guarantee module initialization. This makes transitive registry loading deterministic and removes test-order dependence from Carter, SignalR, and cross-generator bootstrap coverage.
 
 ## [0.0.3-alpha.2] - 2026-07-22
 

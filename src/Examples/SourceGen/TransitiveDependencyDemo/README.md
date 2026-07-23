@@ -22,8 +22,8 @@ When using source generation with multi-project solutions, you may encounter a s
 Needlr's source generator automatically:
 
 1. **Discovers** all referenced assemblies with `[GenerateTypeRegistry]`
-2. **Generates** `typeof()` calls to force those assemblies to load
-3. **Loads** assemblies in alphabetical order by default
+2. **Runs** each referenced registry module's constructor explicitly
+3. **Initializes** registry modules in assembly-name order by default
 
 ## Controlling Assembly Order
 
@@ -87,19 +87,20 @@ After building, check `TransitiveDemo.Host/obj/Generated/` for the generated boo
 
 ```csharp
 // In NeedlrSourceGenBootstrap.g.cs
-[MethodImpl(MethodImplOptions.NoInlining)]
 private static void ForceLoadReferencedAssemblies()
 {
-    _ = typeof(global::TransitiveDemo.FeatureA.Generated.TypeRegistry).Assembly;
-    _ = typeof(global::TransitiveDemo.FeatureB.Generated.TypeRegistry).Assembly;
+    RuntimeHelpers.RunModuleConstructor(
+        typeof(global::TransitiveDemo.FeatureA.Generated.TypeRegistry).Module.ModuleHandle);
+    RuntimeHelpers.RunModuleConstructor(
+        typeof(global::TransitiveDemo.FeatureB.Generated.TypeRegistry).Module.ModuleHandle);
 }
 ```
 
-This ensures both assemblies load before any plugins are executed.
+This guarantees both module initializers complete before any plugins are executed.
 
 ## AOT Compatibility
 
 This feature is fully AOT-compatible because:
-- `typeof()` is resolved at compile time
-- No reflection is used
-- The assembly references are statically known
+- The registry types and module handles are statically known
+- No assembly scanning or name-based loading is used
+- Re-running an already initialized module constructor is safe

@@ -1,3 +1,6 @@
+using System.Reflection;
+using System.Runtime.CompilerServices;
+
 using MultiProjectApp.Features.CrossGenSimulation;
 using MultiProjectApp.Features.Notifications;
 using NexusLabs.Needlr.Generators;
@@ -27,37 +30,34 @@ public sealed class CrossGeneratorPluginDiscoveryTests
     [Fact]
     public void RegisterPlugins_ModuleInitializer_ContributesTypeAbsentFromTypeRegistry()
     {
-        // SimulatedGeneratorPlugin is ONLY in the registry because RegisterPlugins() ran.
-        // TypeRegistryGenerator produced no Register() for this assembly.
+        var crossGenAssembly = InitializeCrossGeneratorModule();
         var found = NeedlrSourceGenBootstrap.TryGetProviders(
             out _,
             out var pluginProvider);
 
-        Assert.True(found);
+        Assert.True(found, "Expected the simulated generator module initializer to register its plugin provider");
 
         var factory = new GeneratedPluginFactory(pluginProvider!);
-        var assembly = typeof(SimulatedGeneratorPlugin).Assembly;
-
         var plugins = factory.CreatePluginsFromAssemblies<ICrossGeneratedPlugin>(
-            [assembly]).ToList();
+            [crossGenAssembly]).ToList();
 
+        Assert.Single(plugins);
         Assert.Contains(plugins, p => p is SimulatedGeneratorPlugin);
     }
 
     [Fact]
     public void RegisterPlugins_ExactlyOneInstance_NoSpuriousDuplicates()
     {
+        var crossGenAssembly = InitializeCrossGeneratorModule();
         var found = NeedlrSourceGenBootstrap.TryGetProviders(
             out _,
             out var pluginProvider);
 
-        Assert.True(found);
+        Assert.True(found, "Expected the simulated generator module initializer to register its plugin provider");
 
         var factory = new GeneratedPluginFactory(pluginProvider!);
-        var assembly = typeof(SimulatedGeneratorPlugin).Assembly;
-
         var plugins = factory.CreatePluginsFromAssemblies<ICrossGeneratedPlugin>(
-            [assembly]).OfType<SimulatedGeneratorPlugin>().ToList();
+            [crossGenAssembly]).OfType<SimulatedGeneratorPlugin>().ToList();
 
         Assert.Single(plugins);
     }
@@ -65,11 +65,12 @@ public sealed class CrossGeneratorPluginDiscoveryTests
     [Fact]
     public void RegisterPlugins_AssemblyFilter_TypeNotVisibleFromOtherAssemblies()
     {
+        _ = InitializeCrossGeneratorModule();
         var found = NeedlrSourceGenBootstrap.TryGetProviders(
             out _,
             out var pluginProvider);
 
-        Assert.True(found);
+        Assert.True(found, "Expected the simulated generator module initializer to register its plugin provider");
 
         var factory = new GeneratedPluginFactory(pluginProvider!);
 
@@ -83,14 +84,12 @@ public sealed class CrossGeneratorPluginDiscoveryTests
     [Fact]
     public void RegisterPlugins_DeduplicatesWithTypeRegistryGenerator_ForHandWrittenNotificationSink()
     {
-        // AuditLogNotificationSink is hand-written, so BOTH TypeRegistryGenerator (via Register())
-        // AND our CrossGeneratedPlugins module initializer (via RegisterPlugins()) contribute it.
-        // Combine() must deduplicate to exactly one instance.
+        _ = InitializeCrossGeneratorModule();
         var found = NeedlrSourceGenBootstrap.TryGetProviders(
             out _,
             out var pluginProvider);
 
-        Assert.True(found);
+        Assert.True(found, "Expected the simulated generator module initializer to register its plugin provider");
 
         var factory = new GeneratedPluginFactory(pluginProvider!);
         var notificationsAssembly = typeof(AuditLogNotificationSink).Assembly;
@@ -100,5 +99,11 @@ public sealed class CrossGeneratorPluginDiscoveryTests
 
         Assert.Single(sinks);
     }
-}
 
+    private static Assembly InitializeCrossGeneratorModule()
+    {
+        var module = typeof(SimulatedGeneratorPlugin).Module;
+        RuntimeHelpers.RunModuleConstructor(module.ModuleHandle);
+        return module.Assembly;
+    }
+}

@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Generators;
@@ -55,20 +56,22 @@ public sealed class SourceGenIntegrationTests
     [Fact]
     public void Carter_ModuleInitializerRegistersPlugins()
     {
-        if (!NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginProvider))
-        {
-            Assert.Fail("NeedlrSourceGenBootstrap has no registered providers");
-            return;
-        }
+        var carterPluginType = typeof(CarterWebApplicationBuilderPlugin);
+        var carterAssembly = carterPluginType.Assembly;
+        RuntimeHelpers.RunModuleConstructor(carterPluginType.Module.ModuleHandle);
+
+        var found = NeedlrSourceGenBootstrap.TryGetProviders(out _, out var pluginProvider);
+        Assert.True(found, "Expected the Carter module initializer to register Needlr providers");
 
         var allPluginTypes = pluginProvider().ToList();
         var carterPluginTypes = allPluginTypes
-            .Where(p => p.PluginType.Assembly == typeof(CarterWebApplicationBuilderPlugin).Assembly)
+            .Where(p => p.PluginType.Assembly == carterAssembly)
             .Select(p => p.PluginType.Name)
             .ToList();
 
-        Assert.Contains(carterPluginTypes, n => n == "CarterWebApplicationBuilderPlugin");
-        Assert.Contains(carterPluginTypes, n => n == "CarterWebApplicationPlugin");
+        Assert.Equal(2, carterPluginTypes.Count);
+        Assert.Contains("CarterWebApplicationBuilderPlugin", carterPluginTypes);
+        Assert.Contains("CarterWebApplicationPlugin", carterPluginTypes);
     }
 
     [Fact]

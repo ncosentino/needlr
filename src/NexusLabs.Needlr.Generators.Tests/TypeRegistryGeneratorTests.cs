@@ -871,8 +871,15 @@ namespace MainApp
 
         // Should generate ForceLoadReferencedAssemblies method
         Assert.Contains("ForceLoadReferencedAssemblies", mainGeneratedCode);
-        Assert.Contains("MethodImpl(MethodImplOptions.NoInlining)", mainGeneratedCode);
-        Assert.Contains("typeof(global::ReferencedLib.Generated.TypeRegistry).Assembly", mainGeneratedCode);
+        Assert.Contains(
+            "global::System.Runtime.CompilerServices.RuntimeHelpers.RunModuleConstructor(",
+            mainGeneratedCode);
+        Assert.Contains(
+            "typeof(global::ReferencedLib.Generated.TypeRegistry).Module.ModuleHandle);",
+            mainGeneratedCode);
+        Assert.DoesNotContain(
+            "typeof(global::ReferencedLib.Generated.TypeRegistry).Assembly",
+            mainGeneratedCode);
     }
 
     [Fact]
@@ -894,35 +901,6 @@ namespace TestApp
 
         // Should NOT generate ForceLoadReferencedAssemblies method when no referenced assemblies have [GenerateTypeRegistry]
         Assert.DoesNotContain("ForceLoadReferencedAssemblies", generatedCode);
-    }
-
-    [Fact]
-    public void Generator_ForceLoadIncludesRuntimeCompilerServicesUsing()
-    {
-        var referencedAssemblySource = @"
-using NexusLabs.Needlr.Generators;
-
-[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""ReferencedLib"" })]
-
-namespace ReferencedLib
-{
-    public class ReferencedService { }
-}";
-
-        var mainAssemblySource = @"
-using NexusLabs.Needlr.Generators;
-
-[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { ""MainApp"" })]
-
-namespace MainApp
-{
-    public class MainService { }
-}";
-
-        var (_, mainGeneratedCode) = RunGeneratorWithReferencedAssembly(referencedAssemblySource, mainAssemblySource);
-
-        // Should include the using for MethodImpl attribute
-        Assert.Contains("using System.Runtime.CompilerServices;", mainGeneratedCode);
     }
 
     private (string referencedGeneratedCode, string mainGeneratedCode) RunGeneratorWithReferencedAssembly(
@@ -1222,7 +1200,9 @@ namespace NotAParticipant
                 .Select(d => d.GetMessage())));
 
         // The aggregator force-loads the participant's registry, and that reference now resolves.
-        Assert.Contains("typeof(global::DomainOnly.Generated.TypeRegistry).Assembly", aggregatorGenerated);
+        Assert.Contains(
+            "typeof(global::DomainOnly.Generated.TypeRegistry).Module.ModuleHandle);",
+            aggregatorGenerated);
         Assert.DoesNotContain(aggregatorEmit.Diagnostics, d => d.Id == "CS0234");
         Assert.True(aggregatorEmit.Success,
             "Aggregator failed to compile: " +

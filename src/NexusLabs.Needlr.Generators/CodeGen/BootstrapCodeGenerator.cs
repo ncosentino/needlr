@@ -13,7 +13,7 @@ internal static class BootstrapCodeGenerator
 {
     /// <summary>
     /// Emits the module-initializer bootstrap source that registers TypeRegistry
-    /// callbacks and force-loads referenced assemblies.
+    /// callbacks and runs referenced TypeRegistry module constructors.
     /// </summary>
     internal static string GenerateModuleInitializerBootstrapSource(string assemblyName, IReadOnlyList<string> referencedAssemblies, BreadcrumbWriter breadcrumbs, bool hasFactories, bool hasOptions, bool hasProviders)
     {
@@ -22,8 +22,6 @@ internal static class BootstrapCodeGenerator
 
         breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Source-Gen Bootstrap");
         builder.AppendLine("#nullable enable");
-        builder.AppendLine();
-        builder.AppendLine("using System.Runtime.CompilerServices;");
         builder.AppendLine();
         builder.AppendLine("using Microsoft.Extensions.Configuration;");
         builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
@@ -36,10 +34,10 @@ internal static class BootstrapCodeGenerator
         builder.AppendLine("    internal static void Initialize()");
         builder.AppendLine("    {");
 
-        // Generate ForceLoadAssemblies call if there are referenced assemblies with [GenerateTypeRegistry]
+        // Generate the referenced-module initialization call when dependencies have registries.
         if (referencedAssemblies.Count > 0)
         {
-            builder.AppendLine("        // Force-load referenced assemblies to ensure their module initializers run");
+            builder.AppendLine("        // Run referenced module constructors so their registries register");
             builder.AppendLine("        ForceLoadReferencedAssemblies();");
             builder.AppendLine();
         }
@@ -95,21 +93,21 @@ internal static class BootstrapCodeGenerator
         {
             builder.AppendLine();
             builder.AppendLine("    /// <summary>");
-            builder.AppendLine("    /// Forces referenced assemblies with [GenerateTypeRegistry] to load,");
-            builder.AppendLine("    /// ensuring their module initializers execute and register their types.");
+            builder.AppendLine("    /// Runs module constructors for referenced assemblies with");
+            builder.AppendLine("    /// [GenerateTypeRegistry], ensuring their registries register.");
             builder.AppendLine("    /// </summary>");
             builder.AppendLine("    /// <remarks>");
-            builder.AppendLine("    /// Without this, transitive dependencies that are never directly referenced");
-            builder.AppendLine("    /// in code would not be loaded by the CLR, and their plugins would not be discovered.");
+            builder.AppendLine("    /// A typeof expression alone does not guarantee module initialization.");
+            builder.AppendLine("    /// RunModuleConstructor is idempotent when a dependency was already initialized.");
             builder.AppendLine("    /// </remarks>");
-            builder.AppendLine("    [MethodImpl(MethodImplOptions.NoInlining)]");
             builder.AppendLine("    private static void ForceLoadReferencedAssemblies()");
             builder.AppendLine("    {");
 
             foreach (var referencedAssembly in referencedAssemblies)
             {
                 var safeRefAssemblyName = GeneratorHelpers.SanitizeIdentifier(referencedAssembly);
-                builder.AppendLine($"        _ = typeof(global::{safeRefAssemblyName}.Generated.TypeRegistry).Assembly;");
+                builder.AppendLine("        global::System.Runtime.CompilerServices.RuntimeHelpers.RunModuleConstructor(");
+                builder.AppendLine($"            typeof(global::{safeRefAssemblyName}.Generated.TypeRegistry).Module.ModuleHandle);");
             }
 
             builder.AppendLine("    }");
