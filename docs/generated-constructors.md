@@ -77,9 +77,16 @@ partial class TenantService
     /// <summary>Initializes a new instance of the <see cref="TenantService"/> class.</summary>
     /// <param name="repository">The value used to initialize <c>_repository</c>.</param>
     /// <param name="tenantName">The value used to initialize <c>_tenantName</c>.</param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="repository"/> or <paramref name="tenantName"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="tenantName"/> is empty or consists only of white-space characters.
+    /// </exception>
     public TenantService(IRepository repository, string tenantName)
     {
         global::System.ArgumentNullException.ThrowIfNull(repository);
+        global::System.ArgumentNullException.ThrowIfNull(tenantName);
         global::System.ArgumentException.ThrowIfNullOrWhiteSpace(tenantName);
 
         _repository = repository;
@@ -264,6 +271,8 @@ Requesting `NotNull` on a non-nullable value type (e.g. plain `int`) is rejected
 | `NotNullOrWhiteSpace` | `string` | `ArgumentException.ThrowIfNullOrWhiteSpace(value)` | `ArgumentNullException` when `null`; `ArgumentException` when empty or white space |
 
 Every built-in guard emits the exact same standard .NET guard-clause call a hand-written constructor would use, so the reported exception type and `ParamName` are identical to what you would get by hand -- `ParamName` is always the generated constructor's parameter name.
+
+The generated constructor's XML documentation also describes the exceptions implied by its effective built-in guards. Repeated guards and parameters are coalesced deterministically into one `ArgumentNullException` element and, when applicable, one `ArgumentException` element. `None`, a suppressed class-level default, and custom guards do not produce exception claims.
 
 `NotNullOrEmpty` and `NotNullOrWhiteSpace` are rejected on a non-`string` field by [NDLRGEN048](analyzers/NDLRGEN048.md). A guard kind not defined on `ConstructorGuardKind` (e.g. produced by casting an out-of-range integer) is rejected by [NDLRGEN047](analyzers/NDLRGEN047.md).
 

@@ -109,6 +109,13 @@ public sealed class GeneratedConstructorGeneratorTests
         var generatedCode = RunGenerator(source);
 
         Assert.Contains("global::System.ArgumentNullException.ThrowIfNull(repository);", generatedCode);
+        Assert.Contains(
+            """
+                /// <exception cref="global::System.ArgumentNullException">
+                /// <paramref name="repository"/> is <see langword="null"/>.
+                /// </exception>
+            """,
+            generatedCode);
         Assert.Contains("_repository = repository;", generatedCode);
     }
 
@@ -333,6 +340,115 @@ public sealed class GeneratedConstructorGeneratorTests
         var generatedCode = RunGenerator(source);
 
         Assert.Contains("global::System.ArgumentException.ThrowIfNullOrEmpty(orderId);", generatedCode);
+    }
+
+    [Fact]
+    public void ExplicitBuiltInGuards_EmitCoalescedExceptionDocumentationDeterministically()
+    {
+        var source = """
+            #nullable enable
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp
+            {
+                public interface IRepository { }
+
+                [GenerateConstructor(ConstructorNullGuardMode.None)]
+                public partial class TenantService
+                {
+                    [ConstructorGuard(ConstructorGuardKind.NotNull)]
+                    private readonly IRepository _repository;
+
+                    [ConstructorGuard(ConstructorGuardKind.NotNullOrEmpty)]
+                    private readonly string _displayName;
+
+                    [ConstructorGuard(ConstructorGuardKind.NotNullOrWhiteSpace)]
+                    private readonly string _tenantName;
+                }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        Assert.Contains(
+            """
+                /// <exception cref="global::System.ArgumentNullException">
+                /// <paramref name="repository"/>, <paramref name="displayName"/>, or <paramref name="tenantName"/> is <see langword="null"/>.
+                /// </exception>
+                /// <exception cref="global::System.ArgumentException">
+                /// <paramref name="displayName"/> is empty; or <paramref name="tenantName"/> is empty or consists only of white-space characters.
+                /// </exception>
+            """,
+            generatedCode);
+    }
+
+    [Fact]
+    public void NoneSuppressionAndCustomGuards_DoNotEmitExceptionDocumentation()
+    {
+        var source = """
+            #nullable enable
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp
+            {
+                public static class CustomGuard
+                {
+                    public static void Validate(string value, string parameterName) { }
+                }
+
+                [GenerateConstructor(ConstructorNullGuardMode.None)]
+                public partial class UnguardedService
+                {
+                    private readonly string _value;
+                }
+
+                [GenerateConstructor(ConstructorNullGuardMode.NonNullableReferences)]
+                public partial class CustomGuardedService
+                {
+                    [ConstructorGuard(ConstructorGuardKind.None)]
+                    [ConstructorGuard(typeof(CustomGuard))]
+                    private readonly string _value;
+                }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        Assert.Contains("global::TestApp.CustomGuard.Validate(value, nameof(value));", generatedCode);
+        Assert.DoesNotContain("<exception", generatedCode);
+    }
+
+    [Fact]
+    public void DuplicateEffectiveBuiltInGuards_EmitSingleExceptionElementPerType()
+    {
+        var source = """
+            #nullable enable
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp
+            {
+                [GenerateConstructor(ConstructorNullGuardMode.NonNullableReferences)]
+                public partial class TenantService
+                {
+                    [ConstructorGuard(ConstructorGuardKind.NotNull)]
+                    [ConstructorGuard(ConstructorGuardKind.NotNull)]
+                    [ConstructorGuard(ConstructorGuardKind.NotNullOrWhiteSpace)]
+                    [ConstructorGuard(ConstructorGuardKind.NotNullOrWhiteSpace)]
+                    private readonly string _tenantName;
+                }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        Assert.Equal(1, CountOccurrences(generatedCode, "<exception cref=\"global::System.ArgumentNullException\">"));
+        Assert.Equal(1, CountOccurrences(generatedCode, "<exception cref=\"global::System.ArgumentException\">"));
+        Assert.Equal(1, CountOccurrences(generatedCode, "<paramref name=\"tenantName\"/> is <see langword=\"null\"/>."));
+        Assert.Equal(
+            1,
+            CountOccurrences(
+                generatedCode,
+                "<paramref name=\"tenantName\"/> is empty or consists only of white-space characters."));
     }
 
     [Fact]
