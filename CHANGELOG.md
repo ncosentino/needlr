@@ -4,6 +4,10 @@
 
 - Generated constructors now emit coalesced XML `<exception>` documentation for effective built-in guards, including distinct null, empty, and white-space failure contracts. Suppressed defaults, `None`, duplicate guards, and custom guards do not produce unsupported exception claims.
 
+### Fixed
+
+- Release documentation now uses an action-managed Python environment on self-hosted runners, avoiding PEP 668 system-Python failures. Python setup, documentation generation/build, and Node.js setup complete before package publication, while all documentation workflows share `docs/requirements.txt`.
+
 ## [0.0.3-alpha.2] - 2026-07-22
 
 ### Added

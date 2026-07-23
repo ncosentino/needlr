@@ -103,7 +103,7 @@ jobs:
         python-version: '3.x'
 
     - name: Install MkDocs
-      run: pip install "mkdocs>=1.5,<2.0" mkdocs-material
+      run: python -m pip install -r docs/requirements.txt
 
     - name: Restore dotnet tools
       run: dotnet tool restore
