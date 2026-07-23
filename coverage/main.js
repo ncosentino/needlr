@@ -384,7 +384,7 @@ var assemblies = [
       { "name": "NexusLabs.Needlr.Generators.CodeGen.DecoratorsCodeGenerator", "rp": "NexusLabs.Needlr.Generators_DecoratorsCodeGenerator.html", "cl": 94, "ucl": 16, "cal": 110, "tl": 238, "cb": 38, "tb": 46, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.CodeGen.EmptyTypeRegistryCodeGenerator", "rp": "NexusLabs.Needlr.Generators_EmptyTypeRegistryCodeGenerator.html", "cl": 45, "ucl": 0, "cal": 45, "tl": 97, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.CodeGen.FactoryCodeGenerator", "rp": "NexusLabs.Needlr.Generators_FactoryCodeGenerator.html", "cl": 136, "ucl": 1, "cal": 137, "tl": 259, "cb": 45, "tb": 54, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Generators.CodeGen.GeneratedConstructorCodeGenerator", "rp": "NexusLabs.Needlr.Generators_GeneratedConstructorCodeGenerator.html", "cl": 61, "ucl": 1, "cal": 62, "tl": 172, "cb": 35, "tb": 37, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Generators.CodeGen.GeneratedConstructorCodeGenerator", "rp": "NexusLabs.Needlr.Generators_GeneratedConstructorCodeGenerator.html", "cl": 125, "ucl": 2, "cal": 127, "tl": 294, "cb": 62, "tb": 65, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.CodeGen.HttpClientCodeGenerator", "rp": "NexusLabs.Needlr.Generators_HttpClientCodeGenerator.html", "cl": 0, "ucl": 30, "cal": 30, "tl": 89, "cb": 0, "tb": 10, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.CodeGen.InjectableTypesCodeGenerator", "rp": "NexusLabs.Needlr.Generators_InjectableTypesCodeGenerator.html", "cl": 44, "ucl": 6, "cal": 50, "tl": 109, "cb": 19, "tb": 22, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.CodeGen.InterceptorCodeGenerator", "rp": "NexusLabs.Needlr.Generators_InterceptorCodeGenerator.html", "cl": 168, "ucl": 16, "cal": 184, "tl": 342, "cb": 40, "tb": 56, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -522,7 +522,7 @@ var assemblies = [
   {
     "name": "NexusLabs.Needlr.Injection.Bundle",
     "classes": [
-      { "name": "NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder", "rp": "NexusLabs.Needlr.Injection.Bundle_ServiceProviderBuilder.html", "cl": 81, "ucl": 4, "cal": 85, "tl": 170, "cb": 18, "tb": 26, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder", "rp": "NexusLabs.Needlr.Injection.Bundle_ServiceProviderBuilder.html", "cl": 81, "ucl": 4, "cal": 85, "tl": 170, "cb": 19, "tb": 26, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions", "rp": "NexusLabs.Needlr.Injection.Bundle_SyringeBundleExtensions.html", "cl": 30, "ucl": 4, "cal": 34, "tl": 132, "cb": 6, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
   {
@@ -1226,6 +1226,12 @@ var riskHotspots = [
     ]},
   {
     "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Analyzers.KeyedServiceResolutionAnalyzer", "reportPath": "NexusLabs.Needlr.Analyzers_KeyedServiceResolutionAnalyzer.html", "methodName": "CollectKeyedRegistration(Microsoft.CodeAnalysis.Diagnostics.SymbolAnalysisContext,System.Collections.Concurrent.ConcurrentDictionary\u00602\u003CSystem.String,System.Collections.Concurrent.ConcurrentBag\u00601\u003CSystem.ValueTuple\u00602\u003CSystem.String,System.String\u003E\u003E\u003E)", "methodShortName": "CollectKeyedRegistration(...)", "fileIndex": 0, "line": 109,
+    "metrics": [
+      { "value": 24, "exceeded": false },
+      { "value": 24, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.CodeGen.GeneratedConstructorCodeGenerator", "reportPath": "NexusLabs.Needlr.Generators_GeneratedConstructorCodeGenerator.html", "methodName": "WriteExceptionDocumentation(System.Text.StringBuilder,NexusLabs.Needlr.Generators.Models.EligibleConstructorField[],System.Collections.Generic.List\u00601\u003CNexusLabs.Needlr.Generators.Models.ConstructorFieldGuard\u003E[])", "methodShortName": "WriteExceptionDocumentation(...)", "fileIndex": 0, "line": 121,
     "metrics": [
       { "value": 24, "exceeded": false },
       { "value": 24, "exceeded": true },

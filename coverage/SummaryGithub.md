@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 07/22/2026 - 19:51:56 |
-| Coverage date: | 07/22/2026 - 19:49:39 - 07/22/2026 - 19:51:52 |
+| Generated on: | 7/23/2026 - 6:09:36 AM |
+| Coverage date: | 7/23/2026 - 6:07:30 AM - 7/23/2026 - 6:09:31 AM |
 | Parser: | MultiReport (25x Cobertura) |
 | Assemblies: | 20 |
 | Classes: | 239 |
 | Files: | 219 |
-| **Line coverage:** | 85.9% (10879 of 12661) |
-| Covered lines: | 10879 |
-| Uncovered lines: | 1782 |
-| Coverable lines: | 12661 |
-| Total lines: | 33262 |
-| **Branch coverage:** | 74.8% (5235 of 6997) |
-| Covered branches: | 5235 |
-| Total branches: | 6997 |
+| **Line coverage:** | 85.9% (10943 of 12726) |
+| Covered lines: | 10943 |
+| Uncovered lines: | 1783 |
+| Coverable lines: | 12726 |
+| Total lines: | 33384 |
+| **Branch coverage:** | 74.9% (5263 of 7025) |
+| Covered branches: | 5263 |
+| Total branches: | 7025 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -126,11 +126,11 @@
 |NexusLabs.Needlr.FluentValidation.ValidationFailureConverter|88.8%|50%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators - 85.3%</summary>
+<details><summary>NexusLabs.Needlr.Generators - 85.4%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators**|**85.3%**|**74.5%**|
+|**NexusLabs.Needlr.Generators**|**85.4%**|**74.6%**|
 |NexusLabs.Needlr.Generators.AssemblyDiscoveryHelper|42.7%|50%|
 |NexusLabs.Needlr.Generators.BreadcrumbWriter|91.8%|83.3%|
 |NexusLabs.Needlr.Generators.CaptiveDependencyAnalyzer|89.3%|88%|
@@ -139,7 +139,7 @@
 |NexusLabs.Needlr.Generators.CodeGen.DecoratorsCodeGenerator|85.4%|82.6%|
 |NexusLabs.Needlr.Generators.CodeGen.EmptyTypeRegistryCodeGenerator|100%||
 |NexusLabs.Needlr.Generators.CodeGen.FactoryCodeGenerator|99.2%|83.3%|
-|NexusLabs.Needlr.Generators.CodeGen.GeneratedConstructorCodeGenerator|98.3%|94.5%|
+|NexusLabs.Needlr.Generators.CodeGen.GeneratedConstructorCodeGenerator|98.4%|95.3%|
 |NexusLabs.Needlr.Generators.CodeGen.HttpClientCodeGenerator|0%|0%|
 |NexusLabs.Needlr.Generators.CodeGen.InjectableTypesCodeGenerator|88%|86.3%|
 |NexusLabs.Needlr.Generators.CodeGen.InterceptorCodeGenerator|91.3%|71.4%|
@@ -288,8 +288,8 @@
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**75%**|
-|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|69.2%|
+|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**78.1%**|
+|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|73%|
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
