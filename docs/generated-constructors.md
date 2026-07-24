@@ -540,7 +540,9 @@ The following are intentionally out of scope for the initial implementation and 
 - **Classes with an existing explicit instance constructor** ([NDLRGEN041](analyzers/NDLRGEN041.md)).
 - **Base types that require constructor arguments** ([NDLRGEN042](analyzers/NDLRGEN042.md)).
 - **Keyed fields or properties** -- generated-constructor generation only ever considers plain private `readonly` fields; there is no support for producing a `[FromKeyedServices]`-annotated generated-constructor parameter from a field or property annotation.
-- **Properties** as a source of constructor parameters -- only fields are considered.
+- **Properties** as a source of this class constructor's parameters -- only fields are
+  considered. Positional records can add explicitly marked properties through
+  [Generated Record Constructor Overloads](generated-record-constructor-overloads.md).
 - **`NotEmpty`** as a built-in guard kind (see [Built-In Guards](#built-in-guards) above).
 - **Array/`params` and floating-point (`float`/`double`) parameterized alias arguments, and every named attribute argument or property** -- diagnosed by [NDLRGEN055](analyzers/NDLRGEN055.md) (see [Parameterized Alias Arguments](#parameterized-alias-arguments) above); only the scalar constant shapes in that section's table are forwarded.
 - **`IHubRegistrationPlugin` implementations** -- SignalR hub-registration plugins require parameterless activation and cannot use generated-constructor generation at all; see [NDLRSIG003](analyzers/NDLRSIG003.md).
@@ -562,7 +564,7 @@ The following are intentionally out of scope for the initial implementation and 
 | `ConstructorGuardKind.NotNullOrEmpty` | -- | Throws `ArgumentNullException`/`ArgumentException` for `null`/empty strings. |
 | `ConstructorGuardKind.NotNullOrWhiteSpace` | -- | Throws `ArgumentNullException`/`ArgumentException` for `null`/empty/white-space-only strings. |
 | `[ConstructorIgnore]` | Field | Excludes an otherwise-eligible field from generated-constructor parameters. Exclusion-only; has no effect without a generation trigger elsewhere on the class. |
-| `[ConstructorGuardDefinition(Type)]` | Attribute type | Declares an application-defined field attribute as an alias for a direct custom guard, using its conventional `Validate` method. |
+| `[ConstructorGuardDefinition(Type)]` | Attribute type | Declares an application-defined field or property attribute as an alias for a direct custom guard, using its conventional `Validate` method. Property usages require `[RecordConstructorOverloadParameter]`. |
 | `[ConstructorGuardDefinition(Type, string)]` | Attribute type | Declares an alias attribute for a custom guard with an explicit method name. |
 
 `[ConstructorGuard]` allows multiple applications on the same field (`AllowMultiple = true`); the other attributes each allow exactly one application.

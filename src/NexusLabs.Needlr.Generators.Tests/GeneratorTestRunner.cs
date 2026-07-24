@@ -13,6 +13,7 @@ namespace NexusLabs.Needlr.Generators.Tests;
 public sealed class GeneratorTestRunner
 {
     private readonly List<string> _sources = new();
+    private readonly List<string> _sourceFilePaths = new();
     private readonly List<MetadataReference> _additionalReferences = new();
     private readonly Dictionary<string, string> _analyzerConfigOptions = new();
     private CSharpParseOptions? _parseOptions;
@@ -24,6 +25,17 @@ public sealed class GeneratorTestRunner
     public GeneratorTestRunner WithSource(string source)
     {
         _sources.Add(source);
+        _sourceFilePaths.Add(string.Empty);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds source code with an explicit syntax-tree file path.
+    /// </summary>
+    public GeneratorTestRunner WithSourceFile(string filePath, string source)
+    {
+        _sources.Add(source);
+        _sourceFilePaths.Add(filePath);
         return this;
     }
 
@@ -33,6 +45,8 @@ public sealed class GeneratorTestRunner
     public GeneratorTestRunner WithSources(params string[] sources)
     {
         _sources.AddRange(sources);
+        _sourceFilePaths.AddRange(
+            Enumerable.Repeat(string.Empty, sources.Length));
         return this;
     }
 
@@ -273,7 +287,12 @@ public sealed class GeneratorTestRunner
     {
         var generator = new TypeRegistryGenerator();
         var parseOptions = _parseOptions ?? new CSharpParseOptions();
-        var syntaxTrees = _sources.Select(s => CSharpSyntaxTree.ParseText(s, parseOptions)).ToArray();
+        var syntaxTrees = _sources
+            .Select((source, index) => CSharpSyntaxTree.ParseText(
+                source,
+                parseOptions,
+                path: _sourceFilePaths[index]))
+            .ToArray();
 
         var references = Basic.Reference.Assemblies.Net100.References.All
             .Concat(_additionalReferences)
@@ -306,7 +325,12 @@ public sealed class GeneratorTestRunner
     public IReadOnlyList<Diagnostic> RunGeneratorCompilationErrors(IIncrementalGenerator generator)
     {
         var parseOptions = _parseOptions ?? new CSharpParseOptions();
-        var syntaxTrees = _sources.Select(s => CSharpSyntaxTree.ParseText(s, parseOptions)).ToArray();
+        var syntaxTrees = _sources
+            .Select((source, index) => CSharpSyntaxTree.ParseText(
+                source,
+                parseOptions,
+                path: _sourceFilePaths[index]))
+            .ToArray();
 
         var references = Basic.Reference.Assemblies.Net100.References.All
             .Concat(_additionalReferences)
@@ -343,7 +367,12 @@ public sealed class GeneratorTestRunner
     public GeneratedFile[] RunGeneratorWithDiagnostics(IIncrementalGenerator generator, out IReadOnlyList<Diagnostic> generatorDiagnostics)
     {
         var parseOptions = _parseOptions ?? new CSharpParseOptions();
-        var syntaxTrees = _sources.Select(s => CSharpSyntaxTree.ParseText(s, parseOptions)).ToArray();
+        var syntaxTrees = _sources
+            .Select((source, index) => CSharpSyntaxTree.ParseText(
+                source,
+                parseOptions,
+                path: _sourceFilePaths[index]))
+            .ToArray();
 
         var references = Basic.Reference.Assemblies.Net100.References.All
             .Concat(_additionalReferences)

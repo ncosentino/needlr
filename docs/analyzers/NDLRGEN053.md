@@ -2,20 +2,22 @@
 
 ## Cause
 
-`[ConstructorGuardDefinition]` decorates a type that is not a usable field-attribute alias: it is not derived from `System.Attribute`, or its own `[AttributeUsage]` does not allow `AttributeTargets.Field`.
+`[ConstructorGuardDefinition]` decorates a type that is not a usable constructor-guard
+alias: it is not derived from `System.Attribute`, or its own `[AttributeUsage]` allows
+neither `AttributeTargets.Field` nor `AttributeTargets.Property`.
 
 ## Rule Description
 
-`[ConstructorGuardDefinition]` turns an application-defined attribute type into an alias for a constructor guard, so it can be applied to a field the same way `[ConstructorGuard]` is. That only makes sense when the decorated type:
+`[ConstructorGuardDefinition]` turns an application-defined attribute type into an alias for a constructor guard, so it can be applied to a generated-constructor field or a participating record-overload property. That only makes sense when the decorated type:
 
 - **Is itself an `Attribute`-derived type** (so it can legally be applied as an attribute at all), and
-- **Allows `AttributeTargets.Field`** in its own `[AttributeUsage]` (so it can legally be applied to the fields this feature targets).
+- **Allows `AttributeTargets.Field` or `AttributeTargets.Property`** in its own `[AttributeUsage]`.
 
-The diagnostic message reports which requirement failed: `"not derived from System.Attribute"` or `"not usable on fields ([AttributeUsage] does not include AttributeTargets.Field)"`.
+The diagnostic message reports which requirement failed.
 
 ## How to Fix
 
-Derive from `Attribute` and allow `AttributeTargets.Field`:
+Derive from `Attribute` and allow at least one supported member target:
 
 ```csharp
 using System;
@@ -28,16 +30,16 @@ public sealed class CollectionNotEmptyAttribute
 {
 }
 
-// WRONG - NDLRGEN053: [AttributeUsage] does not include AttributeTargets.Field
+// WRONG - NDLRGEN053: neither supported member target is allowed
 [ConstructorGuardDefinition(typeof(CollectionNotEmptyGuard))]
-[AttributeUsage(AttributeTargets.Property)]
+[AttributeUsage(AttributeTargets.Method)]
 public sealed class CollectionNotEmptyAttribute : Attribute
 {
 }
 
-// CORRECT - derived from Attribute, usable on fields
+// CORRECT - derived from Attribute, usable on fields and participating properties
 [ConstructorGuardDefinition(typeof(CollectionNotEmptyGuard))]
-[AttributeUsage(AttributeTargets.Field)]
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
 public sealed class CollectionNotEmptyAttribute : Attribute
 {
 }
@@ -48,3 +50,4 @@ public sealed class CollectionNotEmptyAttribute : Attribute
 - [NDLRGEN054](NDLRGEN054.md) - [ConstructorGuardDefinition] guard contract is unresolved
 - [NDLRGEN055](NDLRGEN055.md) - Constructor guard alias usage argument is unsupported
 - [Generated Constructors](../generated-constructors.md)
+- [Generated Record Constructor Overloads](../generated-record-constructor-overloads.md)

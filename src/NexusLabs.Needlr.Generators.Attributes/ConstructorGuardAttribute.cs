@@ -4,25 +4,29 @@ namespace NexusLabs.Needlr.Generators;
 
 /// <summary>
 /// Requests a constructor guard clause for a field participating in generated
-/// constructor generation via <see cref="GenerateConstructorAttribute"/>.
+/// constructor generation or a property participating in a generated positional-record
+/// constructor overload.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Applying this attribute with any kind other than <see cref="ConstructorGuardKind.None"/>,
-/// or with a custom guard type, is itself a positive trigger: it enables constructor
-/// generation with <see cref="ConstructorNullGuardMode.None"/> even if the containing
-/// class does not carry <see cref="GenerateConstructorAttribute"/>. In that case every
-/// other eligible field still becomes a constructor parameter, but only fields with
-/// their own explicit guard receive one.
+/// On an eligible field, applying this attribute with any kind other than
+/// <see cref="ConstructorGuardKind.None"/>, or with a custom guard type, is itself a
+/// positive trigger: it enables constructor generation with
+/// <see cref="ConstructorNullGuardMode.None"/> even if the containing class does not
+/// carry <see cref="GenerateConstructorAttribute"/>. On a property, the guard is valid
+/// only when the property also carries
+/// <see cref="RecordConstructorOverloadParameterAttribute"/>; a property guard does not
+/// trigger an overload by itself.
 /// </para>
 /// <para>
 /// A custom guard type must expose an accessible <see langword="static"/> method
 /// compatible with <c>void Validate(T value, string parameterName)</c>, where
-/// <c>T</c> is compatible with the field's type. The generator emits a
+/// <c>T</c> is compatible with the guarded member's type. The generator emits a
 /// direct, fully-qualified call to that method -- never a reflection-based invocation.
 /// </para>
 /// <para>
-/// This attribute may be applied more than once to the same field to request several
+/// This attribute may be applied more than once to the same field or participating
+/// property to request several
 /// guards additively. The class-level default guard (when applicable) is always
 /// composed first, followed by every explicit <see cref="ConstructorGuardAttribute"/>
 /// in source declaration order. Identical effective guard calls -- the same built-in
@@ -68,15 +72,26 @@ namespace NexusLabs.Needlr.Generators;
 /// // global::System.ArgumentException.ThrowIfNullOrWhiteSpace(orderId);
 /// // OrderIdFormatGuard.Validate(orderId, nameof(orderId));
 /// </code>
+/// <code>
+/// public partial record PreparedRequest(string Query)
+/// {
+///     [RecordConstructorOverloadParameter]
+///     [ConstructorGuard(ConstructorGuardKind.NotNull)]
+///     public PreparedScope? PreparedScope { get; init; }
+/// }
+/// </code>
 /// </example>
-[AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = true)]
+[AttributeUsage(
+    AttributeTargets.Field | AttributeTargets.Property,
+    Inherited = false,
+    AllowMultiple = true)]
 public sealed class ConstructorGuardAttribute : Attribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ConstructorGuardAttribute"/> class
     /// requesting a built-in guard kind.
     /// </summary>
-    /// <param name="kind">The built-in guard clause to emit for this field.</param>
+    /// <param name="kind">The built-in guard clause to emit for this member.</param>
     public ConstructorGuardAttribute(ConstructorGuardKind kind)
     {
         Kind = kind;

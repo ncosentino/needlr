@@ -34,5 +34,5 @@ public partial class UserService
 
 ## See Also
 
-- [NDLRGEN048](NDLRGEN048.md) - Constructor guard incompatible with field type
+- [NDLRGEN048](NDLRGEN048.md) - Constructor guard incompatible with member type
 - [Generated Constructors](../generated-constructors.md)

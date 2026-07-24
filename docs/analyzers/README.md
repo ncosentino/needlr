@@ -94,7 +94,7 @@ These diagnostics are emitted by the `GeneratedConstructorAnalyzer` to validate 
 | [NDLRGEN045](NDLRGEN045.md) | Warning | Constructor guard attribute has no effect |
 | [NDLRGEN046](NDLRGEN046.md) | Error | Constructor guard attribute applied to an ineligible field |
 | [NDLRGEN047](NDLRGEN047.md) | Error | Invalid constructor guard enum value |
-| [NDLRGEN048](NDLRGEN048.md) | Error | Constructor guard incompatible with field type |
+| [NDLRGEN048](NDLRGEN048.md) | Error | Constructor guard incompatible with member type |
 | [NDLRGEN049](NDLRGEN049.md) | Error | Custom constructor guard type is invalid |
 | [NDLRGEN050](NDLRGEN050.md) | Error | Custom constructor guard method name is invalid |
 | [NDLRGEN051](NDLRGEN051.md) | Error | Custom constructor guard method is invalid |
@@ -103,6 +103,12 @@ These diagnostics are emitted by the `GeneratedConstructorAnalyzer` to validate 
 | [NDLRGEN054](NDLRGEN054.md) | Error | [ConstructorGuardDefinition] guard contract is unresolved |
 | [NDLRGEN055](NDLRGEN055.md) | Error | Constructor guard alias usage argument is unsupported |
 | [NDLRGEN056](NDLRGEN056.md) | Error | Custom constructor guard method is incompatible with forwarded alias arguments |
+| [NDLRGEN057](NDLRGEN057.md) | Error | Record constructor-overload type must be partial |
+| [NDLRGEN058](NDLRGEN058.md) | Error | Record constructor-overload type shape is unsupported |
+| [NDLRGEN059](NDLRGEN059.md) | Error | Record constructor-overload property is unsupported |
+| [NDLRGEN060](NDLRGEN060.md) | Error | Constructor guard property does not participate in an overload |
+| [NDLRGEN061](NDLRGEN061.md) | Error | Record constructor overload conflicts with field-based generation |
+| [NDLRGEN062](NDLRGEN062.md) | Error | Record constructor-overload signature collides |
 
 ## HttpClient Diagnostics (NexusLabs.Needlr.Generators)
 

@@ -1057,7 +1057,7 @@ public sealed class NotAnAttributeAlias
     }
 
     [Fact]
-    public async Task NDLRGEN053_WhenAttributeUsageExcludesField()
+    public async Task NDLRGEN053_WhenAttributeUsageExcludesFieldsAndProperties()
     {
         var test = CreateTest(@"
 using NexusLabs.Needlr.Generators;
@@ -1076,7 +1076,7 @@ public sealed class MethodOnlyAliasAttribute : System.Attribute
         test.ExpectedDiagnostics.Add(
             new DiagnosticResult("NDLRGEN053", DiagnosticSeverity.Error)
                 .WithLocation(0)
-                .WithArguments("MethodOnlyAliasAttribute", "not usable on fields ([AttributeUsage] does not include AttributeTargets.Field)"));
+                .WithArguments("MethodOnlyAliasAttribute", "not usable on fields or properties ([AttributeUsage] includes neither AttributeTargets.Field nor AttributeTargets.Property)"));
 
         await test.RunAsync(TestContext.Current.CancellationToken);
     }

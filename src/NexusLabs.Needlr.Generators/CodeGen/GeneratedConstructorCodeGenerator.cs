@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -54,7 +53,10 @@ internal static class GeneratedConstructorCodeGenerator
         builder.AppendLine("{");
 
         var effectiveGuards = model.Fields
-            .Select(field => ComposeEffectiveGuards(model.NullGuardMode, field))
+            .Select(field => ConstructorGuardCodeGenerator.ComposeEffectiveGuards(
+                model.NullGuardMode == GeneratedConstructorNullGuardMode.NonNullableReferences &&
+                    field.IsNonNullableReferenceType,
+                field.ExplicitGuards))
             .ToArray();
 
         builder.AppendLine("    /// <summary>");
@@ -66,7 +68,11 @@ internal static class GeneratedConstructorCodeGenerator
             builder.AppendLine($"    /// <param name=\"{field.ParameterName}\">The value used to initialize <c>{field.FieldName}</c>.</param>");
         }
 
-        WriteExceptionDocumentation(builder, model.Fields, effectiveGuards);
+        ConstructorGuardCodeGenerator.WriteExceptionDocumentation(
+            builder,
+            model.Fields.Select(field => field.ParameterName).ToArray(),
+            effectiveGuards,
+            "    ");
 
         var parameterList = string.Join(", ", model.Fields.Select(f => $"{f.ParameterTypeName} {f.ParameterName}"));
         builder.AppendLine($"    public {model.ContainingTypeName}({parameterList})");
@@ -78,12 +84,9 @@ internal static class GeneratedConstructorCodeGenerator
             var field = model.Fields[i];
             foreach (var guard in effectiveGuards[i])
             {
-                var guardCall = BuildGuardCall(
-                    guard.Kind,
-                    field.ParameterName,
-                    guard.CustomGuardTypeName,
-                    guard.CustomGuardMethodName,
-                    guard.ForwardedArgumentLiterals);
+                var guardCall = ConstructorGuardCodeGenerator.BuildGuardCall(
+                    guard,
+                    field.ParameterName);
                 builder.AppendLine($"        {guardCall}");
                 emittedAnyGuard = true;
             }
@@ -113,182 +116,4 @@ internal static class GeneratedConstructorCodeGenerator
         return typeParameterList.Replace('<', '{').Replace('>', '}');
     }
 
-    private static void WriteExceptionDocumentation(
-        StringBuilder builder,
-        EligibleConstructorField[] fields,
-        List<ConstructorFieldGuard>[] effectiveGuards)
-    {
-        var nullParameters = new List<string>();
-        var emptyParameters = new List<string>();
-        var whiteSpaceParameters = new List<string>();
-
-        for (var i = 0; i < fields.Length; i++)
-        {
-            var documentsNullFailure = false;
-            var documentsEmptyFailure = false;
-            var documentsWhiteSpaceFailure = false;
-
-            foreach (var guard in effectiveGuards[i])
-            {
-                switch (guard.Kind)
-                {
-                    case GeneratedConstructorGuardKind.NotNull:
-                        documentsNullFailure = true;
-                        break;
-                    case GeneratedConstructorGuardKind.NotNullOrEmpty:
-                        documentsNullFailure = true;
-                        documentsEmptyFailure = true;
-                        break;
-                    case GeneratedConstructorGuardKind.NotNullOrWhiteSpace:
-                        documentsNullFailure = true;
-                        documentsWhiteSpaceFailure = true;
-                        break;
-                }
-            }
-
-            if (documentsNullFailure)
-            {
-                nullParameters.Add(fields[i].ParameterName);
-            }
-
-            if (documentsWhiteSpaceFailure)
-            {
-                whiteSpaceParameters.Add(fields[i].ParameterName);
-            }
-            else if (documentsEmptyFailure)
-            {
-                emptyParameters.Add(fields[i].ParameterName);
-            }
-        }
-
-        if (nullParameters.Count > 0)
-        {
-            var description = BuildParameterCondition(
-                nullParameters,
-                "is <see langword=\"null\"/>.");
-            WriteExceptionElement(builder, "global::System.ArgumentNullException", description);
-        }
-
-        if (emptyParameters.Count == 0 && whiteSpaceParameters.Count == 0)
-            return;
-
-        var argumentExceptionDescriptions = new List<string>();
-        if (emptyParameters.Count > 0)
-        {
-            argumentExceptionDescriptions.Add(BuildParameterCondition(
-                emptyParameters,
-                "is empty"));
-        }
-
-        if (whiteSpaceParameters.Count > 0)
-        {
-            argumentExceptionDescriptions.Add(BuildParameterCondition(
-                whiteSpaceParameters,
-                "is empty or consists only of white-space characters"));
-        }
-
-        var argumentExceptionDescription = string.Join("; or ", argumentExceptionDescriptions) + ".";
-        WriteExceptionElement(builder, "global::System.ArgumentException", argumentExceptionDescription);
-    }
-
-    private static string BuildParameterCondition(
-        IReadOnlyList<string> parameterNames,
-        string condition)
-    {
-        return $"{FormatParameterReferences(parameterNames)} {condition}";
-    }
-
-    private static string FormatParameterReferences(IReadOnlyList<string> parameterNames)
-    {
-        if (parameterNames.Count == 1)
-            return $"<paramref name=\"{parameterNames[0]}\"/>";
-
-        if (parameterNames.Count == 2)
-        {
-            return $"<paramref name=\"{parameterNames[0]}\"/> or <paramref name=\"{parameterNames[1]}\"/>";
-        }
-
-        var references = parameterNames
-            .Select(parameterName => $"<paramref name=\"{parameterName}\"/>")
-            .ToArray();
-        return string.Join(", ", references.Take(references.Length - 1)) + $", or {references[references.Length - 1]}";
-    }
-
-    private static void WriteExceptionElement(StringBuilder builder, string exceptionTypeName, string description)
-    {
-        builder.AppendLine($"    /// <exception cref=\"{exceptionTypeName}\">");
-        builder.AppendLine($"    /// {description}");
-        builder.AppendLine("    /// </exception>");
-    }
-
-    private static List<ConstructorFieldGuard> ComposeEffectiveGuards(
-        GeneratedConstructorNullGuardMode mode,
-        EligibleConstructorField field)
-    {
-        var suppressDefault = field.ExplicitGuards.Any(g => g.Kind == GeneratedConstructorGuardKind.None);
-        var seen = new HashSet<(GeneratedConstructorGuardKind Kind, string? Type, string? Method, string ForwardedArguments)>();
-        var guards = new List<ConstructorFieldGuard>();
-
-        if (mode == GeneratedConstructorNullGuardMode.NonNullableReferences && field.IsNonNullableReferenceType && !suppressDefault)
-        {
-            if (seen.Add((GeneratedConstructorGuardKind.NotNull, null, null, string.Empty)))
-            {
-                guards.Add(new ConstructorFieldGuard(GeneratedConstructorGuardKind.NotNull));
-            }
-        }
-
-        foreach (var guard in field.ExplicitGuards)
-        {
-            if (guard.Kind == GeneratedConstructorGuardKind.None)
-                continue;
-
-            var key = (guard.Kind, guard.CustomGuardTypeName, guard.CustomGuardMethodName, ForwardedArguments: string.Join("\u0001", guard.ForwardedArgumentLiterals));
-            if (!seen.Add(key))
-                continue;
-
-            guards.Add(guard);
-        }
-
-        return guards;
-    }
-
-    private static string BuildGuardCall(
-        GeneratedConstructorGuardKind kind,
-        string parameterName,
-        string? customGuardTypeName,
-        string? customGuardMethodName,
-        string[] forwardedArgumentLiterals)
-    {
-        return kind switch
-        {
-            GeneratedConstructorGuardKind.NotNull => $"global::System.ArgumentNullException.ThrowIfNull({parameterName});",
-            GeneratedConstructorGuardKind.NotNullOrEmpty => $"global::System.ArgumentException.ThrowIfNullOrEmpty({parameterName});",
-            GeneratedConstructorGuardKind.NotNullOrWhiteSpace => $"global::System.ArgumentException.ThrowIfNullOrWhiteSpace({parameterName});",
-            GeneratedConstructorGuardKind.Custom => BuildCustomGuardCall(parameterName, customGuardTypeName, customGuardMethodName, forwardedArgumentLiterals),
-            _ => string.Empty,
-        };
-    }
-
-    /// <summary>
-    /// Builds a custom guard method call, splicing any positional arguments forwarded
-    /// from a parameterized alias attribute usage between the guarded value and the
-    /// trailing <c>nameof</c> parameter name -- e.g.
-    /// <c>MinCountGuard.Validate(value, 3, nameof(value));</c>. When
-    /// <paramref name="forwardedArgumentLiterals"/> is empty (a built-in guard's
-    /// call, a direct <c>[ConstructorGuard(typeof(...))]</c> usage, or a bare alias
-    /// with no positional constructor arguments) the emitted call is byte-for-byte
-    /// identical to the two-argument shape this generator has always emitted.
-    /// </summary>
-    private static string BuildCustomGuardCall(
-        string parameterName,
-        string? customGuardTypeName,
-        string? customGuardMethodName,
-        string[] forwardedArgumentLiterals)
-    {
-        var argumentList = forwardedArgumentLiterals.Length == 0
-            ? parameterName
-            : $"{parameterName}, {string.Join(", ", forwardedArgumentLiterals)}";
-
-        return $"{customGuardTypeName}.{customGuardMethodName}({argumentList}, nameof({parameterName}));";
-    }
 }

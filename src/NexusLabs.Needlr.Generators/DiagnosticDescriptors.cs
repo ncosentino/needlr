@@ -405,7 +405,7 @@ internal static class DiagnosticDescriptors
         helpLinkUri: HelpLinkBase + "NDLRGEN038.md");
 
     // ============================================================================
-    // Generated Constructor Analyzer (NDLRGEN039-054)
+    // Generated Constructor Analyzer (NDLRGEN039-056)
     // ============================================================================
 
     /// <summary>
@@ -530,12 +530,12 @@ internal static class DiagnosticDescriptors
     /// </summary>
     public static readonly DiagnosticDescriptor ConstructorGuardIncompatibleWithFieldType = new(
         id: "NDLRGEN048",
-        title: "Constructor guard incompatible with field type",
-        messageFormat: "The '{0}' guard cannot be used on field '{1}' of type '{2}': {3}",
+        title: "Constructor guard incompatible with member type",
+        messageFormat: "The '{0}' guard cannot be used on member '{1}' of type '{2}': {3}",
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "NotNullOrEmpty and NotNullOrWhiteSpace only apply to string-compatible fields. NotNull only applies where a runtime null is actually possible: reference-type fields (nullable or not) and Nullable<T> value-type fields. Remove the guard, or choose a compatible guard kind.",
+        description: "NotNullOrEmpty and NotNullOrWhiteSpace only apply to string-compatible fields or properties. NotNull only applies where a runtime null is actually possible: reference types (nullable or not) and Nullable<T> value types. Remove the guard, or choose a compatible guard kind.",
         helpLinkUri: HelpLinkBase + "NDLRGEN048.md");
 
     /// <summary>
@@ -544,7 +544,7 @@ internal static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor ConstructorGuardTypeInvalid = new(
         id: "NDLRGEN049",
         title: "Custom constructor guard type is invalid",
-        messageFormat: "The custom guard type for field '{0}' is invalid: {1}",
+        messageFormat: "The custom guard type for member '{0}' is invalid: {1}",
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
@@ -557,7 +557,7 @@ internal static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor ConstructorGuardMethodNameInvalid = new(
         id: "NDLRGEN050",
         title: "Custom constructor guard method name is invalid",
-        messageFormat: "The custom guard method name for field '{0}' must not be empty or consist only of white space",
+        messageFormat: "The custom guard method name for member '{0}' must not be empty or consist only of white space",
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
@@ -570,11 +570,11 @@ internal static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor ConstructorGuardMethodInvalid = new(
         id: "NDLRGEN051",
         title: "Custom constructor guard method is invalid",
-        messageFormat: "Guard method '{0}' on type '{1}' is not valid for field '{2}' of type '{3}': {4}",
+        messageFormat: "Guard method '{0}' on type '{1}' is not valid for member '{2}' of type '{3}': {4}",
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "A custom guard method must be an accessible static method returning void with exactly two parameters: a value compatible with the field's type, and a string parameter name. The generator calls this method directly, so its shape must be resolvable at compile time.",
+        description: "A custom guard method must be an accessible static method returning void with exactly two parameters: a value compatible with the guarded member's type, and a string parameter name. The generator calls this method directly, so its shape must be resolvable at compile time.",
         helpLinkUri: HelpLinkBase + "NDLRGEN051.md");
 
     /// <summary>
@@ -583,11 +583,11 @@ internal static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor ConstructorGuardMethodAmbiguous = new(
         id: "NDLRGEN052",
         title: "Custom constructor guard method is ambiguous",
-        messageFormat: "Multiple accessible static methods named '{0}' on type '{1}' are compatible with field '{2}' of type '{3}'; the generator requires exactly one unambiguous match",
+        messageFormat: "Multiple accessible static methods named '{0}' on type '{1}' are compatible with member '{2}' of type '{3}'; the generator requires exactly one unambiguous match",
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "Overload resolution for a custom guard method is intentionally simple and direct rather than full C# overload resolution. Remove or rename the extra overload(s) so exactly one method matches the field's type.",
+        description: "Overload resolution for a custom guard method is intentionally simple and direct rather than full C# overload resolution. Remove or rename the extra overload(s) so exactly one method matches the guarded member's type.",
         helpLinkUri: HelpLinkBase + "NDLRGEN052.md");
 
     /// <summary>
@@ -600,7 +600,7 @@ internal static class DiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "[ConstructorGuardDefinition] must decorate an Attribute-derived type whose [AttributeUsage] allows AttributeTargets.Field, so the resulting alias attribute can be applied to a field like [ConstructorGuard].",
+        description: "[ConstructorGuardDefinition] must decorate an Attribute-derived type whose [AttributeUsage] allows AttributeTargets.Field or AttributeTargets.Property, so the alias can participate in at least one supported generated-constructor feature.",
         helpLinkUri: HelpLinkBase + "NDLRGEN053.md");
 
     /// <summary>
@@ -623,7 +623,7 @@ internal static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor ConstructorGuardAliasUsageArgumentUnsupported = new(
         id: "NDLRGEN055",
         title: "Constructor guard alias usage argument is unsupported",
-        messageFormat: "The alias attribute usage on field '{0}' is invalid: {1}",
+        messageFormat: "The alias attribute usage on member '{0}' is invalid: {1}",
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
@@ -639,12 +639,94 @@ internal static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor ConstructorGuardForwardedArgumentIncompatible = new(
         id: "NDLRGEN056",
         title: "Custom constructor guard method is incompatible with forwarded alias arguments",
-        messageFormat: "Guard method '{0}' on type '{1}' cannot accept the arguments forwarded for field '{2}' of type '{3}': {4}",
+        messageFormat: "Guard method '{0}' on type '{1}' cannot accept the arguments forwarded for member '{2}' of type '{3}': {4}",
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "A parameterized custom guard alias usage forwards its own positional constructor arguments between the guarded value and the trailing string parameter name. The resolved guard method must declare exactly one middle parameter per forwarded argument, and each middle parameter's type must be compatible with its corresponding forwarded argument's type (directly, or via generic method type-parameter unification with the field's type). Change the number or types of the alias usage's arguments, or the guard method's middle parameters, so they match exactly.",
+        description: "A parameterized custom guard alias usage forwards its own positional constructor arguments between the guarded value and the trailing string parameter name. The resolved guard method must declare exactly one middle parameter per forwarded argument, and each middle parameter's type must be compatible with its corresponding forwarded argument's type (directly, or via generic method type-parameter unification with the guarded member's type). Change the number or types of the alias usage's arguments, or the guard method's middle parameters, so they match exactly.",
         helpLinkUri: HelpLinkBase + "NDLRGEN056.md");
+
+    // ============================================================================
+    // Record Constructor Overload Analyzer (NDLRGEN057-062)
+    // ============================================================================
+
+    /// <summary>
+    /// NDLRGEN057: A record receiving a generated constructor overload must be partial.
+    /// </summary>
+    public static readonly DiagnosticDescriptor RecordConstructorOverloadRequiresPartialType = new(
+        id: "NDLRGEN057",
+        title: "Record constructor-overload type must be partial",
+        messageFormat: "Record '{0}' must be declared 'partial' because [RecordConstructorOverloadParameter] requires a source generator to add a constructor",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "A generated forwarding constructor can only be contributed to a partial positional record class. Add the partial modifier to the record declaration.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN057.md");
+
+    /// <summary>
+    /// NDLRGEN058: The marked property's containing type is not a supported record.
+    /// </summary>
+    public static readonly DiagnosticDescriptor RecordConstructorOverloadUnsupportedTypeShape = new(
+        id: "NDLRGEN058",
+        title: "Record constructor-overload type shape is unsupported",
+        messageFormat: "Type '{0}' cannot use [RecordConstructorOverloadParameter] because it is {1}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Record constructor-overload generation supports only top-level, non-file-local positional record classes with no record base type. Ordinary classes, record structs, body-only records, file-local records, nested records, and inherited records are unsupported.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN058.md");
+
+    /// <summary>
+    /// NDLRGEN059: A marked property cannot be assigned by the generated overload.
+    /// </summary>
+    public static readonly DiagnosticDescriptor RecordConstructorOverloadPropertyUnsupported = new(
+        id: "NDLRGEN059",
+        title: "Record constructor-overload property is unsupported",
+        messageFormat: "Property '{0}' cannot participate in a generated record constructor overload because it is {1}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "A participating property must be a non-static, non-indexer, non-required, assignable instance property declared directly by the positional record, must not be represented by the primary parameter list, and must use a type accessible from the generated public constructor.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN059.md");
+
+    /// <summary>
+    /// NDLRGEN060: A property guard has no participating record-overload parameter.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ConstructorGuardOnNonparticipatingProperty = new(
+        id: "NDLRGEN060",
+        title: "Constructor guard property does not participate in an overload",
+        messageFormat: "Property '{0}' has a constructor guard but is not marked with [RecordConstructorOverloadParameter], so no generated record constructor parameter can invoke the guard",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Constructor guards on properties are valid only for properties marked with [RecordConstructorOverloadParameter]. Add the marker or remove the guard.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN060.md");
+
+    /// <summary>
+    /// NDLRGEN061: Field-based constructor generation conflicts with the record-only feature.
+    /// </summary>
+    public static readonly DiagnosticDescriptor RecordConstructorOverloadConflictsWithGeneratedConstructor = new(
+        id: "NDLRGEN061",
+        title: "Record constructor overload conflicts with field-based generation",
+        messageFormat: "Type '{0}' cannot combine [RecordConstructorOverloadParameter] with [GenerateConstructor] or a field-level generated-constructor trigger; use only one constructor-generation model",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The field-based generated-constructor feature owns an ordinary class construction path and participates in Needlr DI metadata, while the record feature adds a forwarding overload only for positional records and intentionally does not participate in DI. The two contracts cannot be combined on the same type.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN061.md");
+
+    /// <summary>
+    /// NDLRGEN062: The proposed constructor signature already exists.
+    /// </summary>
+    public static readonly DiagnosticDescriptor RecordConstructorOverloadSignatureCollision = new(
+        id: "NDLRGEN062",
+        title: "Record constructor-overload signature collides",
+        messageFormat: "Record '{0}' cannot receive the generated constructor overload because its C# signature would collide with existing constructor '{1}'",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Constructor signature identity ignores parameter names, nullable annotations, optional values, and params. Change a marked property's type or remove the conflicting constructor so the generated overload has a unique signature.",
+        helpLinkUri: HelpLinkBase + "NDLRGEN062.md");
 
     // ============================================================================
     // HttpClient Analyzers (NDLRHTTP001-006)
