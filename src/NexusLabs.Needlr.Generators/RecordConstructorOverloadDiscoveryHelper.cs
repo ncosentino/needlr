@@ -345,8 +345,6 @@ internal static class RecordConstructorOverloadDiscoveryHelper
                 GeneratorHelpers.EscapeIdentifier(parameterSymbol.Name),
                 parameterSymbol.Type.ToDisplayString(
                     ConstructorGenerationDiscoveryHelper.NullableAwareFormat),
-                GetDeclarationModifier(parameterSymbol.RefKind),
-                GetArgumentModifier(parameterSymbol.RefKind),
                 documentation);
         }
 
@@ -497,29 +495,6 @@ internal static class RecordConstructorOverloadDiscoveryHelper
     {
         return primaryDeclaration.ParameterList?.Parameters.Any(
             parameter => parameter.Identifier.ValueText == property.Name) == true;
-    }
-
-    private static string GetDeclarationModifier(RefKind refKind)
-    {
-        return refKind switch
-        {
-            RefKind.Ref => "ref ",
-            RefKind.Out => "out ",
-            RefKind.In => "in ",
-            RefKind.RefReadOnlyParameter => "ref readonly ",
-            _ => string.Empty,
-        };
-    }
-
-    private static string GetArgumentModifier(RefKind refKind)
-    {
-        return refKind switch
-        {
-            RefKind.Ref => "ref ",
-            RefKind.Out => "out ",
-            RefKind.In or RefKind.RefReadOnlyParameter => "in ",
-            _ => string.Empty,
-        };
     }
 
     private static bool IsDeclaredInGeneratedFile(ISymbol symbol)

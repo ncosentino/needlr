@@ -566,35 +566,46 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 }
             }
 
-            // Check for [HttpClientOptions] attribute
-            if (HttpClientOptionsAttributeHelper.HasHttpClientOptionsAttribute(typeSymbol))
+            var httpAttrInfo =
+                HttpClientOptionsAttributeHelper.GetHttpClientOptionsAttribute(
+                    typeSymbol);
+            if (httpAttrInfo.HasValue)
             {
-                var httpAttrInfo = HttpClientOptionsAttributeHelper.GetHttpClientOptionsAttribute(typeSymbol);
-                if (httpAttrInfo.HasValue)
-                {
-                    // Try to read a literal ClientName property body, if any.
-                    var clientNamePropResult = HttpClientOptionsAttributeHelper.TryGetClientNameProperty(typeSymbol, out var literalValue);
-                    var propertyNameFromType = clientNamePropResult == ClientNamePropertyResult.Literal ? literalValue : null;
-
-                    if (HttpClientOptionsAttributeHelper.TryResolveClientName(
+                var clientNamePropResult =
+                    HttpClientOptionsAttributeHelper.TryGetClientNameProperty(
                         typeSymbol,
-                        httpAttrInfo.Value,
-                        propertyNameFromType,
-                        out var resolvedClientName))
-                    {
-                        var httpSectionName = HttpClientOptionsAttributeHelper.ResolveSectionName(httpAttrInfo.Value, resolvedClientName);
-                        var httpTypeName = TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
-                        var httpSourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
-                        var capabilities = HttpClientOptionsAttributeHelper.DetectCapabilities(typeSymbol);
+                        out var literalValue);
+                var propertyNameFromType =
+                    clientNamePropResult == ClientNamePropertyResult.Literal
+                        ? literalValue
+                        : null;
 
-                        httpClients.Add(new DiscoveredHttpClient(
-                            httpTypeName,
-                            resolvedClientName,
-                            httpSectionName,
-                            assembly.Name,
-                            capabilities,
-                            httpSourceFilePath));
-                    }
+                if (HttpClientOptionsAttributeHelper.TryResolveClientName(
+                    typeSymbol,
+                    httpAttrInfo.Value,
+                    propertyNameFromType,
+                    out var resolvedClientName))
+                {
+                    var httpSectionName =
+                        HttpClientOptionsAttributeHelper.ResolveSectionName(
+                            httpAttrInfo.Value,
+                            resolvedClientName);
+                    var httpTypeName =
+                        TypeDiscoveryHelper.GetFullyQualifiedName(typeSymbol);
+                    var httpSourceFilePath =
+                        typeSymbol.Locations.FirstOrDefault()?
+                            .SourceTree?.FilePath;
+                    var capabilities =
+                        HttpClientOptionsAttributeHelper.DetectCapabilities(
+                            typeSymbol);
+
+                    httpClients.Add(new DiscoveredHttpClient(
+                        httpTypeName,
+                        resolvedClientName,
+                        httpSectionName,
+                        assembly.Name,
+                        capabilities,
+                        httpSourceFilePath));
                 }
             }
 

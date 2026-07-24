@@ -83,7 +83,7 @@ internal static class RecordConstructorOverloadCodeGenerator
 
         var parameters = model.PrimaryParameters
             .Select(parameter =>
-                $"{parameter.DeclarationModifier}{parameter.TypeName} {parameter.EscapedName}")
+                $"{parameter.TypeName} {parameter.EscapedName}")
             .Concat(model.PropertyParameters.Select(parameter =>
                 $"{parameter.TypeName} {parameter.EscapedPropertyName}"));
         builder.AppendLine(
@@ -92,7 +92,7 @@ internal static class RecordConstructorOverloadCodeGenerator
         var forwardedArguments = string.Join(
             ", ",
             model.PrimaryParameters.Select(parameter =>
-                parameter.ArgumentModifier + parameter.EscapedName));
+                parameter.EscapedName));
         builder.AppendLine($"        : this({forwardedArguments})");
         builder.AppendLine("    {");
 

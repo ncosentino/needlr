@@ -39,10 +39,10 @@ internal static class HttpClientCodeGenerator
 
             // Step 1: IOptions<T> binding so consumers can inject IOptions<WebFetchHttpClientOptions>
             // if they need runtime access to the record alongside the HttpClient.
-            builder.AppendLine($"        services.AddOptions<{http.TypeName}>().BindConfiguration(\"{http.SectionName}\");");
+            builder.AppendLine($"        services.AddOptions<{http.TypeName}>().BindConfiguration(\"{GeneratorHelpers.EscapeStringLiteral(http.SectionName)}\");");
 
             // Step 2: the named AddHttpClient call with a capability-driven configuration callback.
-            builder.AppendLine($"        services.AddHttpClient(\"{EscapeStringLiteral(http.ClientName)}\", (sp, client) =>");
+            builder.AppendLine($"        services.AddHttpClient(\"{GeneratorHelpers.EscapeStringLiteral(http.ClientName)}\", (sp, client) =>");
             builder.AppendLine("        {");
             builder.AppendLine($"            var options = sp.GetRequiredService<global::Microsoft.Extensions.Options.IOptions<{http.TypeName}>>().Value;");
 
@@ -82,8 +82,4 @@ internal static class HttpClientCodeGenerator
         }
     }
 
-    private static string EscapeStringLiteral(string value)
-    {
-        return value.Replace("\\", "\\\\").Replace("\"", "\\\"");
-    }
 }

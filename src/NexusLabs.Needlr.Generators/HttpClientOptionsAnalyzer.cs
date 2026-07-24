@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -56,15 +57,29 @@ public sealed class HttpClientOptionsAnalyzer : DiagnosticAnalyzer
             {
                 foreach (var kvp in nameToTypes)
                 {
-                    if (kvp.Value.Count < 2)
+                    var participants = kvp.Value
+                        .OrderBy(
+                            participant =>
+                                participant.Location.SourceTree?.FilePath ??
+                                string.Empty,
+                            System.StringComparer.Ordinal)
+                        .ThenBy(
+                            participant =>
+                                participant.Location.SourceSpan.Start)
+                        .ThenBy(
+                            participant =>
+                                participant.Type.ToDisplayString(),
+                            System.StringComparer.Ordinal)
+                        .ToArray();
+                    if (participants.Length < 2)
                         continue;
 
                     // Report the collision on every participant after the first, pointing at
                     // the prior participant so both ends of the clash surface in the IDE.
-                    var first = kvp.Value[0];
-                    for (int i = 1; i < kvp.Value.Count; i++)
+                    var first = participants[0];
+                    for (var i = 1; i < participants.Length; i++)
                     {
-                        var dup = kvp.Value[i];
+                        var dup = participants[i];
                         endContext.ReportDiagnostic(Diagnostic.Create(
                             DiagnosticDescriptors.HttpClientNameCollision,
                             dup.Location,
@@ -81,12 +96,7 @@ public sealed class HttpClientOptionsAnalyzer : DiagnosticAnalyzer
         SymbolAnalysisContext context,
         ConcurrentDictionary<string, List<(INamedTypeSymbol Type, Location Location)>> nameToTypes)
     {
-        if (context.Symbol is not INamedTypeSymbol typeSymbol)
-            return;
-
-        if (!HttpClientOptionsAttributeHelper.HasHttpClientOptionsAttribute(typeSymbol))
-            return;
-
+        var typeSymbol = (INamedTypeSymbol)context.Symbol;
         var attrInfo = HttpClientOptionsAttributeHelper.GetHttpClientOptionsAttribute(typeSymbol);
         if (!attrInfo.HasValue)
             return;
@@ -158,15 +168,14 @@ public sealed class HttpClientOptionsAnalyzer : DiagnosticAnalyzer
                 literalValue!));
         }
 
-        // Compute the effective name (attribute wins, then literal property, then inferred).
-        // This matches HttpClientOptionsAttributeHelper.TryResolveClientName exactly.
-        var effectiveName =
-            !string.IsNullOrWhiteSpace(attributeName) ? attributeName :
-            (propResult == ClientNamePropertyResult.Literal && !string.IsNullOrWhiteSpace(literalValue)) ? literalValue :
-            HttpClientOptionsAttributeHelper.InferClientNameFromTypeName(typeSymbol.Name);
-
-        // NDLRHTTP004: empty resolved name
-        if (string.IsNullOrWhiteSpace(effectiveName))
+        var propertyName = propResult == ClientNamePropertyResult.Literal
+            ? literalValue
+            : null;
+        if (!HttpClientOptionsAttributeHelper.TryResolveClientName(
+            typeSymbol,
+            attrInfo.Value,
+            propertyName,
+            out var effectiveName))
         {
             context.ReportDiagnostic(Diagnostic.Create(
                 DiagnosticDescriptors.HttpClientNameEmpty,
@@ -177,7 +186,7 @@ public sealed class HttpClientOptionsAnalyzer : DiagnosticAnalyzer
 
         // Record for NDLRHTTP005 collision detection.
         nameToTypes.AddOrUpdate(
-            effectiveName!,
+            effectiveName,
             _ => new List<(INamedTypeSymbol, Location)> { (typeSymbol, reportLocation) },
             (_, existing) =>
             {

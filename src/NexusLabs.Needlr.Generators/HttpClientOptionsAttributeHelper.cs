@@ -49,20 +49,6 @@ internal static class HttpClientOptionsAttributeHelper
     }
 
     /// <summary>
-    /// Checks if a type has the <c>[HttpClientOptions]</c> attribute.
-    /// </summary>
-    public static bool HasHttpClientOptionsAttribute(INamedTypeSymbol typeSymbol)
-    {
-        foreach (var attribute in typeSymbol.GetAttributes())
-        {
-            if (IsHttpClientOptionsAttribute(attribute.AttributeClass))
-                return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
     /// Extracts the <c>[HttpClientOptions]</c> attribute info from a type, or <c>null</c>
     /// if the attribute is not present.
     /// </summary>
@@ -195,8 +181,7 @@ internal static class HttpClientOptionsAttributeHelper
     {
         foreach (var suffix in ClientNameSuffixes)
         {
-            if (typeName.EndsWith(suffix, System.StringComparison.Ordinal) &&
-                typeName.Length > suffix.Length)
+            if (typeName.EndsWith(suffix, System.StringComparison.Ordinal))
             {
                 return typeName.Substring(0, typeName.Length - suffix.Length);
             }
