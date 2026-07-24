@@ -72,13 +72,6 @@ jobs:
           -targetdir:"coverage/report" \
           -reporttypes:"Html;JsonSummary;MarkdownSummaryGithub;Badges"
 
-    - name: Extract Coverage Percentage
-      id: coverage
-      run: |
-        COVERAGE=$(jq '.summary.linecoverage' coverage/report/Summary.json)
-        echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
-        echo "Coverage: $COVERAGE%"
-
     - name: Add Coverage to Job Summary
       run: cat coverage/report/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
 
@@ -141,35 +134,6 @@ jobs:
       run: |
         mkdir -p site/coverage
         cp -r coverage/report/* site/coverage/
-
-    - name: Update Coverage Badge JSON
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        mkdir -p .github/badges
-        cat > .github/badges/coverage.json << EOF
-        {
-          "schemaVersion": 1,
-          "label": "coverage",
-          "message": "${{ steps.coverage.outputs.percentage }}%",
-          "color": "$([ $(echo "${{ steps.coverage.outputs.percentage }} >= 80" | bc -l) -eq 1 ] && echo 'brightgreen' || ([ $(echo "${{ steps.coverage.outputs.percentage }} >= 60" | bc -l) -eq 1 ] && echo 'yellow' || echo 'red'))"
-        }
-        EOF
-
-    - name: Commit Coverage Badge
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      continue-on-error: true
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        TEMP_BADGE=$(mktemp)
-        cp .github/badges/coverage.json "$TEMP_BADGE"
-        git fetch origin main
-        git reset --hard origin/main
-        cp "$TEMP_BADGE" .github/badges/coverage.json
-        rm -f "$TEMP_BADGE"
-        git add .github/badges/coverage.json
-        git diff --staged --quiet || git commit -m "chore: update coverage badge [skip ci]"
-        git push
 
     - name: Restrict deploy to ci.yml-owned paths
       if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -244,6 +208,10 @@ jobs:
       with:
         dotnet-version: |
           10.0.x
+
+    - name: Validate release finalization
+      shell: pwsh
+      run: scripts/test-release.ps1
 
     - name: Restore
       run: dotnet restore src/NexusLabs.Needlr.slnx

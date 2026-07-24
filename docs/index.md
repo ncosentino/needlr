@@ -9,7 +9,7 @@ description: Needlr is a source-generation-first dependency injection library fo
 **Opinionated fluent dependency injection for .NET with source generation.**
 
 [![CI](https://github.com/ncosentino/needlr/actions/workflows/ci.yml/badge.svg)](https://github.com/ncosentino/needlr/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ncosentino/needlr/main/.github/badges/coverage.json)](https://ncosentino.github.io/needlr/coverage/)
+[![Coverage](https://www.devleader.ca/projects/needlr/coverage/badge_linecoverage.svg)](https://www.devleader.ca/projects/needlr/coverage/)
 [![NuGet](https://img.shields.io/nuget/v/NexusLabs.Needlr.svg)](https://www.nuget.org/packages/NexusLabs.Needlr)
 
 ## What is Needlr?

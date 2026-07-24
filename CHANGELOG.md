@@ -12,6 +12,10 @@
 - HttpClient name inference now treats types named exactly `HttpClientOptions`, `HttpClientSettings`, or `HttpClient` as empty inferred names, making NDLRHTTP004 reachable as documented instead of silently registering a suffix-only client name. HttpClient collision diagnostics are emitted deterministically, and generated client names and configuration section literals are escaped consistently.
 - CI now disables NBGV's per-project cloud build-number and version-variable publication, preventing parallel solution builds from corrupting GitHub Actions file-command files. The obsolete temporary `$GITHUB_ENV` redirection workarounds were removed.
 
+### Changed
+
+- Release preparation now lands version, changelog, analyzer-tracking, and version-specific documentation changes through a pull request. Finalization requires synchronized protected `main`, verifies same-commit CI, and pushes only the version tag. The coverage badge now reads the ReportGenerator SVG deployed with the live report instead of committing generated badge JSON back to `main`.
+
 ### Removed
 
 - Removed the unreferenced internal `MermaidHelpers` and `StringHelpers` duplicates and impossible `ref`/`out`/`in` handling for positional-record parameters.
