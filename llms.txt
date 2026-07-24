@@ -38,6 +38,7 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Plugin Development](https://www.devleader.ca/projects/needlr/plugin-development/) -- Build modular .NET applications with Needlr plugins -- implement IServiceCollectionPlugin and IWebApplicationPlugin to encapsulate service registration and configuration in reusable units.
 - [Solution-Wide Source Generation](https://www.devleader.ca/projects/needlr/solution-wide-source-generation/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Cross-Generator Plugins](https://www.devleader.ca/projects/needlr/cross-generator-plugins/) -- Register plugin types emitted by a second source generator with Needlr using RegisterPlugins() and a module initializer, bypassing the Roslyn generator isolation boundary.
+- [IDE Extensions](https://www.devleader.ca/projects/needlr/ide-extensions/) -- Configure Needlr dependency-graph export for the VS Code and Visual Studio extensions.
 - [Local CI Runners](https://www.devleader.ca/projects/needlr/local-runners/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Releasing Needlr](https://www.devleader.ca/projects/needlr/releasing/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Benchmarks](https://www.devleader.ca/projects/needlr/benchmarks/) -- Opinionated fluent dependency injection for .NET with source generation
@@ -151,3 +152,4 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [ADR-0004 Extract AI Platform to Foundry](https://www.devleader.ca/projects/needlr/adr/adr-0004-extract-ai-platform-to-foundry/) -- Opinionated fluent dependency injection for .NET with source generation
 - [ADR-0005 Generate Guarded Constructors](https://www.devleader.ca/projects/needlr/adr/adr-0005-generate-guarded-constructors/) -- Opinionated fluent dependency injection for .NET with source generation
 - [ADR-0006 Generate Record Constructor Overloads](https://www.devleader.ca/projects/needlr/adr/adr-0006-generate-record-constructor-overloads/) -- Opinionated fluent dependency injection for .NET with source generation
+- [ADR-0007 Own Graph Source Locations Per Project](https://www.devleader.ca/projects/needlr/adr/adr-0007-own-graph-source-locations-per-project/) -- Opinionated fluent dependency injection for .NET with source generation

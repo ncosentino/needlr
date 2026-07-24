@@ -89,6 +89,10 @@
     <lastmod>2026-07-24</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/ide-extensions/</loc>
+    <lastmod>2026-07-24</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/cross-generator-plugins/</loc>
     <lastmod>2026-07-24</lastmod>
   </url>
@@ -130,6 +134,10 @@
   </url>
   <url>
     <loc>https://www.devleader.ca/projects/needlr/adr/adr-0005-generate-guarded-constructors/</loc>
+    <lastmod>2026-07-24</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/adr/adr-0007-own-graph-source-locations-per-project/</loc>
     <lastmod>2026-07-24</lastmod>
   </url>
   <url>
