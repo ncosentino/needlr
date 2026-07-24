@@ -9,6 +9,12 @@
 
 - Release documentation now uses an action-managed Python environment on self-hosted runners, avoiding PEP 668 system-Python failures. Python setup, documentation generation/build, and Node.js setup complete before package publication, while all documentation workflows share `docs/requirements.txt`.
 - Source-generated bootstraps now explicitly run referenced TypeRegistry module constructors instead of relying on `typeof(...).Assembly`, which does not guarantee module initialization. This makes transitive registry loading deterministic and removes test-order dependence from Carter, SignalR, and cross-generator bootstrap coverage.
+- HttpClient name inference now treats types named exactly `HttpClientOptions`, `HttpClientSettings`, or `HttpClient` as empty inferred names, making NDLRHTTP004 reachable as documented instead of silently registering a suffix-only client name. HttpClient collision diagnostics are emitted deterministically, and generated client names and configuration section literals are escaped consistently.
+- CI now disables NBGV's per-project cloud build-number and version-variable publication, preventing parallel solution builds from corrupting GitHub Actions file-command files. The obsolete temporary `$GITHUB_ENV` redirection workarounds were removed.
+
+### Removed
+
+- Removed the unreferenced internal `MermaidHelpers` and `StringHelpers` duplicates and impossible `ref`/`out`/`in` handling for positional-record parameters.
 
 ## [0.0.3-alpha.2] - 2026-07-22
 
