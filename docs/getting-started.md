@@ -394,6 +394,7 @@ var webApplication = new Syringe()
 - Skip noisy cancellation logs with source-generated [Cancellation-Aware Logging](cancellation-aware-logging.md)
 - Remove constructor, field-assignment, and guard-clause boilerplate with source-generated [Generated Constructors](generated-constructors.md)
 - Add guarded forwarding constructors to positional records with [Generated Record Constructor Overloads](generated-record-constructor-overloads.md)
+- Enable solution-wide dependency visualization and source navigation with [IDE Extensions](ide-extensions.md)
 - Learn about [Core Concepts](core-concepts.md) for deeper understanding
 - Explore [Plugin Development](plugin-development.md) to extend functionality
 - Discover [Factory Delegates](factories.md) for types with runtime parameters

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import * as path from 'path';
-import { NeedlrGraph, GraphService, GraphLocation } from './types';
+import { mergeGraphs } from './graphMerge';
+import { NeedlrGraph } from './types';
 
 /**
  * Loads and merges Needlr graph files from all projects in the workspace.
@@ -38,10 +38,7 @@ export class GraphLoader implements vscode.Disposable {
     }
 
     public async findAndLoadGraph(): Promise<NeedlrGraph | undefined> {
-        const allServices = new Map<string, GraphService>();
-        const interfaceLocations = new Map<string, GraphLocation>();
-        let primaryAssemblyName: string | null = null;
-        let primaryProjectPath: string | null = null;
+        const graphs: NeedlrGraph[] = [];
 
         // Find all NeedlrGraph.g.cs files (each project with [GenerateTypeRegistry] has one)
         const sourceFiles = await vscode.workspace.findFiles('**/NeedlrGraph.g.cs', '**/node_modules/**');
@@ -54,29 +51,7 @@ export class GraphLoader implements vscode.Disposable {
 
             console.log(`Needlr: Loaded graph from ${uri.fsPath} with ${graph.services.length} services`);
 
-            if (!primaryAssemblyName) {
-                primaryAssemblyName = graph.assemblyName;
-                primaryProjectPath = graph.projectPath;
-            }
-
-            // Collect interface locations
-            for (const service of graph.services) {
-                for (const iface of service.interfaces) {
-                    if (iface.location?.filePath && !interfaceLocations.has(iface.fullName)) {
-                        interfaceLocations.set(iface.fullName, iface.location);
-                    }
-                }
-            }
-
-            // Merge services - prefer entries with source locations
-            for (const service of graph.services) {
-                const existing = allServices.get(service.fullTypeName);
-                if (!existing) {
-                    allServices.set(service.fullTypeName, service);
-                } else if (this.hasBetterLocation(service, existing)) {
-                    allServices.set(service.fullTypeName, service);
-                }
-            }
+            graphs.push(graph);
         }
 
         // Also check for needlr-graph.json files
@@ -88,56 +63,15 @@ export class GraphLoader implements vscode.Disposable {
 
             console.log(`Needlr: Loaded graph from ${uri.fsPath} with ${graph.services.length} services`);
 
-            if (!primaryAssemblyName) {
-                primaryAssemblyName = graph.assemblyName;
-                primaryProjectPath = graph.projectPath;
-            }
-
-            // Collect interface locations
-            for (const service of graph.services) {
-                for (const iface of service.interfaces) {
-                    if (iface.location?.filePath && !interfaceLocations.has(iface.fullName)) {
-                        interfaceLocations.set(iface.fullName, iface.location);
-                    }
-                }
-            }
-
-            for (const service of graph.services) {
-                const existing = allServices.get(service.fullTypeName);
-                if (!existing) {
-                    allServices.set(service.fullTypeName, service);
-                } else if (this.hasBetterLocation(service, existing)) {
-                    allServices.set(service.fullTypeName, service);
-                }
-            }
+            graphs.push(graph);
         }
 
-        // Apply collected interface locations to all services
-        for (const service of allServices.values()) {
-            for (const iface of service.interfaces) {
-                if (!iface.location && interfaceLocations.has(iface.fullName)) {
-                    iface.location = interfaceLocations.get(iface.fullName);
-                }
-            }
-        }
-
-        if (allServices.size === 0) {
+        const mergedGraph = mergeGraphs(graphs);
+        if (!mergedGraph) {
             console.log('Needlr: No services found in any graph');
             this.clearGraph();
             return undefined;
         }
-
-        // Create merged graph
-        const services = Array.from(allServices.values());
-        const mergedGraph: NeedlrGraph = {
-            schemaVersion: '1.0',
-            generatedAt: new Date().toISOString(),
-            assemblyName: primaryAssemblyName ?? 'Merged',
-            projectPath: primaryProjectPath,
-            services,
-            diagnostics: [],
-            statistics: this.calculateStatistics(services)
-        };
 
         this.currentGraph = mergedGraph;
         this._onGraphLoaded.fire(mergedGraph);
@@ -145,27 +79,6 @@ export class GraphLoader implements vscode.Disposable {
 
         console.log(`Needlr: Merged graph has ${mergedGraph.services.length} services`);
         return mergedGraph;
-    }
-
-    private hasBetterLocation(newService: GraphService, existing: GraphService): boolean {
-        const newHasLocation = newService.location?.filePath && newService.location.line > 0;
-        const existingHasLocation = existing.location?.filePath && existing.location.line > 0;
-        return !!newHasLocation && !existingHasLocation;
-    }
-
-    private calculateStatistics(services: GraphService[]) {
-        return {
-            totalServices: services.length,
-            singletons: services.filter(s => s.lifetime === 'Singleton').length,
-            scoped: services.filter(s => s.lifetime === 'Scoped').length,
-            transient: services.filter(s => s.lifetime === 'Transient').length,
-            decorators: services.reduce((sum, s) => sum + s.decorators.length, 0),
-            interceptors: services.reduce((sum, s) => sum + s.interceptors.length, 0),
-            factories: services.filter(s => s.metadata.hasFactory).length,
-            options: services.filter(s => s.metadata.hasOptions).length,
-            hostedServices: services.filter(s => s.metadata.isHostedService).length,
-            plugins: services.filter(s => s.metadata.isPlugin).length
-        };
     }
 
     private async loadGraphFileInternal(uri: vscode.Uri): Promise<NeedlrGraph | undefined> {

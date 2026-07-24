@@ -207,4 +207,45 @@ namespace TestApp
         Assert.Contains("LoggingDecorator", graphSource);
         Assert.Contains("decorators", graphSource);
     }
+
+    [Fact]
+    public void ProducerGraph_IncludesItsOwnServiceAndInterfaceLocations()
+    {
+        var files = GeneratorTestRunner.ForTypeRegistry()
+            .WithSourceFile(
+                "Feature/AssemblyInfo.cs",
+                """
+                [assembly: NexusLabs.Needlr.Generators.GenerateTypeRegistry]
+                """)
+            .WithSourceFile(
+                "Contracts/IFeatureService.cs",
+                """
+                namespace Feature;
+
+                public interface IFeatureService
+                {
+                }
+                """)
+            .WithSourceFile(
+                "Services/FeatureService.cs",
+                """
+                namespace Feature;
+
+                public sealed class FeatureService : IFeatureService
+                {
+                }
+                """)
+            .WithGraphExportEnabled()
+            .RunTypeRegistryGeneratorFiles();
+
+        var graphFile = Assert.Single(
+            files,
+            file => file.FilePath.EndsWith("NeedlrGraph.g.cs"));
+        Assert.Contains(
+            "Services/FeatureService.cs",
+            graphFile.Content);
+        Assert.Contains(
+            "Contracts/IFeatureService.cs",
+            graphFile.Content);
+    }
 }

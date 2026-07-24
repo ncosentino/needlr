@@ -13,13 +13,22 @@ Both extensions share a common architecture:
 
 ## Enabling Graph Export
 
-Add to your `.csproj`:
+Add the property to a solution-level `Directory.Build.props` so each project owns and
+emits its source locations:
 
 ```xml
-<PropertyGroup>
-  <NeedlrExportGraph>true</NeedlrExportGraph>
-</PropertyGroup>
+<Project>
+  <PropertyGroup>
+    <NeedlrExportGraph>true</NeedlrExportGraph>
+  </PropertyGroup>
+</Project>
 ```
+
+The extensions merge every project graph by fully qualified type name, prefer the
+producer entry with a source location, and backfill interface locations. A consuming
+project's graph may contain referenced services with null locations when Roslyn only has
+PE metadata; the referenced project's own graph supplies navigation within the
+workspace.
 
 ## Extensions
 
@@ -70,6 +79,10 @@ Both extensions use the same JSON schema, ensuring:
 - Consistent behavior across IDEs
 - Independent development
 - Single source of truth for graph format
+
+Each project graph is authoritative for source locations in its own assembly. External
+NuGet package locations remain unavailable until a SourceLink-aware navigation design is
+introduced.
 
 ### File Discovery
 

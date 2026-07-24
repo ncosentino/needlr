@@ -82,6 +82,7 @@ nav:
     - Plugin Development: plugin-development.md
     - Solution-Wide Source Generation: solution-wide-source-generation.md
     - Cross-Generator Plugins: cross-generator-plugins.md
+    - IDE Extensions: ide-extensions.md
     - Local CI Runners: local-runners.md
     - Releasing Needlr: releasing.md
   - Benchmarks: benchmarks.md
@@ -180,6 +181,7 @@ nav:
     - ADR-0004 Extract AI Platform to Foundry: adr/adr-0004-extract-ai-platform-to-foundry.md
     - ADR-0005 Generate Guarded Constructors: adr/adr-0005-generate-guarded-constructors.md
     - ADR-0006 Generate Record Constructor Overloads: adr/adr-0006-generate-record-constructor-overloads.md
+    - ADR-0007 Own Graph Source Locations Per Project: adr/adr-0007-own-graph-source-locations-per-project.md
 
 plugins:
   - search

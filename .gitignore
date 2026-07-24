@@ -119,4 +119,6 @@ docs/api/v*/
 docs/articles.md
 # Node.js
 node_modules/
+ide-extensions/vscode/out/*.test.js
+ide-extensions/vscode/out/*.test.js.map
 *.vsix

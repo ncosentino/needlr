@@ -15,6 +15,7 @@
 ### Removed
 
 - Removed the unreferenced internal `MermaidHelpers` and `StringHelpers` duplicates and impossible `ref`/`out`/`in` handling for positional-record parameters.
+- Removed compile-time regex parsing of referenced `ServiceCatalog` initializer syntax for graph locations. Each project graph now owns its source locations, while IDE consumers merge producer graphs and leave PE metadata locations explicitly unknown.
 
 ## [0.0.3-alpha.2] - 2026-07-22
 
