@@ -10,9 +10,9 @@ The guard type and/or method referenced by `[ConstructorGuardDefinition]` do not
 
 - The guard type must resolve and be accessible from the attribute's own declaration.
 - An explicit method name, if supplied, must not be empty or white-space-only.
-- A compatible accessible static method must exist with the general guard-method shape (`static void Method(T value, string parameterName)`, no `ref`/`out`/`in` parameters) -- checked independently of any specific field type, since the alias can be applied to many different fields later.
+- A compatible accessible static method must exist with the general guard-method shape (`static void Method(T value, string parameterName)`, no `ref`/`out`/`in` parameters) -- checked independently of any specific member type, since the alias can be applied to different participating fields or properties later.
 
-Validating the alias once, at its own declaration, means every field that later uses `[CollectionNotEmpty]` (or whatever the alias is named) does not need to re-diagnose the same broken guard reference.
+Validating the alias once, at its own declaration, means every participating member that later uses `[CollectionNotEmpty]` does not need to re-diagnose the same broken guard reference.
 
 ## How to Fix
 
@@ -61,3 +61,4 @@ public sealed class CollectionNotEmptyAttribute : Attribute
 - [NDLRGEN051](NDLRGEN051.md) - Custom constructor guard method is invalid
 - [NDLRGEN055](NDLRGEN055.md) - Constructor guard alias usage argument is unsupported
 - [Generated Constructors](../generated-constructors.md)
+- [Generated Record Constructor Overloads](../generated-record-constructor-overloads.md)

@@ -26,12 +26,9 @@ namespace NexusLabs.Needlr.Generators;
 /// </remarks>
 internal static class ConstructorGenerationDiscoveryHelper
 {
-    private const string ConstructorGuardAttributeName = "ConstructorGuardAttribute";
-    private const string ConstructorGuardDefinitionAttributeName = "ConstructorGuardDefinitionAttribute";
     private const string GenerateConstructorAttributeName = "GenerateConstructorAttribute";
-    private const string DefaultGuardMethodName = "Validate";
 
-    private static readonly SymbolDisplayFormat NullableAwareFormat = SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
+    internal static readonly SymbolDisplayFormat NullableAwareFormat = SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
         SymbolDisplayFormat.FullyQualifiedFormat.MiscellaneousOptions | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
 
     /// <summary>
@@ -99,10 +96,10 @@ internal static class ConstructorGenerationDiscoveryHelper
             return null;
         }
 
-        var candidates = new List<(IFieldSymbol Field, ConstructorFieldGuard[] Guards)>();
+        var candidates = new List<(IFieldSymbol Field, ConstructorGuardModel[] Guards)>();
         foreach (var field in GeneratedConstructorEligibility.GetEligibleConstructorFields(typeSymbol))
         {
-            candidates.Add((field, GetExplicitGuards(field)));
+            candidates.Add((field, ConstructorGuardDiscoveryHelper.GetExplicitGuards(field)));
         }
 
         var hasPositiveFieldTrigger = GeneratedConstructorEligibility.HasPositiveFieldGuardTrigger(typeSymbol);
@@ -273,126 +270,6 @@ internal static class ConstructorGenerationDiscoveryHelper
         return null;
     }
 
-    private static ConstructorFieldGuard[] GetExplicitGuards(IFieldSymbol field)
-    {
-        var guards = new List<ConstructorFieldGuard>();
-
-        foreach (var attribute in field.GetAttributes())
-        {
-            var attrClass = attribute.AttributeClass;
-            if (attrClass is null)
-                continue;
-
-            if (IsConstructorGuardAttributeClass(attrClass))
-            {
-                var parsed = ParseConstructorGuardAttribute(attribute);
-                if (parsed.HasValue)
-                    guards.Add(parsed.Value);
-
-                continue;
-            }
-
-            if (TryGetGuardDefinition(attrClass, out var guardTypeName, out var guardMethodName))
-            {
-                var forwardedArgumentLiterals = TryRenderForwardedArguments(attribute);
-                if (forwardedArgumentLiterals is null)
-                {
-                    // Unsupported arguments invalidate the complete guard call so the
-                    // generator never emits a partial or positionally incorrect call.
-                    continue;
-                }
-
-                guards.Add(new ConstructorFieldGuard(GeneratedConstructorGuardKind.Custom, guardTypeName, guardMethodName, forwardedArgumentLiterals));
-            }
-        }
-
-        return guards.ToArray();
-    }
-
-    /// <summary>
-    /// Renders every positional constructor argument of a parameterized alias
-    /// attribute usage (e.g. <c>[MinCount(3)]</c>) in declared order, or
-    /// <see langword="null"/> when any argument is a shape
-    /// <see cref="TypedConstantRenderer"/> does not support or when named attribute
-    /// arguments are present. A direct
-    /// <c>[ConstructorGuard(typeof(...))]</c> usage never reaches this method, so it
-    /// always forwards zero arguments.
-    /// </summary>
-    private static string[]? TryRenderForwardedArguments(AttributeData attribute)
-    {
-        if (attribute.NamedArguments.Length > 0)
-            return null;
-
-        if (attribute.ConstructorArguments.Length == 0)
-            return System.Array.Empty<string>();
-
-        var rendered = new string[attribute.ConstructorArguments.Length];
-        for (var i = 0; i < attribute.ConstructorArguments.Length; i++)
-        {
-            if (!TypedConstantRenderer.TryRender(attribute.ConstructorArguments[i], out var literal))
-                return null;
-
-            rendered[i] = literal;
-        }
-
-        return rendered;
-    }
-
-    private static bool IsConstructorGuardAttributeClass(INamedTypeSymbol attrClass)
-    {
-        return GeneratedConstructorEligibility.IsNeedlrGeneratorsAttribute(attrClass, ConstructorGuardAttributeName);
-    }
-
-    private static ConstructorFieldGuard? ParseConstructorGuardAttribute(AttributeData attribute)
-    {
-        if (attribute.ConstructorArguments.Length == 0)
-            return null;
-
-        var first = attribute.ConstructorArguments[0];
-
-        if (first.Kind == TypedConstantKind.Enum && first.Value is int enumValue)
-        {
-            return new ConstructorFieldGuard((GeneratedConstructorGuardKind)enumValue);
-        }
-
-        if (first.Value is ITypeSymbol guardType)
-        {
-            var methodName = attribute.ConstructorArguments.Length > 1 && attribute.ConstructorArguments[1].Value is string explicitName
-                ? explicitName
-                : DefaultGuardMethodName;
-
-            return new ConstructorFieldGuard(GeneratedConstructorGuardKind.Custom, guardType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), methodName);
-        }
-
-        return null;
-    }
-
-    private static bool TryGetGuardDefinition(INamedTypeSymbol attrClass, out string guardTypeName, out string guardMethodName)
-    {
-        foreach (var metaAttribute in attrClass.GetAttributes())
-        {
-            var metaClass = metaAttribute.AttributeClass;
-            if (metaClass is null)
-                continue;
-
-            if (!GeneratedConstructorEligibility.IsNeedlrGeneratorsAttribute(metaClass, ConstructorGuardDefinitionAttributeName))
-                continue;
-
-            if (metaAttribute.ConstructorArguments.Length == 0 || metaAttribute.ConstructorArguments[0].Value is not ITypeSymbol guardType)
-                continue;
-
-            guardTypeName = guardType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-            guardMethodName = metaAttribute.ConstructorArguments.Length > 1 && metaAttribute.ConstructorArguments[1].Value is string explicitName
-                ? explicitName
-                : DefaultGuardMethodName;
-            return true;
-        }
-
-        guardTypeName = string.Empty;
-        guardMethodName = string.Empty;
-        return false;
-    }
-
     /// <summary>
     /// Normalizes a field name into a constructor parameter name (e.g. <c>_repository</c>
     /// -> <c>repository</c>), escaping C# keywords with <c>@</c>. Internal so
@@ -417,11 +294,6 @@ internal static class ConstructorGenerationDiscoveryHelper
             name = char.ToLowerInvariant(name[0]) + name.Substring(1);
         }
 
-        if (SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None)
-        {
-            name = "@" + name;
-        }
-
-        return name;
+        return GeneratorHelpers.EscapeIdentifier(name);
     }
 }

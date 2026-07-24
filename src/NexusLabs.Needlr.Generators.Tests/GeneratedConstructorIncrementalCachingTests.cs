@@ -142,7 +142,7 @@ public sealed class GeneratedConstructorIncrementalCachingTests
     [Fact]
     public void EditingOneAliasGuardsForwardedLiteral_InvalidatesOnlyThatTypesModelAndOutput()
     {
-        // Regression test for ConstructorFieldGuard's forwarded-argument-literal
+        // Regression test for ConstructorGuardModel's forwarded-argument-literal
         // equality: changing only the literal argument of a parameterized alias
         // attribute usage (e.g. [MinCount(3)] -> [MinCount(5)]) must be observed as a
         // real change to TypeA's model/output, while TypeB -- an entirely unrelated

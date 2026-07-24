@@ -9,7 +9,7 @@ The guard method resolved for a parameterized custom guard alias usage does not 
 A parameterized custom guard alias usage (e.g. `[MinCount(3)]`) forwards its own positional constructor arguments between the guarded value and the trailing `string` parameter name. The resolved guard method must be shaped as `static void Method(T value, ...one parameter per forwarded argument, string parameterName)`:
 
 - **Effective arity must match exactly.** The number of parameters between the value and the trailing parameter name must equal the number of arguments the alias usage forwards -- neither more nor fewer.
-- **Each middle parameter's type must be compatible with its corresponding forwarded argument's type**, either directly or, for a generic guard method, via type-parameter unification with the field's type (the same unification `MinCountGuard.Validate<T>` uses to bind `T` from the field's collection element type).
+- **Each middle parameter's type must be compatible with its corresponding forwarded argument's type**, either directly or, for a generic guard method, via type-parameter unification with the guarded member's type.
 
 This diagnostic is reported specifically when the incompatibility is attributable to a forwarded argument. A value-parameter or general-shape incompatibility unrelated to any forwarded argument is still reported by [NDLRGEN051](NDLRGEN051.md), and an ambiguous match across multiple compatible overloads is still reported by [NDLRGEN052](NDLRGEN052.md).
 
@@ -77,3 +77,4 @@ public partial class Container
 - [NDLRGEN051](NDLRGEN051.md) - Custom constructor guard method is invalid
 - [NDLRGEN052](NDLRGEN052.md) - Custom constructor guard method is ambiguous
 - [Generated Constructors](../generated-constructors.md)
+- [Generated Record Constructor Overloads](../generated-record-constructor-overloads.md)

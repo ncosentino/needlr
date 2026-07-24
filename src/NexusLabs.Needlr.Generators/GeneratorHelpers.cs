@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Microsoft.CodeAnalysis.CSharp;
+
 namespace NexusLabs.Needlr.Generators;
 
 /// <summary>
@@ -49,6 +51,17 @@ internal static class GeneratorHelpers
         }
 
         return string.Join(".", segments.Where(s => s.Length > 0));
+    }
+
+    /// <summary>
+    /// Escapes a C# keyword or contextual keyword for use as an identifier.
+    /// </summary>
+    public static string EscapeIdentifier(string name)
+    {
+        return SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None ||
+            SyntaxFacts.GetContextualKeywordKind(name) != SyntaxKind.None
+                ? "@" + name
+                : name;
     }
 
     /// <summary>
