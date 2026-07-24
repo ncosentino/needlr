@@ -41,15 +41,6 @@ jobs:
       run: dotnet restore src/NexusLabs.Needlr.slnx
 
     - name: Build (Release)
-      env:
-        # Nerdbank.GitVersioning's SetCloudBuildVariables MSBuild task detects
-        # GITHUB_ACTIONS=true and appends version metadata to $GITHUB_ENV during
-        # every project build. When parallel MSBuild workers race on the shared
-        # env file, a torn line can cause the runner post-step to fail with
-        # "Invalid format '<value>'". Redirecting to step-local tempfiles means
-        # NBGV writes harmlessly; the runner's real env file stays untouched.
-        GITHUB_ENV: /tmp/discard-build-env
-        GITHUB_OUTPUT: /tmp/discard-build-output
       run: dotnet build src/NexusLabs.Needlr.slnx --configuration Release --no-restore
 
     - name: Test with Coverage
@@ -280,10 +271,6 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev file
 
     - name: Publish AOT Console App
-      env:
-        GITHUB_ENV: /tmp/discard-aot-console-env
-        GITHUB_OUTPUT: /tmp/discard-aot-console-output
-        GITHUB_STEP_SUMMARY: /tmp/discard-aot-console-summary
       run: |
         dotnet publish src/Examples/SourceGen/AotSourceGenConsoleApp/AotSourceGenConsoleApp.csproj \
           -c Release \
@@ -318,10 +305,6 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev file
 
     - name: Publish AOT Web App
-      env:
-        GITHUB_ENV: /tmp/discard-aot-web-env
-        GITHUB_OUTPUT: /tmp/discard-aot-web-output
-        GITHUB_STEP_SUMMARY: /tmp/discard-aot-web-summary
       run: |
         dotnet publish src/Examples/SourceGen/AotSourceGenApp/AotSourceGenApp.csproj \
           -c Release \

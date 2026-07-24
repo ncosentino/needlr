@@ -21,24 +21,6 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $repoRoot  = Join-Path $scriptDir '..'
 $failed    = $false
 
-# GitHub Actions file-command env vars ($GITHUB_ENV / $GITHUB_OUTPUT /
-# $GITHUB_STEP_SUMMARY) point at runner-owned files that the runner reads
-# after this step completes. Nerdbank.GitVersioning's SetCloudBuildVariables
-# MSBuild task detects GITHUB_ACTIONS=true and writes to $GITHUB_ENV during
-# every project build — and in our per-csproj package-validation invocations
-# it produces a malformed line the runner rejects with "Invalid format '2'"
-# at post-step time. Confirmed by the NBGV stack trace in run 24288153060.
-#
-# Redirecting (not clearing) the env vars to throwaway temp files lets NBGV
-# write harmlessly. Nulling the env vars makes NBGV throw MSB4018 because it
-# can't open a null path. The runner already cached the ORIGINAL path when
-# it set the env var for this step, so it reads its own untouched file at
-# post-step time — our redirect only affects this pwsh session and its
-# child processes, not the runner's post-step processing.
-$env:GITHUB_ENV          = [System.IO.Path]::GetTempFileName()
-$env:GITHUB_OUTPUT       = [System.IO.Path]::GetTempFileName()
-$env:GITHUB_STEP_SUMMARY = [System.IO.Path]::GetTempFileName()
-
 function Assert-NuspecDependency {
     param(
         [string]$NupkgPath,
