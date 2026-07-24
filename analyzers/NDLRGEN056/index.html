@@ -16,7 +16,7 @@
         <link rel="prev" href="../NDLRGEN055/">
       
       
-        <link rel="next" href="../NDLRSIG001/">
+        <link rel="next" href="../NDLRGEN057/">
       
       
         
@@ -994,6 +994,34 @@
     
   
     Generated Constructors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../generated-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated Record Constructor Overloads
   
 
     
@@ -3304,6 +3332,174 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN057/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN057
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN058/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN058
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN059/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN059
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN060/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN060
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN061/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN061
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN062/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN062
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4257,6 +4453,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/adr-0006-generate-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0006 Generate Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4291,7 +4522,7 @@
 <p>A parameterized custom guard alias usage (e.g. <code>[MinCount(3)]</code>) forwards its own positional constructor arguments between the guarded value and the trailing <code>string</code> parameter name. The resolved guard method must be shaped as <code>static void Method(T value, ...one parameter per forwarded argument, string parameterName)</code>:</p>
 <ul>
 <li><strong>Effective arity must match exactly.</strong> The number of parameters between the value and the trailing parameter name must equal the number of arguments the alias usage forwards -- neither more nor fewer.</li>
-<li><strong>Each middle parameter's type must be compatible with its corresponding forwarded argument's type</strong>, either directly or, for a generic guard method, via type-parameter unification with the field's type (the same unification <code>MinCountGuard.Validate&lt;T&gt;</code> uses to bind <code>T</code> from the field's collection element type).</li>
+<li><strong>Each middle parameter's type must be compatible with its corresponding forwarded argument's type</strong>, either directly or, for a generic guard method, via type-parameter unification with the guarded member's type.</li>
 </ul>
 <p>This diagnostic is reported specifically when the incompatibility is attributable to a forwarded argument. A value-parameter or general-shape incompatibility unrelated to any forwarded argument is still reported by <a href="../NDLRGEN051/">NDLRGEN051</a>, and an ambiguous match across multiple compatible overloads is still reported by <a href="../NDLRGEN052/">NDLRGEN052</a>.</p>
 <h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
@@ -4352,6 +4583,7 @@
 <li><a href="../NDLRGEN051/">NDLRGEN051</a> - Custom constructor guard method is invalid</li>
 <li><a href="../NDLRGEN052/">NDLRGEN052</a> - Custom constructor guard method is ambiguous</li>
 <li><a href="../../generated-constructors/">Generated Constructors</a></li>
+<li><a href="../../generated-record-constructor-overloads/">Generated Record Constructor Overloads</a></li>
 </ul><script type="application/ld+json">
 {
   "@context": "https://schema.org",

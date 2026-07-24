@@ -1014,6 +1014,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../generated-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../service-catalog/" class="md-nav__link">
         
   
@@ -3304,6 +3332,174 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN057/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN057
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN058/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN058
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN059/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN059
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN060/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN060
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN061/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN061
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN062/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN062
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4257,6 +4453,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/adr-0006-generate-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0006 Generate Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4294,7 +4525,7 @@
 <li><strong>Array/<code>params</code> and floating-point (<code>float</code>/<code>double</code>) positional arguments.</strong> Rendering an array as a single forwarded literal is inherently ambiguous, and floating-point literals can silently lose round-trip precision.</li>
 <li><strong>Named attribute arguments and properties.</strong> Only positional constructor arguments are ever forwarded.</li>
 </ul>
-<p>This is checked at every alias <em>usage</em> site (not just the alias's own declaration), because a usage's positional arguments are only known where the alias attribute is actually applied to a field.</p>
+<p>This is checked at every alias <em>usage</em> site (not just the alias's own declaration), because a usage's positional arguments are only known where the alias attribute is actually applied to a participating field or property.</p>
 <h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
 <p>Change the alias usage to avoid the unsupported argument shape, or forward the value as a supported positional argument instead:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">System</span><span class="p">;</span>
@@ -4352,6 +4583,7 @@
 <li><a href="../NDLRGEN056/">NDLRGEN056</a> - Custom constructor guard method is incompatible with forwarded alias arguments</li>
 <li><a href="../NDLRGEN051/">NDLRGEN051</a> - Custom constructor guard method is invalid</li>
 <li><a href="../../generated-constructors/">Generated Constructors</a></li>
+<li><a href="../../generated-record-constructor-overloads/">Generated Record Constructor Overloads</a></li>
 </ul><script type="application/ld+json">
 {
   "@context": "https://schema.org",

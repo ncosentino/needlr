@@ -16,7 +16,7 @@
         <link rel="prev" href="../cancellation-aware-logging/">
       
       
-        <link rel="next" href="../service-catalog/">
+        <link rel="next" href="../generated-record-constructor-overloads/">
       
       
         
@@ -1410,6 +1410,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../generated-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -3612,6 +3640,174 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analyzers/NDLRGEN057/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN057
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analyzers/NDLRGEN058/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN058
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analyzers/NDLRGEN059/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN059
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analyzers/NDLRGEN060/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN060
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analyzers/NDLRGEN061/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN061
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analyzers/NDLRGEN062/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN062
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4556,6 +4752,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/adr-0006-generate-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0006 Generate Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5092,7 +5323,9 @@
 <li><strong>Classes with an existing explicit instance constructor</strong> (<a href="../analyzers/NDLRGEN041/">NDLRGEN041</a>).</li>
 <li><strong>Base types that require constructor arguments</strong> (<a href="../analyzers/NDLRGEN042/">NDLRGEN042</a>).</li>
 <li><strong>Keyed fields or properties</strong> -- generated-constructor generation only ever considers plain private <code>readonly</code> fields; there is no support for producing a <code>[FromKeyedServices]</code>-annotated generated-constructor parameter from a field or property annotation.</li>
-<li><strong>Properties</strong> as a source of constructor parameters -- only fields are considered.</li>
+<li><strong>Properties</strong> as a source of this class constructor's parameters -- only fields are
+  considered. Positional records can add explicitly marked properties through
+  <a href="../generated-record-constructor-overloads/">Generated Record Constructor Overloads</a>.</li>
 <li><strong><code>NotEmpty</code></strong> as a built-in guard kind (see <a href="#built-in-guards">Built-In Guards</a> above).</li>
 <li><strong>Array/<code>params</code> and floating-point (<code>float</code>/<code>double</code>) parameterized alias arguments, and every named attribute argument or property</strong> -- diagnosed by <a href="../analyzers/NDLRGEN055/">NDLRGEN055</a> (see <a href="#parameterized-alias-arguments">Parameterized Alias Arguments</a> above); only the scalar constant shapes in that section's table are forwarded.</li>
 <li><strong><code>IHubRegistrationPlugin</code> implementations</strong> -- SignalR hub-registration plugins require parameterless activation and cannot use generated-constructor generation at all; see <a href="../analyzers/NDLRSIG003/">NDLRSIG003</a>.</li>
@@ -5171,7 +5404,7 @@
 <tr>
 <td><code>[ConstructorGuardDefinition(Type)]</code></td>
 <td>Attribute type</td>
-<td>Declares an application-defined field attribute as an alias for a direct custom guard, using its conventional <code>Validate</code> method.</td>
+<td>Declares an application-defined field or property attribute as an alias for a direct custom guard, using its conventional <code>Validate</code> method. Property usages require <code>[RecordConstructorOverloadParameter]</code>.</td>
 </tr>
 <tr>
 <td><code>[ConstructorGuardDefinition(Type, string)]</code></td>

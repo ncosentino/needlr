@@ -134,7 +134,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#ndlrgen048-constructor-guard-incompatible-with-field-type" class="md-skip">
+        <a href="#ndlrgen048-constructor-guard-incompatible-with-member-type" class="md-skip">
           Skip to content
         </a>
       
@@ -994,6 +994,34 @@
     
   
     Generated Constructors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../generated-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated Record Constructor Overloads
   
 
     
@@ -3304,6 +3332,174 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN057/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN057
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN058/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN058
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN059/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN059
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN060/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN060
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN061/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN061
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN062/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN062
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4257,6 +4453,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/adr-0006-generate-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0006 Generate Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4284,18 +4515,19 @@
   
 
 
-<h1 id="ndlrgen048-constructor-guard-incompatible-with-field-type">NDLRGEN048: Constructor guard incompatible with field type<a class="headerlink" href="#ndlrgen048-constructor-guard-incompatible-with-field-type" title="Permanent link">&para;</a></h1>
+<h1 id="ndlrgen048-constructor-guard-incompatible-with-member-type">NDLRGEN048: Constructor guard incompatible with member type<a class="headerlink" href="#ndlrgen048-constructor-guard-incompatible-with-member-type" title="Permanent link">&para;</a></h1>
 <h2 id="cause">Cause<a class="headerlink" href="#cause" title="Permanent link">&para;</a></h2>
-<p>A built-in <code>[ConstructorGuard]</code> kind is applied to a field whose type it cannot validate:</p>
+<p>A built-in <code>[ConstructorGuard]</code> kind is applied to a participating field or record
+property whose type it cannot validate:</p>
 <ul>
-<li><code>NotNullOrEmpty</code> or <code>NotNullOrWhiteSpace</code> applied to a field that is not <code>string</code>.</li>
-<li><code>NotNull</code> applied to a field where a runtime <code>null</code> value is never possible: a non-nullable value type (other than <code>Nullable&lt;T&gt;</code>).</li>
+<li><code>NotNullOrEmpty</code> or <code>NotNullOrWhiteSpace</code> applied to a member that is not <code>string</code>.</li>
+<li><code>NotNull</code> applied to a member where a runtime <code>null</code> value is never possible: a non-nullable value type (other than <code>Nullable&lt;T&gt;</code>).</li>
 </ul>
 <h2 id="rule-description">Rule Description<a class="headerlink" href="#rule-description" title="Permanent link">&para;</a></h2>
-<p><code>NotNullOrEmpty</code> and <code>NotNullOrWhiteSpace</code> call <code>System.ArgumentException.ThrowIfNullOrEmpty</code> / <code>ThrowIfNullOrWhiteSpace</code>, both of which only accept a <code>string</code>. Applying either to a non-<code>string</code> field would not compile as generated source, so it is rejected earlier, at the attribute usage site, with a clear message.</p>
+<p><code>NotNullOrEmpty</code> and <code>NotNullOrWhiteSpace</code> call <code>System.ArgumentException.ThrowIfNullOrEmpty</code> / <code>ThrowIfNullOrWhiteSpace</code>, both of which only accept a <code>string</code>. Applying either to a non-<code>string</code> member would not compile as generated source, so it is rejected earlier, at the attribute usage site, with a clear message.</p>
 <p><code>NotNull</code> is meaningful for any reference type (nullable or not), for <code>Nullable&lt;T&gt;</code> value types, and for a type parameter that is not constrained to a value type. It is rejected on a plain non-nullable value type (such as <code>int</code> or <code>Guid</code>) or a <code>struct</code>/<code>unmanaged</code>-constrained type parameter because a runtime <code>null</code> is never possible for that type -- the guard could never fail, so it only adds dead code.</p>
 <h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
-<p>Choose a guard kind compatible with the field's type, or change the field's type:</p>
+<p>Choose a guard kind compatible with the member's type, or change the member's type:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.Generators</span><span class="p">;</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="na">[GenerateConstructor]</span>
@@ -4334,6 +4566,7 @@
 <li><a href="../NDLRGEN047/">NDLRGEN047</a> - Invalid constructor guard enum value</li>
 <li><a href="../NDLRGEN051/">NDLRGEN051</a> - Custom constructor guard method is invalid</li>
 <li><a href="../../generated-constructors/">Generated Constructors</a></li>
+<li><a href="../../generated-record-constructor-overloads/">Generated Record Constructor Overloads</a></li>
 </ul><script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -4344,7 +4577,7 @@
       "name": "What causes NDLRGEN048?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "A built-in [ConstructorGuard] kind is applied to a field whose type it cannot validate:"
+        "text": "A built-in [ConstructorGuard] kind is applied to a participating field or record property whose type it cannot validate:"
       }
     },
     {
@@ -4352,7 +4585,7 @@
       "name": "How do I fix NDLRGEN048?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Choose a guard kind compatible with the field's type, or change the field's type:"
+        "text": "Choose a guard kind compatible with the member's type, or change the member's type:"
       }
     }
   ]

@@ -1014,6 +1014,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../generated-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../service-catalog/" class="md-nav__link">
         
   
@@ -3304,6 +3332,174 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN057/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN057
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN058/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN058
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN059/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN059
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN060/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN060
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN061/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN061
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN062/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN062
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4257,6 +4453,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/adr-0006-generate-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0006 Generate Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4286,16 +4517,18 @@
 
 <h1 id="ndlrgen053-constructorguarddefinition-target-is-invalid">NDLRGEN053: [ConstructorGuardDefinition] target is invalid<a class="headerlink" href="#ndlrgen053-constructorguarddefinition-target-is-invalid" title="Permanent link">&para;</a></h1>
 <h2 id="cause">Cause<a class="headerlink" href="#cause" title="Permanent link">&para;</a></h2>
-<p><code>[ConstructorGuardDefinition]</code> decorates a type that is not a usable field-attribute alias: it is not derived from <code>System.Attribute</code>, or its own <code>[AttributeUsage]</code> does not allow <code>AttributeTargets.Field</code>.</p>
+<p><code>[ConstructorGuardDefinition]</code> decorates a type that is not a usable constructor-guard
+alias: it is not derived from <code>System.Attribute</code>, or its own <code>[AttributeUsage]</code> allows
+neither <code>AttributeTargets.Field</code> nor <code>AttributeTargets.Property</code>.</p>
 <h2 id="rule-description">Rule Description<a class="headerlink" href="#rule-description" title="Permanent link">&para;</a></h2>
-<p><code>[ConstructorGuardDefinition]</code> turns an application-defined attribute type into an alias for a constructor guard, so it can be applied to a field the same way <code>[ConstructorGuard]</code> is. That only makes sense when the decorated type:</p>
+<p><code>[ConstructorGuardDefinition]</code> turns an application-defined attribute type into an alias for a constructor guard, so it can be applied to a generated-constructor field or a participating record-overload property. That only makes sense when the decorated type:</p>
 <ul>
 <li><strong>Is itself an <code>Attribute</code>-derived type</strong> (so it can legally be applied as an attribute at all), and</li>
-<li><strong>Allows <code>AttributeTargets.Field</code></strong> in its own <code>[AttributeUsage]</code> (so it can legally be applied to the fields this feature targets).</li>
+<li><strong>Allows <code>AttributeTargets.Field</code> or <code>AttributeTargets.Property</code></strong> in its own <code>[AttributeUsage]</code>.</li>
 </ul>
-<p>The diagnostic message reports which requirement failed: <code>"not derived from System.Attribute"</code> or <code>"not usable on fields ([AttributeUsage] does not include AttributeTargets.Field)"</code>.</p>
+<p>The diagnostic message reports which requirement failed.</p>
 <h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
-<p>Derive from <code>Attribute</code> and allow <code>AttributeTargets.Field</code>:</p>
+<p>Derive from <code>Attribute</code> and allow at least one supported member target:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">System</span><span class="p">;</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.Generators</span><span class="p">;</span>
@@ -4306,16 +4539,16 @@
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">{</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">}</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1">// WRONG - NDLRGEN053: [AttributeUsage] does not include AttributeTargets.Field</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1">// WRONG - NDLRGEN053: neither supported member target is allowed</span>
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="na">[ConstructorGuardDefinition(typeof(CollectionNotEmptyGuard))]</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="na">[AttributeUsage(AttributeTargets.Property)]</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="na">[AttributeUsage(AttributeTargets.Method)]</span>
 </span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">CollectionNotEmptyAttribute</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Attribute</span>
 </span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="p">{</span>
 </span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="p">}</span>
 </span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="c1">// CORRECT - derived from Attribute, usable on fields</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="c1">// CORRECT - derived from Attribute, usable on fields and participating properties</span>
 </span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="na">[ConstructorGuardDefinition(typeof(CollectionNotEmptyGuard))]</span>
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="na">[AttributeUsage(AttributeTargets.Field)]</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="na">[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]</span>
 </span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">CollectionNotEmptyAttribute</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Attribute</span>
 </span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="p">{</span>
 </span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="p">}</span>
@@ -4325,6 +4558,7 @@
 <li><a href="../NDLRGEN054/">NDLRGEN054</a> - [ConstructorGuardDefinition] guard contract is unresolved</li>
 <li><a href="../NDLRGEN055/">NDLRGEN055</a> - Constructor guard alias usage argument is unsupported</li>
 <li><a href="../../generated-constructors/">Generated Constructors</a></li>
+<li><a href="../../generated-record-constructor-overloads/">Generated Record Constructor Overloads</a></li>
 </ul><script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -4335,7 +4569,7 @@
       "name": "What causes NDLRGEN053?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "[ConstructorGuardDefinition] decorates a type that is not a usable field-attribute alias: it is not derived from System.Attribute, or its own [AttributeUsage] does not allow AttributeTargets.Field."
+        "text": "[ConstructorGuardDefinition] decorates a type that is not a usable constructor-guard alias: it is not derived from System.Attribute, or its own [AttributeUsage] allows neither AttributeTargets.Field nor AttributeTargets.Property."
       }
     },
     {
@@ -4343,7 +4577,7 @@
       "name": "How do I fix NDLRGEN053?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Derive from Attribute and allow AttributeTargets.Field:"
+        "text": "Derive from Attribute and allow at least one supported member target:"
       }
     }
   ]

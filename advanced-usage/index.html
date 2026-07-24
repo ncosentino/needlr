@@ -1007,6 +1007,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../generated-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../service-catalog/" class="md-nav__link">
         
   
@@ -1689,10 +1717,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#controlling-assembly-load-order-with-needlrassemblyorder" class="md-nav__link">
+  <a href="#controlling-module-initialization-order-with-needlrassemblyorder" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Controlling Assembly Load Order with [NeedlrAssemblyOrder]
+        Controlling Module Initialization Order with [NeedlrAssemblyOrder]
       
     </span>
   </a>
@@ -4058,6 +4086,174 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analyzers/NDLRGEN057/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN057
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analyzers/NDLRGEN058/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN058
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analyzers/NDLRGEN059/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN059
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analyzers/NDLRGEN060/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN060
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analyzers/NDLRGEN061/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN061
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analyzers/NDLRGEN062/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN062
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5002,6 +5198,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/adr-0006-generate-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0006 Generate Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5866,24 +6097,25 @@ internally:</p>
 <p>The generator emits error <code>NDLRGEN002</code> if it detects internal plugin types in a referenced assembly without <code>[GenerateTypeRegistry]</code>, helping you identify projects that need the attribute.</p>
 <h2 id="assembly-loading-control">Assembly Loading Control<a class="headerlink" href="#assembly-loading-control" title="Permanent link">&para;</a></h2>
 <h3 id="automatic-assembly-loading">Automatic Assembly Loading<a class="headerlink" href="#automatic-assembly-loading" title="Permanent link">&para;</a></h3>
-<p>When using source generation, Needlr automatically discovers all referenced assemblies that have <code>[GenerateTypeRegistry]</code> and ensures they are loaded at startup. This is critical because:</p>
+<p>When using source generation, Needlr automatically discovers all referenced assemblies that have <code>[GenerateTypeRegistry]</code> and ensures their module initializers complete at startup. This is critical because:</p>
 <ul>
-<li><strong>Module initializers only run when an assembly is loaded</strong> - If your code never directly references a type from an assembly, that assembly never loads</li>
+<li><strong>Assembly metadata access is insufficient</strong> - Obtaining a <code>Type</code> or <code>Assembly</code> does not guarantee the module initializer has completed</li>
 <li><strong>Transitive dependencies</strong> - Plugin assemblies referenced by your project but never directly used in code would be invisible to the type registry</li>
 </ul>
-<p>Needlr solves this by generating a <code>ForceLoadReferencedAssemblies()</code> method that uses <code>typeof()</code> to force assembly loading:</p>
+<p>Needlr solves this by generating a <code>ForceLoadReferencedAssemblies()</code> method that explicitly runs each referenced registry module's constructor:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1">// Generated in NeedlrSourceGenBootstrap.g.cs</span>
-</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="na">[MethodImpl(MethodImplOptions.NoInlining)]</span>
-</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="k">private</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">ForceLoadReferencedAssemblies</span><span class="p">()</span>
-</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="p">{</span>
-</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="w">    </span><span class="n">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">typeof</span><span class="p">(</span><span class="k">global</span><span class="p">::</span><span class="n">MyApp</span><span class="p">.</span><span class="n">Features</span><span class="p">.</span><span class="n">Logging</span><span class="p">.</span><span class="n">Generated</span><span class="p">.</span><span class="n">TypeRegistry</span><span class="p">).</span><span class="n">Assembly</span><span class="p">;</span>
-</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="w">    </span><span class="n">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">typeof</span><span class="p">(</span><span class="k">global</span><span class="p">::</span><span class="n">MyApp</span><span class="p">.</span><span class="n">Features</span><span class="p">.</span><span class="n">Scheduling</span><span class="p">.</span><span class="n">Generated</span><span class="p">.</span><span class="n">TypeRegistry</span><span class="p">).</span><span class="n">Assembly</span><span class="p">;</span>
-</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="w">    </span><span class="c1">// ... all discovered assemblies with [GenerateTypeRegistry]</span>
-</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a><span class="p">}</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="k">private</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">ForceLoadReferencedAssemblies</span><span class="p">()</span>
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="p">{</span>
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="w">    </span><span class="n">RuntimeHelpers</span><span class="p">.</span><span class="n">RunModuleConstructor</span><span class="p">(</span>
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="w">        </span><span class="k">typeof</span><span class="p">(</span><span class="k">global</span><span class="p">::</span><span class="n">MyApp</span><span class="p">.</span><span class="n">Features</span><span class="p">.</span><span class="n">Logging</span><span class="p">.</span><span class="n">Generated</span><span class="p">.</span><span class="n">TypeRegistry</span><span class="p">).</span><span class="n">Module</span><span class="p">.</span><span class="n">ModuleHandle</span><span class="p">);</span>
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="w">    </span><span class="n">RuntimeHelpers</span><span class="p">.</span><span class="n">RunModuleConstructor</span><span class="p">(</span>
+</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="w">        </span><span class="k">typeof</span><span class="p">(</span><span class="k">global</span><span class="p">::</span><span class="n">MyApp</span><span class="p">.</span><span class="n">Features</span><span class="p">.</span><span class="n">Scheduling</span><span class="p">.</span><span class="n">Generated</span><span class="p">.</span><span class="n">TypeRegistry</span><span class="p">).</span><span class="n">Module</span><span class="p">.</span><span class="n">ModuleHandle</span><span class="p">);</span>
+</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a><span class="w">    </span><span class="c1">// ... all discovered assemblies with [GenerateTypeRegistry]</span>
+</span><span id="__span-29-9"><a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>This is fully AOT-compatible - <code>typeof()</code> is resolved at compile time.</p>
-<h3 id="controlling-assembly-load-order-with-needlrassemblyorder">Controlling Assembly Load Order with [NeedlrAssemblyOrder]<a class="headerlink" href="#controlling-assembly-load-order-with-needlrassemblyorder" title="Permanent link">&para;</a></h3>
-<p>By default, referenced assemblies are loaded in alphabetical order. If you need specific assemblies to load before or after others (e.g., when plugins have dependencies on other plugins being registered first), use the <code>[NeedlrAssemblyOrder]</code> attribute:</p>
+<p><code>RunModuleConstructor</code> is idempotent, so dependencies that were already initialized are unaffected. The module handles are derived from statically known <code>typeof()</code> references, keeping this path AOT-compatible without runtime assembly scanning or name-based loading.</p>
+<h3 id="controlling-module-initialization-order-with-needlrassemblyorder">Controlling Module Initialization Order with [NeedlrAssemblyOrder]<a class="headerlink" href="#controlling-module-initialization-order-with-needlrassemblyorder" title="Permanent link">&para;</a></h3>
+<p>By default, referenced module constructors run in assembly-name order. If you need specific registries initialized before or after others (e.g., when plugins have dependencies on other plugins being registered first), use the <code>[NeedlrAssemblyOrder]</code> attribute:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.Generators</span><span class="p">;</span>
 </span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>
 </span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="c1">// In your host application&#39;s assembly attributes</span>
@@ -5893,13 +6125,13 @@ internally:</p>
 </span><span id="__span-30-7"><a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="w">    </span><span class="n">Last</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="p">[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;MyApp.Features.Health&quot;</span><span class="w"> </span><span class="p">})]</span>
 </span></code></pre></div>
 <p><strong>How ordering works:</strong>
-1. Assemblies in <code>First</code> are loaded first, in the order specified
-2. All other discovered assemblies are loaded alphabetically
-3. Assemblies in <code>Last</code> are loaded last, in the order specified</p>
+1. Module constructors for assemblies in <code>First</code> run first, in the order specified
+2. All other discovered module constructors run in assembly-name order
+3. Module constructors for assemblies in <code>Last</code> run last, in the order specified</p>
 <p><strong>Example scenario:</strong> Your <code>AuthenticationPlugin</code> needs <code>ILogger</code> which is registered by <code>LoggingPlugin</code>:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="na">[assembly: GenerateTypeRegistry]</span>
 </span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="na">[assembly: NeedlrAssemblyOrder(</span>
-</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="na">    First = new[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;MyApp.Features.Logging&quot;</span><span class="w"> </span><span class="p">})]</span><span class="w">  </span><span class="c1">// Logging loads first</span>
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="na">    First = new[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;MyApp.Features.Logging&quot;</span><span class="w"> </span><span class="p">})]</span><span class="w">  </span><span class="c1">// Logging initializes first</span>
 </span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a>
 </span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="k">namespace</span><span class="w"> </span><span class="nn">MyApp.Bootstrap</span><span class="p">;</span>
 </span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a>

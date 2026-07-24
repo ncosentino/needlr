@@ -1014,6 +1014,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../generated-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../service-catalog/" class="md-nav__link">
         
   
@@ -3304,6 +3332,174 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN057/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN057
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN058/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN058
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN059/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN059
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN060/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN060
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN061/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN061
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN062/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN062
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4257,6 +4453,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/adr-0006-generate-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0006 Generate Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4292,9 +4523,9 @@
 <ul>
 <li>The guard type must resolve and be accessible from the attribute's own declaration.</li>
 <li>An explicit method name, if supplied, must not be empty or white-space-only.</li>
-<li>A compatible accessible static method must exist with the general guard-method shape (<code>static void Method(T value, string parameterName)</code>, no <code>ref</code>/<code>out</code>/<code>in</code> parameters) -- checked independently of any specific field type, since the alias can be applied to many different fields later.</li>
+<li>A compatible accessible static method must exist with the general guard-method shape (<code>static void Method(T value, string parameterName)</code>, no <code>ref</code>/<code>out</code>/<code>in</code> parameters) -- checked independently of any specific member type, since the alias can be applied to different participating fields or properties later.</li>
 </ul>
-<p>Validating the alias once, at its own declaration, means every field that later uses <code>[CollectionNotEmpty]</code> (or whatever the alias is named) does not need to re-diagnose the same broken guard reference.</p>
+<p>Validating the alias once, at its own declaration, means every participating member that later uses <code>[CollectionNotEmpty]</code> does not need to re-diagnose the same broken guard reference.</p>
 <h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
 <p>Fix the referenced guard type or method so it resolves to a valid, accessible, correctly shaped static method:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">System</span><span class="p">;</span>
@@ -4338,6 +4569,7 @@
 <li><a href="../NDLRGEN051/">NDLRGEN051</a> - Custom constructor guard method is invalid</li>
 <li><a href="../NDLRGEN055/">NDLRGEN055</a> - Constructor guard alias usage argument is unsupported</li>
 <li><a href="../../generated-constructors/">Generated Constructors</a></li>
+<li><a href="../../generated-record-constructor-overloads/">Generated Record Constructor Overloads</a></li>
 </ul><script type="application/ld+json">
 {
   "@context": "https://schema.org",

@@ -1014,6 +1014,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../generated-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../service-catalog/" class="md-nav__link">
         
   
@@ -3304,6 +3332,174 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN057/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN057
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN058/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN058
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN059/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN059
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN060/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN060
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN061/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN061
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN062/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN062
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4257,6 +4453,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/adr-0006-generate-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0006 Generate Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4286,9 +4517,9 @@
 
 <h1 id="ndlrgen051-custom-constructor-guard-method-is-invalid">NDLRGEN051: Custom constructor guard method is invalid<a class="headerlink" href="#ndlrgen051-custom-constructor-guard-method-is-invalid" title="Permanent link">&para;</a></h1>
 <h2 id="cause">Cause<a class="headerlink" href="#cause" title="Permanent link">&para;</a></h2>
-<p>No accessible static method matching the required guard-method shape was found on the referenced guard type for the field's type.</p>
+<p>No accessible static method matching the required guard-method shape was found on the referenced guard type for the guarded field or property type.</p>
 <h2 id="rule-description">Rule Description<a class="headerlink" href="#rule-description" title="Permanent link">&para;</a></h2>
-<p>A custom guard method must be an <strong>accessible</strong>, <strong>static</strong>, <strong><code>void</code></strong>-returning method with <strong>exactly two parameters</strong>: a value parameter compatible with the field's type (directly, or via a generic method's type-parameter inference), and a <code>string</code> parameter name as the last parameter. Neither parameter may be passed by <code>ref</code>, <code>out</code>, or <code>in</code> -- the generator emits a direct call and cannot support by-reference parameters.</p>
+<p>A custom guard method must be an <strong>accessible</strong>, <strong>static</strong>, <strong><code>void</code></strong>-returning method with <strong>exactly two parameters</strong>: a value parameter compatible with the guarded member's type (directly, or via a generic method's type-parameter inference), and a <code>string</code> parameter name as the last parameter. Neither parameter may be passed by <code>ref</code>, <code>out</code>, or <code>in</code> -- the generator emits a direct call and cannot support by-reference parameters.</p>
 <p>The generator calls this method directly, so its shape must be fully resolvable at compile time; there is no fallback to reflection for a method that almost matches. The diagnostic message reports the specific reason the best candidate method failed to qualify, for example:</p>
 <ul>
 <li>No method with that name exists on the guard type.</li>
@@ -4298,7 +4529,7 @@
 <li>The method does not have exactly two parameters.</li>
 <li>The method's second parameter is not a <code>string</code> parameter name.</li>
 <li>A parameter is passed by <code>ref</code>/<code>out</code>/<code>in</code>.</li>
-<li>The method's value parameter type is not compatible with the field's type.</li>
+<li>The method's value parameter type is not compatible with the guarded member's type.</li>
 </ul>
 <h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
 <p>Adjust the guard method's signature to match the required shape:</p>
@@ -4346,6 +4577,7 @@
 <li><a href="../NDLRGEN052/">NDLRGEN052</a> - Custom constructor guard method is ambiguous</li>
 <li><a href="../NDLRGEN056/">NDLRGEN056</a> - Custom constructor guard method is incompatible with forwarded alias arguments</li>
 <li><a href="../../generated-constructors/">Generated Constructors</a></li>
+<li><a href="../../generated-record-constructor-overloads/">Generated Record Constructor Overloads</a></li>
 </ul><script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -4356,7 +4588,7 @@
       "name": "What causes NDLRGEN051?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No accessible static method matching the required guard-method shape was found on the referenced guard type for the field's type."
+        "text": "No accessible static method matching the required guard-method shape was found on the referenced guard type for the guarded field or property type."
       }
     },
     {

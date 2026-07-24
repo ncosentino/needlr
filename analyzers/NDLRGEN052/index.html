@@ -1014,6 +1014,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../generated-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../service-catalog/" class="md-nav__link">
         
   
@@ -3304,6 +3332,174 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN057/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN057
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN058/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN058
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN059/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN059
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN060/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN060
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN061/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN061
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NDLRGEN062/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NDLRGEN062
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4257,6 +4453,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/adr-0006-generate-record-constructor-overloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0006 Generate Record Constructor Overloads
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4286,11 +4517,11 @@
 
 <h1 id="ndlrgen052-custom-constructor-guard-method-is-ambiguous">NDLRGEN052: Custom constructor guard method is ambiguous<a class="headerlink" href="#ndlrgen052-custom-constructor-guard-method-is-ambiguous" title="Permanent link">&para;</a></h1>
 <h2 id="cause">Cause<a class="headerlink" href="#cause" title="Permanent link">&para;</a></h2>
-<p>More than one accessible static method with the guard's method name is compatible with the field's type on the referenced guard type.</p>
+<p>More than one accessible static method with the guard's method name is compatible with the guarded field or property type on the referenced guard type.</p>
 <h2 id="rule-description">Rule Description<a class="headerlink" href="#rule-description" title="Permanent link">&para;</a></h2>
-<p>Overload resolution for a custom guard method is intentionally simple and direct rather than full C# overload resolution: the generator requires exactly one accessible static method compatible with <code>(value, string parameterName)</code> for the field's type. When two or more overloads are all compatible -- for example, two overloads that both accept the field's type through different generic constraints, or an exact match plus a compatible base-type overload -- the generator has no principled way to prefer one over the other, so it reports the ambiguity instead of guessing.</p>
+<p>Overload resolution for a custom guard method is intentionally simple and direct rather than full C# overload resolution: the generator requires exactly one accessible static method compatible with <code>(value, string parameterName)</code> for the guarded member's type. When two or more overloads are all compatible -- for example, two overloads that both accept the member's type through different generic constraints, or an exact match plus a compatible base-type overload -- the generator has no principled way to prefer one over the other, so it reports the ambiguity instead of guessing.</p>
 <h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
-<p>Remove or rename the extra overload(s) so exactly one method matches the field's type, or select the intended overload with an explicit method name:</p>
+<p>Remove or rename the extra overload(s) so exactly one method matches the guarded member's type, or select the intended overload with an explicit method name:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.Generators</span><span class="p">;</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">public</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">OrderGuards</span>
@@ -4325,6 +4556,7 @@
 <li><a href="../NDLRGEN051/">NDLRGEN051</a> - Custom constructor guard method is invalid</li>
 <li><a href="../NDLRGEN056/">NDLRGEN056</a> - Custom constructor guard method is incompatible with forwarded alias arguments</li>
 <li><a href="../../generated-constructors/">Generated Constructors</a></li>
+<li><a href="../../generated-record-constructor-overloads/">Generated Record Constructor Overloads</a></li>
 </ul><script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -4335,7 +4567,7 @@
       "name": "What causes NDLRGEN052?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "More than one accessible static method with the guard's method name is compatible with the field's type on the referenced guard type."
+        "text": "More than one accessible static method with the guard's method name is compatible with the guarded field or property type on the referenced guard type."
       }
     },
     {
@@ -4343,7 +4575,7 @@
       "name": "How do I fix NDLRGEN052?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Remove or rename the extra overload(s) so exactly one method matches the field's type, or select the intended overload with an explicit method name:"
+        "text": "Remove or rename the extra overload(s) so exactly one method matches the guarded member's type, or select the intended overload with an explicit method name:"
       }
     }
   ]
