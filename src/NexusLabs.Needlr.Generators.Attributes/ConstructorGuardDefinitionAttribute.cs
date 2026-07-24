@@ -4,16 +4,19 @@ namespace NexusLabs.Needlr.Generators;
 
 /// <summary>
 /// Declares that an application-defined attribute type is an alias for a constructor
-/// guard, so it can be applied to fields directly instead of
+/// guard, so it can be applied to fields or participating record properties instead of
 /// <see cref="ConstructorGuardAttribute"/>.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Apply this meta-attribute to your own <see cref="Attribute"/>-derived field
-/// attribute type. When the generator finds your attribute applied to a field, it
-/// resolves the guard from this meta-attribute and treats the field exactly as if
+/// Apply this meta-attribute to your own <see cref="Attribute"/>-derived field or
+/// property attribute type. When the generator finds your attribute applied to a
+/// supported member, it resolves the guard from this meta-attribute and treats the
+/// member exactly as if
 /// <see cref="ConstructorGuardAttribute"/> had been applied directly with the same
-/// guard type -- including as a positive trigger for constructor generation.
+/// guard type. A positive alias on an eligible field triggers field-based constructor
+/// generation; a property alias is emitted only when the property also carries
+/// <see cref="RecordConstructorOverloadParameterAttribute"/>.
 /// </para>
 /// <para>
 /// This works whether your alias attribute type is declared in the same project as
@@ -35,6 +38,20 @@ namespace NexusLabs.Needlr.Generators;
 /// }
 ///
 /// // Generated call: CollectionNotEmptyGuard.Validate(orders, nameof(orders));
+/// </code>
+/// <code>
+/// [ConstructorGuardDefinition(typeof(ScopeGuard))]
+/// [AttributeUsage(AttributeTargets.Property)]
+/// public sealed class ValidScopeAttribute : Attribute
+/// {
+/// }
+///
+/// public partial record PreparedRequest(string Query)
+/// {
+///     [RecordConstructorOverloadParameter]
+///     [ValidScope]
+///     public PreparedScope? Scope { get; init; }
+/// }
 /// </code>
 /// </example>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]

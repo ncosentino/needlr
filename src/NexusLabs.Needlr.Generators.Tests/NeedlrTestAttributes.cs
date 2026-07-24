@@ -242,10 +242,18 @@ namespace NexusLabs.Needlr.Generators
 
     /// <summary>
     /// Generated-constructor feature attributes: GenerateConstructor, ConstructorGuard,
-    /// ConstructorIgnore, ConstructorGuardDefinition, ConstructorGuardKind, and
-    /// ConstructorNullGuardMode, matching the real package's public shapes.
+    /// ConstructorIgnore, ConstructorGuardDefinition, RecordConstructorOverloadParameter,
+    /// ConstructorGuardKind, and ConstructorNullGuardMode, matching the real package's
+    /// public shapes.
     /// </summary>
     public const string GeneratedConstructor = @"
+namespace System.Runtime.CompilerServices
+{
+    internal static class IsExternalInit
+    {
+    }
+}
+
 namespace NexusLabs.Needlr.Generators
 {
     public enum ConstructorNullGuardMode
@@ -270,7 +278,7 @@ namespace NexusLabs.Needlr.Generators
         public ConstructorNullGuardMode Mode { get; }
     }
 
-    [System.AttributeUsage(System.AttributeTargets.Field, Inherited = false, AllowMultiple = true)]
+    [System.AttributeUsage(System.AttributeTargets.Field | System.AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
     public sealed class ConstructorGuardAttribute : System.Attribute
     {
         public ConstructorGuardAttribute(ConstructorGuardKind kind) => Kind = kind;
@@ -303,6 +311,11 @@ namespace NexusLabs.Needlr.Generators
 
         public System.Type GuardType { get; }
         public string? MethodName { get; }
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+    public sealed class RecordConstructorOverloadParameterAttribute : System.Attribute
+    {
     }
 }";
 

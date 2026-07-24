@@ -13,7 +13,7 @@ Two categories are never forwarded, regardless of where the alias itself is decl
 - **Array/`params` and floating-point (`float`/`double`) positional arguments.** Rendering an array as a single forwarded literal is inherently ambiguous, and floating-point literals can silently lose round-trip precision.
 - **Named attribute arguments and properties.** Only positional constructor arguments are ever forwarded.
 
-This is checked at every alias *usage* site (not just the alias's own declaration), because a usage's positional arguments are only known where the alias attribute is actually applied to a field.
+This is checked at every alias *usage* site (not just the alias's own declaration), because a usage's positional arguments are only known where the alias attribute is actually applied to a participating field or property.
 
 ## How to Fix
 
@@ -78,3 +78,4 @@ public partial class Container
 - [NDLRGEN056](NDLRGEN056.md) - Custom constructor guard method is incompatible with forwarded alias arguments
 - [NDLRGEN051](NDLRGEN051.md) - Custom constructor guard method is invalid
 - [Generated Constructors](../generated-constructors.md)
+- [Generated Record Constructor Overloads](../generated-record-constructor-overloads.md)

@@ -71,6 +71,7 @@ nav:
     - Compose and Expose Closed Generics: composed-closed-generics.md
     - Cancellation-Aware Logging: cancellation-aware-logging.md
     - Generated Constructors: generated-constructors.md
+    - Generated Record Constructor Overloads: generated-record-constructor-overloads.md
     - Service Catalog: service-catalog.md
     - Breadcrumbs: breadcrumbs.md
     - .NET MAUI: maui.md
@@ -145,6 +146,12 @@ nav:
       - NDLRGEN054: analyzers/NDLRGEN054.md
       - NDLRGEN055: analyzers/NDLRGEN055.md
       - NDLRGEN056: analyzers/NDLRGEN056.md
+      - NDLRGEN057: analyzers/NDLRGEN057.md
+      - NDLRGEN058: analyzers/NDLRGEN058.md
+      - NDLRGEN059: analyzers/NDLRGEN059.md
+      - NDLRGEN060: analyzers/NDLRGEN060.md
+      - NDLRGEN061: analyzers/NDLRGEN061.md
+      - NDLRGEN062: analyzers/NDLRGEN062.md
     - SignalR Analyzers:
       - NDLRSIG001: analyzers/NDLRSIG001.md
       - NDLRSIG002: analyzers/NDLRSIG002.md
@@ -172,6 +179,7 @@ nav:
   - Architecture Decisions:
     - ADR-0004 Extract AI Platform to Foundry: adr/adr-0004-extract-ai-platform-to-foundry.md
     - ADR-0005 Generate Guarded Constructors: adr/adr-0005-generate-guarded-constructors.md
+    - ADR-0006 Generate Record Constructor Overloads: adr/adr-0006-generate-record-constructor-overloads.md
 
 plugins:
   - search

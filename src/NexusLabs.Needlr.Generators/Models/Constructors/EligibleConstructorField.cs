@@ -21,7 +21,7 @@ internal readonly struct EligibleConstructorField : IEquatable<EligibleConstruct
         string parameterName,
         string parameterTypeName,
         bool isNonNullableReferenceType,
-        ConstructorFieldGuard[] explicitGuards)
+        ConstructorGuardModel[] explicitGuards)
     {
         FieldName = fieldName;
         ParameterName = parameterName;
@@ -55,7 +55,7 @@ internal readonly struct EligibleConstructorField : IEquatable<EligibleConstruct
     /// <summary>
     /// Explicit guards requested for this field, in source declaration order.
     /// </summary>
-    public ConstructorFieldGuard[] ExplicitGuards { get; }
+    public ConstructorGuardModel[] ExplicitGuards { get; }
 
     public bool Equals(EligibleConstructorField other)
     {
@@ -90,7 +90,7 @@ internal readonly struct EligibleConstructorField : IEquatable<EligibleConstruct
 
     public static bool operator !=(EligibleConstructorField left, EligibleConstructorField right) => !left.Equals(right);
 
-    private static bool GuardsEqual(ConstructorFieldGuard[] left, ConstructorFieldGuard[] right)
+    private static bool GuardsEqual(ConstructorGuardModel[] left, ConstructorGuardModel[] right)
     {
         if (ReferenceEquals(left, right))
             return true;

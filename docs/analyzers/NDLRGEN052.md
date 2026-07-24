@@ -2,15 +2,15 @@
 
 ## Cause
 
-More than one accessible static method with the guard's method name is compatible with the field's type on the referenced guard type.
+More than one accessible static method with the guard's method name is compatible with the guarded field or property type on the referenced guard type.
 
 ## Rule Description
 
-Overload resolution for a custom guard method is intentionally simple and direct rather than full C# overload resolution: the generator requires exactly one accessible static method compatible with `(value, string parameterName)` for the field's type. When two or more overloads are all compatible -- for example, two overloads that both accept the field's type through different generic constraints, or an exact match plus a compatible base-type overload -- the generator has no principled way to prefer one over the other, so it reports the ambiguity instead of guessing.
+Overload resolution for a custom guard method is intentionally simple and direct rather than full C# overload resolution: the generator requires exactly one accessible static method compatible with `(value, string parameterName)` for the guarded member's type. When two or more overloads are all compatible -- for example, two overloads that both accept the member's type through different generic constraints, or an exact match plus a compatible base-type overload -- the generator has no principled way to prefer one over the other, so it reports the ambiguity instead of guessing.
 
 ## How to Fix
 
-Remove or rename the extra overload(s) so exactly one method matches the field's type, or select the intended overload with an explicit method name:
+Remove or rename the extra overload(s) so exactly one method matches the guarded member's type, or select the intended overload with an explicit method name:
 
 ```csharp
 using NexusLabs.Needlr.Generators;
@@ -48,3 +48,4 @@ public partial class OrderService
 - [NDLRGEN051](NDLRGEN051.md) - Custom constructor guard method is invalid
 - [NDLRGEN056](NDLRGEN056.md) - Custom constructor guard method is incompatible with forwarded alias arguments
 - [Generated Constructors](../generated-constructors.md)
+- [Generated Record Constructor Overloads](../generated-record-constructor-overloads.md)

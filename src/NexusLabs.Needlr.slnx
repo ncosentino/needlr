@@ -10,6 +10,7 @@
     <Project Path="Examples/SourceGen/GeneratedConstructorExample/GeneratedConstructorExample.csproj" />
     <Project Path="Examples/SourceGen/HttpClientExample/HttpClientExample.csproj" />
     <Project Path="Examples/SourceGen/MinimalWebApiSourceGen/MinimalWebApiSourceGen.csproj" />
+    <Project Path="Examples/SourceGen/RecordConstructorOverloadExample/RecordConstructorOverloadExample.csproj" />
   </Folder>
   <Folder Name="/Examples/SourceGen/AotConsole/">
     <Project Path="Examples/SourceGen/AotSourceGenConsoleApp/AotSourceGenConsoleApp.csproj" />

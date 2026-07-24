@@ -2,11 +2,11 @@
 
 ## Cause
 
-No accessible static method matching the required guard-method shape was found on the referenced guard type for the field's type.
+No accessible static method matching the required guard-method shape was found on the referenced guard type for the guarded field or property type.
 
 ## Rule Description
 
-A custom guard method must be an **accessible**, **static**, **`void`**-returning method with **exactly two parameters**: a value parameter compatible with the field's type (directly, or via a generic method's type-parameter inference), and a `string` parameter name as the last parameter. Neither parameter may be passed by `ref`, `out`, or `in` -- the generator emits a direct call and cannot support by-reference parameters.
+A custom guard method must be an **accessible**, **static**, **`void`**-returning method with **exactly two parameters**: a value parameter compatible with the guarded member's type (directly, or via a generic method's type-parameter inference), and a `string` parameter name as the last parameter. Neither parameter may be passed by `ref`, `out`, or `in` -- the generator emits a direct call and cannot support by-reference parameters.
 
 The generator calls this method directly, so its shape must be fully resolvable at compile time; there is no fallback to reflection for a method that almost matches. The diagnostic message reports the specific reason the best candidate method failed to qualify, for example:
 
@@ -17,7 +17,7 @@ The generator calls this method directly, so its shape must be fully resolvable 
 - The method does not have exactly two parameters.
 - The method's second parameter is not a `string` parameter name.
 - A parameter is passed by `ref`/`out`/`in`.
-- The method's value parameter type is not compatible with the field's type.
+- The method's value parameter type is not compatible with the guarded member's type.
 
 ## How to Fix
 
@@ -71,3 +71,4 @@ public partial class OrderService
 - [NDLRGEN052](NDLRGEN052.md) - Custom constructor guard method is ambiguous
 - [NDLRGEN056](NDLRGEN056.md) - Custom constructor guard method is incompatible with forwarded alias arguments
 - [Generated Constructors](../generated-constructors.md)
+- [Generated Record Constructor Overloads](../generated-record-constructor-overloads.md)

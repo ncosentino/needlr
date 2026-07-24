@@ -3,6 +3,7 @@
 ### Added
 
 - Generated constructors now emit coalesced XML `<exception>` documentation for effective built-in guards, including distinct null, empty, and white-space failure contracts. Suppressed defaults, `None`, duplicate guards, and custom guards do not produce unsupported exception claims.
+- **`NexusLabs.Needlr.Generators` — `[RecordConstructorOverloadParameter]`: generate one guarded public forwarding constructor for a top-level partial positional record from explicitly marked properties.** The overload preserves every primary parameter, appends marked properties in deterministic source order, chains through `this(...)`, reuses built-in/custom/aliased constructor guards, emits XML documentation, communicates built-in null rejection through parameter nullability, and remains deliberately outside Needlr DI/AOT constructor metadata. Primary construction, object initializers, serializers, copy construction, and `with` expressions retain normal record semantics. Invalid type/property shapes, mixed `[GenerateConstructor]` usage, unmarked property guards, and signature collisions are diagnosed by NDLRGEN057-NDLRGEN062. See `docs/generated-record-constructor-overloads.md`, ADR-0006, and the runnable `RecordConstructorOverloadExample`.
 
 ### Fixed
 
