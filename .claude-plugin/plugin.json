@@ -1,0 +1,11 @@
+{
+  "name": "needlr",
+  "description": "Version-aware Needlr application, source-generation, and framework-integration specialists.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Nick Cosentino"
+  },
+  "homepage": "https://www.devleader.ca/projects/needlr/",
+  "repository": "https://github.com/ncosentino/needlr",
+  "license": "MIT"
+}

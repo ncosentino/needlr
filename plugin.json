@@ -1,0 +1,20 @@
+{
+  "name": "needlr",
+  "description": "Version-aware Needlr application, source-generation, and framework-integration specialists.",
+  "version": "1.0.0",
+  "repository": "https://github.com/ncosentino/needlr",
+  "author": {
+    "name": "Nick Cosentino"
+  },
+  "license": "MIT",
+  "keywords": [
+    "needlr",
+    "dependency-injection",
+    "source-generation",
+    "dotnet"
+  ],
+  "skills": [
+    "skills/"
+  ],
+  "agents": "agents/"
+}
