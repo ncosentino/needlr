@@ -1,313 +1,165 @@
 # Releasing Needlr
 
-This is the in-depth maintainer guide for cutting a new Needlr release
-(alpha, beta, rc, or stable). It exists so nobody — human or LLM
-assistant — has to rediscover the release process by reading commit
-history.
+This is the authoritative maintainer guide for cutting a Needlr release.
+The fast-lookup checklist is
+[`RELEASING.md`](https://github.com/ncosentino/needlr/blob/main/RELEASING.md).
 
-The fast-lookup version lives at [`RELEASING.md`](https://github.com/ncosentino/needlr/blob/main/RELEASING.md) in the repo root.
+## Release model
 
----
+Needlr uses protected `main`. A release is deliberately split into two
+operations:
 
-## What a release actually is
+1. **Release preparation through a pull request**
+   - update `version.json`;
+   - ship analyzer diagnostics;
+   - create the exact `CHANGELOG.md` release section;
+   - update version-specific documentation where applicable;
+   - pass required pull-request CI.
+2. **Tag-only finalization from synchronized `main`**
+   - verify the prepared version and release metadata;
+   - verify successful same-commit `main` CI;
+   - validate build and package contents;
+   - create and push only the version tag.
 
-A Needlr release is:
+The split is a safety boundary. The release script cannot write a version
+commit to protected `main`, and package publication cannot begin from a
+commit that bypassed pull-request validation.
 
-1. A move of every unshipped analyzer diagnostic from
-   `AnalyzerReleases.Unshipped.md` → `AnalyzerReleases.Shipped.md`.
-2. A `CHANGELOG.md` entry under a new `## [x.y.z-label.N]` heading.
-3. A version bump in `version.json` via Nerdbank.GitVersioning.
-4. A lightweight git tag `v<version>` on the bump commit.
-5. A push of the tag to `origin`, which triggers
-   `.github/workflows/release.yml` to build, test, pack, publish to
-   NuGet.org + GitHub Packages, and create a GitHub Release.
+## What a release contains
 
-Steps 1-4 are orchestrated by `scripts/release.ps1`. Step 5 is the CI
-workflow. Everything after the tag push is automated.
+A Needlr release consists of:
 
----
+1. Analyzer rule rows moved from every
+   `AnalyzerReleases.Unshipped.md` into the corresponding
+   `AnalyzerReleases.Shipped.md`.
+2. An exact dated `CHANGELOG.md` section:
+   `## [x.y.z-label.N] - YYYY-MM-DD`.
+3. The same version in `version.json`.
+4. A lightweight `v<version>` tag on the squash-merge commit.
+5. Automated build, test, packaging, publication, release creation, and
+   documentation deployment from `.github/workflows/release.yml`.
+
+The version, changelog, analyzer files, and documentation are reviewed in the
+preparation pull request. `scripts/release.ps1` only validates and tags the
+already-merged result.
 
 ## Prerequisites
 
-You need all of the following installed and working before running
-the release script:
-
 | Tool | Purpose | Install |
 |---|---|---|
-| .NET 10 SDK | Build + pack | [dot.net](https://dot.net) |
-| PowerShell 7+ (`pwsh`) | Runs `release.ps1` | [aka.ms/pwsh](https://aka.ms/pwsh) |
-| `nbgv` | Bumps `version.json` and tags | `dotnet tool install -g nbgv` |
-| `gh` CLI | CI gate queries GitHub check runs | [cli.github.com](https://cli.github.com) |
-| Python + mkdocs (optional) | Local docs validation | `python -m pip install -r docs/requirements.txt` |
+| .NET 10 SDK | Build and pack | [dot.net](https://dot.net) |
+| PowerShell 7+ (`pwsh`) | Run the release scripts | [aka.ms/pwsh](https://aka.ms/pwsh) |
+| `nbgv` | Update `version.json`, resolve versions, and create the tag | `dotnet tool install -g nbgv` |
+| `gh` CLI | Query the exact `main` CI workflow run | [cli.github.com](https://cli.github.com) |
+| Python and MkDocs | Local documentation validation | `python -m pip install -r docs/requirements.txt` |
 
-You also need:
+The maintainer needs permission to:
 
-- **Push access to `origin/main`** on `ncosentino/needlr`.
-- **A NuGet.org trusted publishing policy** for package owner `ncosentino`,
-  repository `ncosentino/needlr`, workflow `release.yml`, and environment
-  `release`.
-- **The GitHub-provided `GITHUB_TOKEN`** (automatic, no setup).
+- create and merge a release-preparation pull request;
+- push a version tag to `origin`;
+- use the configured NuGet.org trusted-publishing policy indirectly through
+  `release.yml`.
 
----
+Direct push access to `main` is neither required nor permitted.
 
 ## Version numbering
 
-Needlr uses [SemVer 2.0.0](https://semver.org/) with a specific tag
-format enforced by `version.json`.
+Needlr uses SemVer 2.0.0. Prerelease tags use a dot before the counter:
+
+```text
+v0.0.3-alpha.3
+```
+
+Do not use `v0.0.3-alpha-0003`. NuGet may normalize the displayed package
+version, but `version.json`, the changelog, and the git tag use the dotted
+form.
 
 ### Source of truth
 
-`version.json` at the repo root contains the version Nerdbank.GitVersioning
-resolves at build time. Every `.csproj` inherits from it — **there are
-zero hardcoded versions in individual project files**.
+`version.json` is the version source read by every project. Individual project
+files do not carry package versions.
 
-```json
-{
-  "version": "0.0.3-alpha.1",
-  "publicReleaseRefSpec": [
-    "^refs/heads/main$",
-    "^refs/heads/release/v\\d+\\.\\d+",
-    "^refs/tags/v\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z\\.]+)?$"
-  ]
-}
-```
+Use `nbgv set-version <version>` on the release-preparation branch. The
+tag-only release script intentionally does not call `nbgv set-version`.
 
-Do not edit `version.json` by hand during a release. Always go through
-`nbgv set-version` or `release.ps1 -Prerelease alpha`.
+Needlr is configured for squash-only merges. The squash-merge commit therefore
+introduces the new `version.json` value and NBGV resolves exactly that version
+on the merge commit. If NBGV reports a suffix such as `.g<sha>`, the current
+commit is not the version-reset commit and must not be tagged.
 
-### Tag format
+### Choosing the next prerelease
 
-Tags are lightweight (not annotated) and follow the pattern:
-
-```
-v<major>.<minor>.<patch>-<label>.<counter>
-```
-
-For alpha: `v0.0.3-alpha.1`, `v0.0.3-alpha.2`, ...
-
-**Watch the separator:** it's a **dot** between `alpha` and the
-counter, not a dash. `v0.0.3-alpha-0002` is wrong; `v0.0.3-alpha.2` is
-right. NuGet displays the version with different normalization in its
-UI but the tag and `version.json` use the dotted form.
-
-For example, tag `v0.0.3-alpha.1` publishes NuGet package version
-`0.0.3-alpha-0001`.
-
-### Finding the next version
+Fetch all tags and inspect the current sequence:
 
 ```powershell
-./scripts/release.ps1 -Prerelease alpha -Base 0.0.3 -DryRun
+git fetch origin main --tags
+git tag --list "v0.0.3-alpha.*" --sort=-version:refname |
+  Select-Object -First 10
 ```
 
-The `-Prerelease` flag scans existing tags for the highest
-`v0.0.3-alpha.*` and increments the counter. `-Base` pins the base
-version so a stale `version.json` doesn't confuse the calculation. The
-dry run prints what the real run would do.
-
----
-
-## Pre-release gates
-
-Before the script takes any destructive action (version bump, commit,
-tag, push) it runs the following gates. All must pass.
-
-### 1. Clean working tree
+Increment the highest published counter and confirm that neither the local nor
+remote tag exists:
 
 ```powershell
-git diff --quiet
+git tag --list "v0.0.3-alpha.3"
+git ls-remote --tags origin "refs/tags/v0.0.3-alpha.3"
 ```
 
-Dirty trees are rejected. Stash or commit first. This exists because
-`release.ps1` uses `git commit -am` for the version bump — any
-unrelated staged or unstaged changes would get dragged into the release
-commit.
+The release script repeats both checks before tagging.
 
-### 2. `nbgv` installed
+## Phase 1: prepare the release pull request
 
-The script checks `Get-Command nbgv` and falls back to
-`~/.dotnet/tools/nbgv.exe`. If neither is present it throws a
-remediation message pointing at `dotnet tool install -g nbgv`.
+### Create the branch
 
-### 3. CI green on HEAD
+Start from the latest remote `main`:
 
 ```powershell
-gh api "repos/$repoSlug/commits/$sha/check-runs"
+git fetch origin main --tags
+git switch --create release/prepare-v0.0.3-alpha.3 origin/main
 ```
 
-Every check run on the current commit must be `completed` with
-`conclusion` in `success` / `skipped` / `neutral`. Anything failing,
-pending, or neutral blocks the release.
+Never prepare the release by committing directly on local `main`.
 
-The rationale: the CI workflow on `main` runs the full test matrix
-(unit tests, integration tests, generator tests, AspNet tests, AOT
-publish, example builds). If any of those are red, the package you're
-about to ship is known-broken.
+### Update `version.json`
 
-Override with `-SkipCiCheck` only if you're deliberately cutting a
-release before CI finishes (for example, you just pushed a fix and
-don't want to wait five minutes, and you've personally verified the
-build locally). Never skip this on a release candidate or stable.
+Run NBGV on the preparation branch:
 
-### 4. Analyzer release tracking
-
-> This is the gate that was silently broken before
-> [`f66653c2`](https://github.com/ncosentino/needlr/commit/f66653c2). If
-> you are reading this because a past release shipped with stale
-> unshipped rules, welcome back.
-
-Every Needlr analyzer project includes two `AdditionalFiles`:
-
-- `AnalyzerReleases.Shipped.md` — every diagnostic ID that has shipped
-  in a prior release, grouped under `## Release <version>` headers.
-- `AnalyzerReleases.Unshipped.md` — every diagnostic ID that is in code
-  but has not yet been included in a released version.
-
-`Microsoft.CodeAnalysis.Analyzers` (referenced from every analyzer
-project) enforces these files via rules **RS2000**, **RS2001**, and
-**RS2002**:
-
-- **RS2000**: Add the new rule to `Unshipped.md` when you introduce it
-  in code.
-- **RS2001**: Rule IDs in `Unshipped.md` must eventually move to
-  `Shipped.md` before a release.
-- **RS2002**: Rules in `Shipped.md` must still exist in the analyzer.
-
-**Before every release**, every unshipped rule must move. The release
-script refuses to proceed otherwise:
-
-```
-BLOCKED: analyzer projects have unshipped rules.
-
-Before releasing, move each rule below from its AnalyzerReleases.Unshipped.md
-file into the matching AnalyzerReleases.Shipped.md under a new header:
-  ## Release 0.0.2-alpha.26
+```powershell
+nbgv set-version 0.0.3-alpha.3
 ```
 
-See [Shipping analyzers](#shipping-analyzers) below for the exact
-mechanical procedure.
+Review the resulting `version.json` diff. Do not manually change unrelated
+NBGV settings.
 
-### 5. Build + pack validation
+### Ship analyzer diagnostics
 
-The script walks every `.csproj` under `src/` that is neither a test
-project nor has `<IsPackable>false</IsPackable>`, and runs
-`dotnet pack -c Release -v q --no-restore` on each. First failure
-aborts the release. This catches:
+Every Needlr analyzer project has:
 
-- Projects that compile for `dotnet build` but fail at pack time
-  (missing `Description`, invalid package id, missing README).
-- Projects that ship a new analyzer DLL via a custom `None Include`
-  entry whose `OutputPath` doesn't exist yet.
-- Projects whose `netstandard2.0` target drifts against the generator
-  requirements.
+- `AnalyzerReleases.Shipped.md` for diagnostics included in a release;
+- `AnalyzerReleases.Unshipped.md` for diagnostics added since the last
+  applicable release.
 
-### 6. Nuspec validation
-
-After successful packs, `scripts/test-packages.ps1 -NoBuild` runs. It
-extracts every `.nupkg` from `artifacts/`, parses the embedded
-`.nuspec`, and asserts:
-
-- The `dependencies` graph matches expected shape.
-- Analyzer and generator DLLs are placed at the correct package paths
-  (`analyzers/dotnet/cs/`).
-- The `Needlr.Build` package correctly transitively delivers the
-  generator assembly (regression test for a past bug — see commit
-  `b77544fa`).
-
-This is the last gate before the version bump actually happens.
-
----
-
-## Shipping analyzers
-
-This is the step that historically got forgotten. `release.ps1` now
-blocks on it, but you still have to do the mechanical move yourself.
-
-### Finding what needs to ship
-
-The guardrail tells you exactly which files and which rule IDs. You
-can also check manually:
+Find pending rule rows:
 
 ```powershell
 Get-ChildItem src -Recurse -Filter AnalyzerReleases.Unshipped.md |
   ForEach-Object {
-    $rules = Get-Content $_.FullName | Where-Object { $_ -match '^NDLR' }
+    $rules = Get-Content $_.FullName |
+      Where-Object { $_ -match '^NDLR' }
     if ($rules) {
       Write-Host $_.FullName
-      $rules | ForEach-Object { Write-Host "  $($_ -split '\s*\|\s*' | Select-Object -First 1)" }
+      $rules
     }
   }
 ```
 
-### Version header format — the non-obvious rule
-
-**`Microsoft.CodeAnalysis.Analyzers` rule RS2007 rejects pre-release
-labels in the release header.** A header like `## Release 0.0.2-alpha.26`
-will fail the analyzer build with:
-
-```
-error RS2007: Analyzer release file 'AnalyzerReleases.Shipped.md' has a
-missing or invalid release header '## Release 0.0.2-alpha.26'
-```
-
-The authoritative format is the **base version only**, no pre-release
-label, no `v` prefix, no date:
-
-```
-## Release 0.0.2
-```
-
-**All alpha/beta/rc releases of `0.0.2` share the same
-`## Release 0.0.2` section.** You don't add a new section per alpha
-bump — you append the newly-shipped rules to the existing section.
-
-This is the single rule that has bounced every past release attempt
-(see fix commits `83ef38ab`, `6b7e1166`, `22bd5b64`). The commit
-`22bd5b64` (`fix: use semver-only release header for analyzer tracking`)
-was a retroactive fix that merged `## Release 0.0.2-alpha.17` back into
-`## Release 0.0.2` after the analyzer build rejected it.
-
-When `0.0.3` is the next base version, that's when a new section gets
-created.
-
-### The mechanical move
-
-For each `AnalyzerReleases.Unshipped.md` with unshipped rules:
+For each file with rule rows:
 
 1. Open the paired `AnalyzerReleases.Shipped.md`.
-2. Find the existing `## Release <base-version>` section that
-   corresponds to the current base version (e.g. `## Release 0.0.2`
-   if you're shipping `v0.0.2-alpha.26`). If one does not exist —
-   for example, this is the first time the analyzer project has
-   ever shipped anything — create it with the base version only:
+2. Find or create the base-version section, such as:
 
    ```markdown
-   ## Release 0.0.2
-
-   ### New Rules
-
-   Rule ID | Category | Severity | Notes
-   --------|----------|----------|-------
-   <paste every unshipped row here, unchanged>
-   ```
-
-3. If the section already exists, append the new rule rows to its
-   table in **alphanumeric order** by Rule ID (so `NDLRCOR012` goes
-   between `NDLRCOR011` and `NDLRCOR015`, not at the end of the
-   section). Consistent ordering makes diffs easier to review.
-
-4. Open `AnalyzerReleases.Unshipped.md` and **delete only the rule
-   data rows**. Keep:
-   - The `; Unshipped analyzer releases` comment at the top
-   - The help link comment
-   - The `### New Rules` heading
-   - The table header row (`Rule ID | Category | Severity | Notes`)
-   - The separator row (`--------|----------|----------|-------`)
-
-   The post-ship file should look like:
-
-   ```markdown
-   ; Unshipped analyzer releases
-   ; https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md
+   ## Release 0.0.3
 
    ### New Rules
 
@@ -315,375 +167,327 @@ For each `AnalyzerReleases.Unshipped.md` with unshipped rules:
    --------|----------|----------|-------
    ```
 
-5. Repeat for each analyzer project with unshipped rules.
+3. Move every pending row into that section in alphanumeric diagnostic-ID
+   order.
+4. Delete only the rule data rows from `AnalyzerReleases.Unshipped.md`.
+   Keep its comments, heading, table header, and separator.
 
-6. Build each analyzer project locally to verify the updated files
-   are accepted by `Microsoft.CodeAnalysis.Analyzers`:
+The header uses the base version only. Roslyn rule RS2007 rejects a header such
+as `## Release 0.0.3-alpha.3`.
 
-   ```powershell
-   dotnet build src/NexusLabs.Needlr.Analyzers/NexusLabs.Needlr.Analyzers.csproj -c Release
-   dotnet build src/NexusLabs.Needlr.Generators/NexusLabs.Needlr.Generators.csproj -c Release
-   ```
+The release script fails if any line beginning with `NDLR` remains in an
+unshipped file.
 
-   If the build fails with `RS2001`, `RS2002`, or `RS2007`, re-read
-   the [Version header format](#version-header-format-the-non-obvious-rule)
-   section above and fix the header before proceeding.
+### Create the changelog section
 
-7. Commit with the conventional message:
-
-   ```
-   chore: ship analyzers for 0.0.2-alpha.26
-   ```
-
-### Example diff
-
-From the fix for `v0.0.2-alpha.26` (commits `f66653c2` + follow-up),
-the shipping change for `NexusLabs.Needlr.Analyzers` looked like:
-
-```diff
-  ## Release 0.0.2
-
-  ### New Rules
-
-  Rule ID | Category | Severity | Notes
-  --------|----------|----------|-------
-  ...
-  NDLRCOR011 | NexusLabs.Needlr | Info | KeyedServiceResolutionAnalyzer, ...
-+ NDLRCOR012 | NexusLabs.Needlr | Error | Disposable captive dependency - ...
-  NDLRCOR015 | NexusLabs.Needlr | Error | [RegisterAs<T>] type argument ...
-+ NDLRCOR016 | NexusLabs.Needlr | Warning | [DoNotAutoRegister] applied ...
-```
-
-Note how `NDLRCOR012` is inserted **in order** between `NDLRCOR011`
-and `NDLRCOR015`, not appended at the end.
-
-### If you add a new analyzer diagnostic between releases
-
-1. Add the `DiagnosticDescriptor` in the analyzer project.
-2. Add a row to that project's `AnalyzerReleases.Unshipped.md` under
-   `### New Rules` with the same `Rule ID | Category | Severity | Notes`
-   format. **Build immediately** — if you forget, the next release
-   script run will tell you, but it's much easier to fix at the source.
-3. Write the doc page at `docs/analyzers/NDLRXXX.md` following the
-   template in `.claude/rules/generated/docs.md`.
-4. Add a nav entry in `mkdocs.yml` under the appropriate analyzer
-   subgroup.
-5. Add a row to `docs/analyzers/README.md` in the matching table.
-
-The release script handles the shipping; you only have to remember the
-Unshipped.md row on the day you add the rule.
-
----
-
-## Writing the CHANGELOG entry
-
-`CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-
-The release workflow extracts release notes by searching for a section
-matching `## [<version>]` — it takes everything from that header up
-until the next `## [` header.
-
-### Template
+Move the content being released out of `## [Unreleased]` and into an exact,
+dated section:
 
 ```markdown
-## [0.0.2-alpha.26] - 2026-04-10
+## [0.0.3-alpha.3] - 2026-07-24
 
 ### Added
 
-- **Feature name** — One-sentence description. Link to the PR or
-  feature docs if relevant.
+- ...
 
 ### Fixed
 
-- **Bug description** — What broke, how it was fixed, observable
-  symptom before the fix. Include issue/PR links.
+- ...
 
 ### Changed
 
-- Internal refactors or breaking changes. Breaking changes should be
-  clearly flagged.
+- ...
 
 ### Shipped analyzers
 
-- `NDLRXXX001`, `NDLRXXX002`, ... (list every ID moved to Shipped.md
-  in this release, even if they were added in a prior alpha).
+- `NDLRGEN057`, `NDLRGEN058`, ...
 ```
 
-The `### Shipped analyzers` section is a Needlr convention. It lets
-downstream consumers see at a glance which diagnostic IDs are now
-"released" in a given version, which helps them triage RS2000 errors
-that pop up when they upgrade.
+The release workflow and `release.ps1` both require the exact
+`## [<version>]` heading. The optional `### Shipped analyzers` section records
+which diagnostics moved into the shipped files.
 
-### Finding what changed
+### Update version-specific documentation
+
+Update any documentation whose examples, compatibility statements, or API
+links refer to the release version. Routine feature documentation should
+already be present before release preparation.
+
+### Validate the preparation
+
+Use the repository NuGet cache on this machine:
 
 ```powershell
-# Commits since the previous release tag.
-git log v0.0.2-alpha.25..HEAD --oneline
+$env:NUGET_PACKAGES = 'G:\dev\caches\nuget\packages'
 ```
 
-Turn that list into CHANGELOG sections manually, or use the
-`skills/changelog-generator/scripts/generate.py` helper referenced by
-the dry-run output:
+Run the targeted release regression test:
 
 ```powershell
-python skills/changelog-generator/scripts/generate.py \
-  --from v0.0.2-alpha.25 \
-  --to HEAD \
-  --version 0.0.2-alpha.26
+pwsh -NoProfile -File scripts/test-release.ps1
 ```
 
-Review the output, edit for tone, and append to `CHANGELOG.md`.
+That test creates an isolated local remote, exercises dry-run and real
+finalization with command shims, and proves:
 
----
+- no branch commit is created;
+- `origin/main` does not move;
+- the expected tag is the only remote write;
+- the tag points at the prepared `main` commit.
 
-## Running the release
+Then run the normal validation appropriate to the release content, including:
 
-### Dry run first
+```powershell
+dotnet build src/NexusLabs.Needlr.slnx -c Release
+pwsh -NoProfile -File scripts/test-packages.ps1
+python -m mkdocs build --strict
+```
+
+### Open and merge the pull request
+
+Push only the feature branch and open the release-preparation pull request:
+
+```powershell
+git push -u origin release/prepare-v0.0.3-alpha.3
+gh pr create
+```
+
+Wait for all required checks:
+
+- `build-and-test`;
+- `package-validation`;
+- `aot-console-app`;
+- `aot-web-app`.
+
+Resolve review conversations and squash-merge the pull request. The
+path-filtered `build-maui-example` workflow is not a required branch check;
+when it runs for relevant changes, it must still pass.
+
+## Phase 2: finalize the release tag
+
+### Wait for same-commit main CI
+
+After the preparation pull request merges, wait for the `ci.yml` **push** run
+on the squash-merge commit to complete successfully. Pull-request CI is not a
+substitute because the release workflow independently verifies the exact
+`main` commit.
+
+### Synchronize local main
+
+```powershell
+git fetch origin main --tags
+git switch main
+git pull --ff-only origin main
+git status --short
+```
+
+The status output must be empty. The script fetches again and requires:
+
+```text
+local HEAD == origin/main
+```
+
+It never pulls, rebases, commits, or pushes a branch on the maintainer's
+behalf.
+
+### Run the dry run
+
+Use the exact prepared version:
+
+```powershell
+./scripts/release.ps1 0.0.3-alpha.3 -DryRun
+```
+
+Dry run validates:
+
+- a completely clean working tree;
+- NBGV availability;
+- exact `version.json` and NBGV version agreement;
+- exact changelog section;
+- empty analyzer unshipped rule tables;
+- local and remote tag availability.
+
+It prints the real tag-only write operation. Dry run intentionally skips the
+real-run-only main-position, hosted-CI, pack, and package-content gates.
+
+The `-Prerelease` form remains available after the release version has already
+been prepared:
 
 ```powershell
 ./scripts/release.ps1 -Prerelease alpha -Base 0.0.3 -DryRun
 ```
 
-Dry run:
+The computed version must still exactly match `version.json`.
 
-- Runs every gate listed in [Pre-release gates](#pre-release-gates)
-  except the clean-working-tree check (so you can iterate).
-- Computes the next version number.
-- Extracts the `CHANGELOG.md` entry for that version and prints it.
-- Prints what it would commit, tag, and push — without doing any of it.
-
-If the dry run reports a missing CHANGELOG entry or unshipped
-analyzers, fix those and re-run.
-
-### Real run
+### Run finalization
 
 ```powershell
-./scripts/release.ps1 -Prerelease alpha -Base 0.0.3
+./scripts/release.ps1 0.0.3-alpha.3
 ```
 
-The real run, in order:
+The real run:
 
-1. Runs all gates.
-2. Runs `nbgv set-version <new>` to bump `version.json`.
-3. Creates a commit: `chore: bump version to 0.0.3-alpha.2`.
-4. Rebases and pushes the version commit to `main`, retrying a bounded number
-   of times if the coverage-badge bot wins the push race.
-5. Creates a lightweight tag via `nbgv tag` on the exact commit now present on
-   `main`.
-6. Pushes that tag to trigger the release workflow.
+1. Repeats every metadata and tag-availability check.
+2. Requires local `main` to equal freshly fetched `origin/main`.
+3. Requires a successful `ci.yml` push run for that exact SHA.
+4. Runs solution-level Release pack validation.
+5. Runs `scripts/test-packages.ps1 -NoBuild`.
+6. Rechecks the clean tree, remote `main`, and tag availability to close race
+   windows.
+7. Runs `nbgv tag`.
+8. Verifies the local tag resolves to `HEAD`.
+9. Pushes only `refs/tags/v<version>`.
 
-### When the tag lands on origin
+There is no `-SkipCiCheck` bypass. If same-commit `main` CI is missing,
+pending, or failing, the release is not ready.
 
-`.github/workflows/release.yml` fires on the tag push. Its steps:
+## Gates enforced by `release.ps1`
 
-1. Wait for the `ci.yml` push run on `main` for the exact tag commit to
-   complete successfully.
-2. Checkout + setup .NET 10.
-3. Restore, build `src/NexusLabs.Needlr.slnx` with `-p:PublicRelease=true`.
-4. Run full test suite with coverage collection.
-5. Pack every `NexusLabs.Needlr*.csproj` except tests, benchmarks,
-   integration tests, then validate every package version.
-6. Extract the release notes, provision an action-managed Python environment,
-   install `docs/requirements.txt`, build the versioned documentation site, and
-   provision Node.js for the Cloudflare deployment.
-7. Exchange the GitHub OIDC identity for a short-lived NuGet.org API key
-   through `NuGet/login@v1`.
-8. `dotnet nuget push` every `.nupkg` to NuGet.org with
-   `--skip-duplicate`.
-9. `dotnet nuget push` every `.nupkg` to GitHub Packages using
-   `${{ secrets.GITHUB_TOKEN }}` with `--skip-duplicate`.
-10. Deploy the merged documentation site to GitHub Pages and Cloudflare Pages.
-11. Create a GitHub Release via `softprops/action-gh-release@v2`
-   flagged as pre-release because the tag contains `-`, attaching
-   every `.nupkg` and `.snupkg` file.
+| Gate | Failure means |
+|---|---|
+| Clean repository | Tracked, staged, or untracked content could contaminate validation |
+| NBGV installed | The prepared version or tag cannot be resolved reliably |
+| Exact prepared version | `version.json`, NBGV, and the requested tag would disagree |
+| Exact changelog section | Release notes are incomplete or use the wrong version |
+| Analyzer release tracking | Diagnostics would ship while still marked unshipped |
+| Tag availability | The version was already used or a tag race occurred |
+| Synchronized protected main | The tag would not identify the reviewed merged commit |
+| Successful same-commit CI | The exact release commit has not passed `main` CI |
+| Solution pack | One or more packages cannot be built |
+| Package assertions | A NuGet dependency or packaged asset regressed |
+| Final race checks | `main`, the working tree, or tag state changed during validation |
 
-The publish job defaults to the PitCrew self-hosted Linux runner and supports
-`CI_RUNNER=ubuntu-latest` as a manual fallback. `actions/setup-python` provides
-the isolated Python environment on either runner; do not install documentation
-dependencies into the runner's system Python or bypass PEP 668 protections.
+Every gate fails closed. API errors, missing tools, and unparsable repository
+identity are release blockers rather than warnings.
 
-Watch the workflow run at
-[Actions](https://github.com/ncosentino/needlr/actions/workflows/release.yml)
-while it runs. It typically takes 6-10 minutes.
+## What the tag triggers
 
----
+Pushing `v<version>` starts `.github/workflows/release.yml`.
+
+Before publication, the workflow:
+
+1. Finds the `ci.yml` push run for `main` whose SHA equals the tag SHA.
+2. Waits for that run to complete.
+3. Fails unless its conclusion is `success`.
+4. Checks that the tag version equals NBGV's semantic version.
+5. Checks that the exact changelog section exists.
+6. Restores, builds, tests, packs, validates package versions, and builds
+   documentation.
+
+After those gates, trusted publishing:
+
+- exchanges the workflow OIDC identity for a short-lived NuGet.org key;
+- pushes packages to NuGet.org and GitHub Packages;
+- deploys stable and versioned API documentation;
+- creates the GitHub Release and attaches package artifacts.
+
+Tag pushes are separate from protected branch updates, so main protection does
+not block release finalization.
 
 ## Post-release verification
 
-After the workflow succeeds:
+After `release.yml` succeeds:
 
-1. **NuGet.org:** visit
-   [nuget.org/packages/NexusLabs.Needlr](https://www.nuget.org/packages/NexusLabs.Needlr)
-   and verify the new version appears under the Versions tab. Check a
-   few other key packages too (`NexusLabs.Needlr.AspNet`,
-   `NexusLabs.Needlr.Generators`, `NexusLabs.Needlr.SignalR`).
-2. **GitHub Release:** visit
-   [releases](https://github.com/ncosentino/needlr/releases) and verify
-   the new tag shows up, is marked as pre-release, has the CHANGELOG
-   section as the release notes, and has the `.nupkg` + `.snupkg`
-   assets attached.
-3. **GitHub Packages:** visit
-   [Packages](https://github.com/ncosentino/needlr/packages) and verify
-   the new version is present.
-4. **Smoke test:** create a scratch project that references the new
-   version and verifies the most critical feature still works. For a
-   web-path fix like `v0.0.2-alpha.26`, that means running the
-   `MinimalWebApiSourceGen` example against the new package reference.
-
-If any verification step fails, open an issue immediately and start
-the rollback conversation. See [Rolling back](#rolling-back).
-
----
-
-## Rolling back
-
-NuGet.org packages can be **unlisted** (hidden from search and version
-resolution) but not deleted. GitHub Releases can be deleted. Tags can
-be deleted (but doing so does not unpublish the NuGet packages).
-
-If a released version is broken:
-
-1. **Unlist the bad version on NuGet.org** via the web UI
-   (Manage Package → Listing). This stops new consumers from pulling
-   it but preserves package integrity for anyone who already has it
-   cached.
-2. **Delete the GitHub Release** (optional, only if the release page
-   itself is misleading).
-3. **Delete the local and remote tag** (optional, only if the tag
-   commit itself needs to be revised):
-   ```powershell
-   git tag -d v0.0.2-alpha.26
-   git push origin :refs/tags/v0.0.2-alpha.26
-   ```
-4. **Cut a new release** with the fix and a higher counter
-   (`v0.0.2-alpha.27`). Never re-use a version number that has been
-   pushed to NuGet.org.
-5. **Write a CHANGELOG entry** for the new release explaining the
-   rollback and what was broken in the unlisted version.
-
-Unlisting is cheap and reversible; deletion is not. Prefer unlist.
-
----
+1. Verify the new version on
+   [NuGet.org](https://www.nuget.org/packages/NexusLabs.Needlr).
+2. Verify the GitHub Release is marked correctly and has `.nupkg` and
+   `.snupkg` assets.
+3. Verify the release notes match the exact changelog section.
+4. Verify stable and versioned API documentation.
+5. Perform a focused consumer smoke test when the released change warrants it.
 
 ## Troubleshooting
 
-### `nbgv: command not found`
+### `version.json contains '<old>', not '<new>'`
 
-Install the tool:
+The release-preparation pull request did not update `version.json`, or local
+`main` has not been synchronized after merge. Do not let the release script
+change it. Prepare or merge the correct pull request, then update local
+`main`.
 
-```powershell
-dotnet tool install -g nbgv
-```
+### `NBGV resolves '<version>.g<sha>'`
 
-Make sure `~/.dotnet/tools` is on your `PATH` (the script also looks
-there directly as a fallback).
+The current commit is after the commit that introduced the version. A release
+tag must point at the exact squash-merge commit that resets the version height.
+Inspect the preparation pull request and repository merge method rather than
+tagging the suffixed version.
 
-### `BLOCKED: CI is not fully green on HEAD`
+### `Local main must exactly match origin/main`
 
-One of the GitHub check runs for the current commit is failing,
-pending, or neutral. Open the Actions tab for the commit on GitHub,
-find the failing run, fix the underlying issue, push, wait for the
-re-run to go green, then re-run the release script.
+Another commit reached `main`, or local `main` is behind/ahead. Fetch and use a
+fast-forward update. If the new remote commit changes release content, review
+it and wait for its same-commit CI before retrying.
 
-Override with `-SkipCiCheck` only in true emergencies and only when
-you've personally verified the build and tests locally.
+### `No ci.yml push run exists`
+
+Wait for the `main` push workflow to be created. Confirm the tag candidate is
+the actual `main` SHA and that Actions is enabled.
+
+### `Main CI must complete successfully`
+
+Open the run URL printed by the script. Fix failures through another pull
+request, merge it, update local `main`, and rerun all release checks.
 
 ### `BLOCKED: analyzer projects have unshipped rules`
 
-See [Shipping analyzers](#shipping-analyzers). The script prints every
-file and every rule ID that needs to be moved; just walk the list.
+Return to the preparation phase. Move every printed rule into the paired
+shipped file under the base-version header, commit that change through a pull
+request, and do not tag until it merges.
 
-### `Pack validation failed`
+### Package validation fails
 
-Some `.csproj` failed `dotnet pack`. Run the failing pack command
-manually to see the full error:
+Run the failing command directly:
 
 ```powershell
-dotnet pack src/NexusLabs.Needlr.<Whatever>/NexusLabs.Needlr.<Whatever>.csproj -c Release
+dotnet pack src/NexusLabs.Needlr.slnx -c Release
+pwsh -NoProfile -File scripts/test-packages.ps1 -NoBuild
 ```
 
-Common causes:
+Typical causes include missing package metadata, an incorrect analyzer asset
+path, or a transitive dependency exclusion regression.
 
-- Missing `<Description>` property on a new project.
-- `PackageReadmeFile` pointing at a README that wasn't marked as
-  included in the pack.
-- A newly-added analyzer DLL whose `OutputPath` doesn't resolve because
-  the build matrix is wrong (check the `<None Include>` entry in the
-  `.csproj`).
+### The tag exists locally after a failed push
 
-### Nuspec validation fails
+Inspect it before retrying:
 
-`scripts/test-packages.ps1` caught a packaging regression. Look at the
-specific assertion that fired in the output. Most common: a change to
-`Directory.Build.props` that broke a transitive dependency for one of
-the bundle packages.
+```powershell
+git show v0.0.3-alpha.3
+git ls-remote --tags origin refs/tags/v0.0.3-alpha.3
+```
 
-### The workflow fires but nothing publishes
+If the remote tag does not exist and the local tag points at the correct,
+unchanged `main` commit, retrying the push manually is possible. If there is
+any mismatch, stop and investigate; never move or reuse a published version
+tag casually.
 
-Check the Actions tab for the workflow run. Common causes:
+## Rolling back a bad release
 
-- The same-commit `ci.yml` push run on `main` is missing, still running, or
-  did not complete successfully.
-- A manually-created tag points to a commit that was never pushed to `main`.
-  `release.ps1` avoids this by landing the version commit before creating the
-  tag.
-- The NuGet trusted publishing policy does not match the repository owner,
-  repository, workflow filename, or `release` environment.
-- The publish job is missing `id-token: write`, `environment: release`, or the
-  `NuGet/login@v1` token exchange.
-- A transient NuGet.org outage. Re-run the workflow from the Actions
-  tab.
-- A package was already published at that version (`--skip-duplicate`
-  in the push command silently swallows this — it's usually a sign
-  someone manually published before the workflow ran, which shouldn't
-  happen).
+NuGet.org packages can be unlisted but not deleted.
 
-### Docs build fails in `mkdocs` strict mode
+1. Unlist the bad package version on NuGet.org.
+2. Delete the GitHub Release only if its page is misleading.
+3. Avoid deleting the tag unless the release record itself must be withdrawn.
+4. Fix the defect through a new pull request.
+5. Release a higher version. Never reuse a version that reached a package
+   feed.
 
-If your release adds new analyzer diagnostic doc pages, ensure:
+## Historical failure modes
 
-- Each new `docs/analyzers/NDLRXXX.md` exists.
-- Each new page has a nav entry in `mkdocs.yml` under the correct
-  analyzer subgroup.
-- Each new page has a row in `docs/analyzers/README.md`.
+- Forgetting to move analyzer rules before release.
+- Using prerelease text in Roslyn analyzer release headers.
+- Using `alpha-0003` instead of `alpha.3`.
+- Tagging a commit whose NBGV version contains a commit-height suffix.
+- Creating or pushing a release version commit directly on `main`.
+- Treating pull-request CI as proof that the exact merged `main` commit passed.
+- Releasing from a dirty repository.
 
-This is documented in `.claude/rules/generated/docs.md`. The `api/stable/*`
-warnings emitted by strict mode are pre-existing and expected locally;
-CI handles them with a placeholder step.
-
----
-
-## Historical gotchas (why this document exists)
-
-Every item here has bitten past releases. They're listed not to shame
-anybody, but so the next maintainer can recognize the failure mode:
-
-- **Forgetting the analyzer Unshipped→Shipped move.** Commits
-  `83ef38ab`, `6b7e1166`, `22bd5b64`, `6e0b08bb`, `22c7e284` are all
-  retroactive fixes or ship-catch-up commits. This is the single most
-  common release-day mistake, which is why
-  `scripts/release.ps1` now blocks on it.
-- **Wrong version header format.** Early releases used
-  `## Release <date>` or omitted the version entirely. The correct
-  format is `## Release <version>` with no date, no `v` prefix.
-- **Using `alpha-0026` instead of `alpha.26`.** The dot-separated form
-  is what `version.json`, `nbgv`, and the release workflow expect.
-  NuGet displays it differently in the web UI but the source of truth
-  uses the dot.
-- **Pushing to `origin/main` before CI runs.** Always wait for CI to
-  go green on the version-bump commit before the tag push. The release
-  script's CI gate enforces this for you.
-- **Releasing from a dirty working tree.** Early releases accidentally
-  included uncommitted changes in the version bump commit. The clean
-  tree gate catches this now.
-
----
+The current process converts each failure mode into an explicit gate.
 
 ## See also
 
-- [`RELEASING.md`](https://github.com/ncosentino/needlr/blob/main/RELEASING.md) — the
-  fast-lookup version at the repo root.
+- [`RELEASING.md`](https://github.com/ncosentino/needlr/blob/main/RELEASING.md)
 - [`scripts/release.ps1`](https://github.com/ncosentino/needlr/blob/main/scripts/release.ps1)
+- [`scripts/test-release.ps1`](https://github.com/ncosentino/needlr/blob/main/scripts/test-release.ps1)
 - [`.github/workflows/release.yml`](https://github.com/ncosentino/needlr/blob/main/.github/workflows/release.yml)
 - [`CHANGELOG.md`](https://github.com/ncosentino/needlr/blob/main/CHANGELOG.md)
-- [Roslyn analyzer release tracking docs](https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md)
+- [Roslyn analyzer release tracking](https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md)
