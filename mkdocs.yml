@@ -182,6 +182,7 @@ nav:
     - ADR-0005 Generate Guarded Constructors: adr/adr-0005-generate-guarded-constructors.md
     - ADR-0006 Generate Record Constructor Overloads: adr/adr-0006-generate-record-constructor-overloads.md
     - ADR-0007 Own Graph Source Locations Per Project: adr/adr-0007-own-graph-source-locations-per-project.md
+    - ADR-0008 Own a Version-Aware Agent Marketplace: adr/adr-0008-own-version-aware-agent-marketplace.md
 
 plugins:
   - search

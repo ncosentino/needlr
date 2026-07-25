@@ -13,37 +13,116 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      source_required: ${{ steps.scope.outputs.source_required }}
+      marketplace_required: ${{ steps.scope.outputs.marketplace_required }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Detect validation scope
+      id: scope
+      shell: pwsh
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        FORCE_ALL: ${{ github.event_name == 'workflow_dispatch' }}
+      run: |
+        $arguments = @{
+          BaseSha = $env:BASE_SHA
+          HeadSha = $env:HEAD_SHA
+        }
+        if ($env:FORCE_ALL -eq 'true') {
+          $arguments.ForceAll = $true
+        }
+        scripts/get-ci-scope.ps1 @arguments
+
+  marketplace-validation:
+    needs: changes
+    if: needs.changes.outputs.marketplace_required == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Validate agent marketplace
+      shell: pwsh
+      run: scripts/validate-agent-marketplace.ps1
+
   build-and-test:
+    needs: [changes, marketplace-validation]
+    if: always()
     # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
     # Untrusted fork pull requests always use GitHub-hosted infrastructure.
-    runs-on: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    # Marketplace-only changes use a lightweight hosted no-op rather than occupying PitCrew.
+    runs-on: ${{ needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
     permissions:
       contents: write
       pages: write
       id-token: write
 
     steps:
+    - name: Enforce validation routing
+      shell: bash
+      run: |
+        if [[ "${{ needs.changes.result }}" != "success" ]]; then
+          echo "::error::CI scope detection did not succeed."
+          exit 1
+        fi
+        marketplace_required="${{ needs.changes.outputs.marketplace_required }}"
+        marketplace_result="${{ needs.marketplace-validation.result }}"
+        if [[ "$marketplace_required" == "true" && "$marketplace_result" != "success" ]]; then
+          echo "::error::Required agent marketplace validation did not succeed."
+          exit 1
+        fi
+        if [[ "$marketplace_required" != "true" &&
+              "$marketplace_result" != "success" &&
+              "$marketplace_result" != "skipped" ]]; then
+          echo "::error::Agent marketplace validation ended unexpectedly."
+          exit 1
+        fi
+
+    - name: Source validation not required
+      if: needs.changes.outputs.source_required != 'true'
+      run: echo "Marketplace-only change; source, package, documentation, and AOT validation are not applicable."
+
     - name: Checkout
+      if: needs.changes.outputs.source_required == 'true'
       uses: actions/checkout@v4
       with:
         fetch-depth: 0 # Needed for NBGV / SourceLink / deterministic builds
 
     - name: Setup .NET
+      if: needs.changes.outputs.source_required == 'true'
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
           10.0.x
 
     - name: Add .NET global tools to PATH
+      if: needs.changes.outputs.source_required == 'true'
       run: echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
 
     - name: Restore
+      if: needs.changes.outputs.source_required == 'true'
       run: dotnet restore src/NexusLabs.Needlr.slnx
 
     - name: Build (Release)
+      if: needs.changes.outputs.source_required == 'true'
       run: dotnet build src/NexusLabs.Needlr.slnx --configuration Release --no-restore
 
     - name: Test with Coverage
+      if: needs.changes.outputs.source_required == 'true'
       run: |
         failed=0
         while IFS= read -r proj; do
@@ -63,9 +142,11 @@ jobs:
         exit $failed
 
     - name: Install ReportGenerator
+      if: needs.changes.outputs.source_required == 'true'
       run: dotnet tool install -g dotnet-reportgenerator-globaltool
 
     - name: Generate Coverage Reports
+      if: needs.changes.outputs.source_required == 'true'
       run: |
         reportgenerator \
           -reports:"coverage/**/coverage.cobertura.xml" \
@@ -73,26 +154,32 @@ jobs:
           -reporttypes:"Html;JsonSummary;MarkdownSummaryGithub;Badges"
 
     - name: Add Coverage to Job Summary
+      if: needs.changes.outputs.source_required == 'true'
       run: cat coverage/report/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
 
     - name: Upload Coverage Report Artifact
+      if: needs.changes.outputs.source_required == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
         path: coverage/report/
 
     - name: Setup Python for MkDocs
+      if: needs.changes.outputs.source_required == 'true'
       uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
     - name: Install MkDocs
+      if: needs.changes.outputs.source_required == 'true'
       run: python -m pip install -r docs/requirements.txt
 
     - name: Restore dotnet tools
+      if: needs.changes.outputs.source_required == 'true'
       run: dotnet tool restore
 
     - name: Generate API Documentation
+      if: needs.changes.outputs.source_required == 'true'
       run: ./scripts/generate-api-docs.sh docs/api/dev --update-index
 
     # NOTE: there used to be an "Ensure Stable API Docs Are Available" step
@@ -111,12 +198,15 @@ jobs:
     # real stable content on gh-pages written by release.yml.
 
     - name: Generate Articles Page
+      if: needs.changes.outputs.source_required == 'true'
       run: python scripts/generate-articles.py docs/articles.md
 
     - name: Build Documentation
+      if: needs.changes.outputs.source_required == 'true'
       run: python -m mkdocs build
 
     - name: Build sitemap index
+      if: needs.changes.outputs.source_required == 'true'
       # mkdocs's default /sitemap.xml is a single flat file containing only
       # pages mkdocs knows about at this build time — which excludes the
       # /api/stable/ slice owned by release.yml. Replace it with a sitemap
@@ -130,13 +220,13 @@ jobs:
       run: python scripts/build-sitemap-index.py ./site
 
     - name: Add Coverage Report to Site
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: needs.changes.outputs.source_required == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
         mkdir -p site/coverage
         cp -r coverage/report/* site/coverage/
 
     - name: Restrict deploy to ci.yml-owned paths
-      if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
         # ci.yml owns: /api/dev/*, /coverage/*, home, feature pages, assets.
         # release.yml owns: /api/stable/*, /api/v<version>/*.
@@ -153,7 +243,7 @@ jobs:
         echo "Restricted ./site/ to ci.yml-owned paths."
 
     - name: Deploy Documentation and Coverage
-      if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -165,7 +255,7 @@ jobs:
     # by keep_files above) -- check it out fresh and mirror that whole tree
     # to Cloudflare Pages, rather than deploying our own partial ./site/.
     - name: Checkout gh-pages for Cloudflare mirror
-      if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: actions/checkout@v4
       with:
         ref: gh-pages
@@ -176,17 +266,17 @@ jobs:
     # older archives stay in gh-pages history but are not published here.
     # Also removes the checkout's .git so it is not uploaded.
     - name: Trim mirror before Cloudflare deploy
-      if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: python scripts/trim-cloudflare-mirror.py gh-pages-mirror --keep 20
 
     - name: Setup Node.js
-      if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: actions/setup-node@v4
       with:
         node-version: '24'
 
     - name: Deploy Documentation to Cloudflare Pages
-      if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: cloudflare/wrangler-action@v4
       with:
         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -194,51 +284,89 @@ jobs:
         command: pages deploy gh-pages-mirror --project-name=needlr --branch=main --commit-dirty=true
 
   package-validation:
-    runs-on: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
-    # Runs in parallel with build-and-test (no 'needs')
+    needs: changes
+    if: always()
+    runs-on: ${{ needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    # Runs in parallel with the other source jobs after scope detection.
 
     steps:
+    - name: Enforce validation routing
+      if: needs.changes.result != 'success'
+      run: |
+        echo "::error::CI scope detection did not succeed."
+        exit 1
+
+    - name: Source package validation not required
+      if: needs.changes.result == 'success' && needs.changes.outputs.source_required != 'true'
+      run: echo "Marketplace-only change; package validation is not applicable."
+
     - name: Checkout
+      if: needs.changes.outputs.source_required == 'true'
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     - name: Setup .NET
+      if: needs.changes.outputs.source_required == 'true'
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
           10.0.x
 
+    - name: Validate CI scope classifier
+      if: needs.changes.outputs.source_required == 'true'
+      shell: pwsh
+      run: scripts/test-ci-scope.ps1
+
     - name: Validate release finalization
+      if: needs.changes.outputs.source_required == 'true'
       shell: pwsh
       run: scripts/test-release.ps1
 
     - name: Restore
+      if: needs.changes.outputs.source_required == 'true'
       run: dotnet restore src/NexusLabs.Needlr.slnx
 
     - name: Validate package contents
+      if: needs.changes.outputs.source_required == 'true'
       shell: pwsh
       run: scripts/test-packages.ps1
 
   aot-console-app:
-    runs-on: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
-    # Runs in parallel with build-and-test (no 'needs')
+    needs: changes
+    if: always()
+    runs-on: ${{ needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    # Runs in parallel with the other source jobs after scope detection.
 
     steps:
+    - name: Enforce validation routing
+      if: needs.changes.result != 'success'
+      run: |
+        echo "::error::CI scope detection did not succeed."
+        exit 1
+
+    - name: Source AOT console validation not required
+      if: needs.changes.result == 'success' && needs.changes.outputs.source_required != 'true'
+      run: echo "Marketplace-only change; AOT console validation is not applicable."
+
     - name: Checkout
+      if: needs.changes.outputs.source_required == 'true'
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     - name: Setup .NET 10
+      if: needs.changes.outputs.source_required == 'true'
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 10.0.x
 
     - name: Install AOT dependencies
+      if: needs.changes.outputs.source_required == 'true'
       run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev file
 
     - name: Publish AOT Console App
+      if: needs.changes.outputs.source_required == 'true'
       run: |
         dotnet publish src/Examples/SourceGen/AotSourceGenConsoleApp/AotSourceGenConsoleApp.csproj \
           -c Release \
@@ -247,32 +375,50 @@ jobs:
           -o artifacts/console
 
     - name: Verify Console App Executable
+      if: needs.changes.outputs.source_required == 'true'
       run: |
         test -f artifacts/console/AotSourceGenConsoleApp
         file artifacts/console/AotSourceGenConsoleApp
 
     - name: Run Console App
+      if: needs.changes.outputs.source_required == 'true'
       run: artifacts/console/AotSourceGenConsoleApp || echo "App executed (exit expected for demo)"
 
   aot-web-app:
-    runs-on: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
-    # Runs in parallel with build-and-test (no 'needs')
+    needs: changes
+    if: always()
+    runs-on: ${{ needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    # Runs in parallel with the other source jobs after scope detection.
 
     steps:
+    - name: Enforce validation routing
+      if: needs.changes.result != 'success'
+      run: |
+        echo "::error::CI scope detection did not succeed."
+        exit 1
+
+    - name: Source AOT web validation not required
+      if: needs.changes.result == 'success' && needs.changes.outputs.source_required != 'true'
+      run: echo "Marketplace-only change; AOT web validation is not applicable."
+
     - name: Checkout
+      if: needs.changes.outputs.source_required == 'true'
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     - name: Setup .NET 10
+      if: needs.changes.outputs.source_required == 'true'
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 10.0.x
 
     - name: Install AOT dependencies
+      if: needs.changes.outputs.source_required == 'true'
       run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev file
 
     - name: Publish AOT Web App
+      if: needs.changes.outputs.source_required == 'true'
       run: |
         dotnet publish src/Examples/SourceGen/AotSourceGenApp/AotSourceGenApp.csproj \
           -c Release \
@@ -281,6 +427,7 @@ jobs:
           -o artifacts/webapp
 
     - name: Verify Web App Executable
+      if: needs.changes.outputs.source_required == 'true'
       run: |
         test -f artifacts/webapp/AotSourceGenApp
         file artifacts/webapp/AotSourceGenApp
