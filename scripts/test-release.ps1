@@ -92,7 +92,7 @@ $workScriptsPath = Join-Path $workPath 'scripts'
 $workSrcPath = Join-Path $workPath 'src'
 $workAnalyzerPath = Join-Path $workSrcPath 'TestAnalyzer'
 $workReleaseScript = Join-Path $workScriptsPath 'release.ps1'
-$previousPath = $env:Path
+$previousPath = $env:PATH
 $previousVersion = $env:TEST_RELEASE_VERSION
 $previousSha = $env:TEST_RELEASE_SHA
 $previousCiConclusion = $env:TEST_RELEASE_CI_CONCLUSION
@@ -192,7 +192,7 @@ exit 0
         $env:TEST_RELEASE_VERSION = $releaseVersion
         $env:TEST_RELEASE_SHA = $expectedSha
         $env:TEST_RELEASE_CI_CONCLUSION = 'success'
-        $env:Path = "$shimPath$([System.IO.Path]::PathSeparator)$previousPath"
+        $env:PATH = "$shimPath$([System.IO.Path]::PathSeparator)$previousPath"
 
         $pwsh = (Get-Command pwsh -ErrorAction Stop).Source
         $mismatchOutput = & $pwsh -NoProfile -File $workReleaseScript -Version '1.2.3-alpha.5' -DryRun 2>&1
@@ -256,7 +256,7 @@ exit 0
 
     Write-Host 'Release script validation passed.' -ForegroundColor Green
 } finally {
-    $env:Path = $previousPath
+    $env:PATH = $previousPath
     if ($null -eq $previousVersion) {
         Remove-Item Env:TEST_RELEASE_VERSION -ErrorAction SilentlyContinue
     } else {

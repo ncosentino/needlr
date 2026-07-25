@@ -54,7 +54,7 @@ function Ensure-Nbgv {
   $toolName = if ($IsWindows) { 'nbgv.exe' } else { 'nbgv' }
   $toolsPath = Join-Path $toolsDir $toolName
   if (Test-Path $toolsPath) {
-    $env:Path = "$toolsDir$([System.IO.Path]::PathSeparator)$env:Path"
+    $env:PATH = "$toolsDir$([System.IO.Path]::PathSeparator)$env:PATH"
     return
   }
 
