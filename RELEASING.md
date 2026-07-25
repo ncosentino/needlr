@@ -16,7 +16,7 @@ Needlr uses a protected-main release flow with two separate operations:
 ### 1. Prepare the release pull request
 
 ```powershell
-git fetch origin main --tags
+git fetch origin main
 git switch --create release/prepare-v0.0.3-alpha.3 origin/main
 
 # Choose the next unused version, then update version.json on this branch.
@@ -42,7 +42,7 @@ squash-merge it. Do not push the preparation commit directly to `main`.
 Wait for the `ci.yml` push run on the squash-merge commit to succeed, then:
 
 ```powershell
-git fetch origin main --tags
+git fetch origin main
 git switch main
 git pull --ff-only origin main
 
@@ -70,6 +70,7 @@ publish packages or documentation.
 | Prepared version | `version.json` and NBGV both resolve exactly to the requested version |
 | Changelog | Exact `## [<version>]` section exists |
 | Analyzer tracking | Every `AnalyzerReleases.Unshipped.md` has zero rule rows |
+| Remote version sequence | Existing release tags are read from `origin` without modifying local tag refs |
 | Unused version | The version tag does not exist locally or on `origin` |
 | Protected-main position | Real runs use local `main` exactly equal to freshly fetched `origin/main` |
 | Same-commit CI | The successful `ci.yml` push run is for that exact `main` commit |

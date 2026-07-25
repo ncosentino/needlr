@@ -89,12 +89,12 @@ commit is not the version-reset commit and must not be tagged.
 
 ### Choosing the next prerelease
 
-Fetch all tags and inspect the current sequence:
+Refresh `main`, then inspect the remote tag sequence without importing or
+rewriting local tag refs:
 
 ```powershell
-git fetch origin main --tags
-git tag --list "v0.0.3-alpha.*" --sort=-version:refname |
-  Select-Object -First 10
+git fetch origin main
+git ls-remote --tags --refs origin "refs/tags/v0.0.3-alpha.*"
 ```
 
 Increment the highest published counter and confirm that neither the local nor
@@ -107,6 +107,12 @@ git ls-remote --tags origin "refs/tags/v0.0.3-alpha.3"
 
 The release script repeats both checks before tagging.
 
+Do not require `git fetch --tags` for release preparation. Historical local
+tags may intentionally or accidentally differ from remote tag objects, and Git
+rejects an all-tags fetch rather than clobbering them. The release script reads
+the authoritative remote sequence with `git ls-remote` and leaves every local
+historical tag unchanged.
+
 ## Phase 1: prepare the release pull request
 
 ### Create the branch
@@ -114,7 +120,7 @@ The release script repeats both checks before tagging.
 Start from the latest remote `main`:
 
 ```powershell
-git fetch origin main --tags
+git fetch origin main
 git switch --create release/prepare-v0.0.3-alpha.3 origin/main
 ```
 
@@ -275,7 +281,7 @@ substitute because the release workflow independently verifies the exact
 ### Synchronize local main
 
 ```powershell
-git fetch origin main --tags
+git fetch origin main
 git switch main
 git pull --ff-only origin main
 git status --short

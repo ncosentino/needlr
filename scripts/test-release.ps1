@@ -189,6 +189,27 @@ exit 0
         Invoke-Git -Arguments @('push', '-u', 'origin', 'main') -FailureMessage 'Could not push fixture main.' | Out-Null
 
         $expectedSha = (Invoke-Git -Arguments @('rev-parse', 'HEAD') -FailureMessage 'Could not resolve fixture HEAD.').Trim()
+
+        foreach ($counter in 1..3) {
+            $tag = "v1.2.3-alpha.$counter"
+            Invoke-Git -Arguments @('tag', $tag) -FailureMessage "Could not create fixture tag $tag." | Out-Null
+            Invoke-Git -Arguments @('push', 'origin', "refs/tags/$tag") -FailureMessage "Could not push fixture tag $tag." | Out-Null
+            Invoke-Git -Arguments @('tag', '-d', $tag) -FailureMessage "Could not remove local fixture tag $tag." | Out-Null
+        }
+
+        $conflictingTag = 'v0.9.0-alpha.1'
+        Invoke-Git -Arguments @('tag', $conflictingTag) -FailureMessage 'Could not create the remote-conflict fixture tag.' | Out-Null
+        Invoke-Git -Arguments @('push', 'origin', "refs/tags/$conflictingTag") -FailureMessage 'Could not push the remote-conflict fixture tag.' | Out-Null
+        Invoke-Git -Arguments @('tag', '-d', $conflictingTag) -FailureMessage 'Could not remove the lightweight fixture tag.' | Out-Null
+        Invoke-Git -Arguments @('tag', '-a', $conflictingTag, '-m', 'stale local tag object') -FailureMessage 'Could not create the conflicting annotated local tag.' | Out-Null
+
+        $localConflictingTag = (Invoke-Git -Arguments @('rev-parse', "refs/tags/$conflictingTag") -FailureMessage 'Could not resolve the conflicting local tag.').Trim()
+        $remoteConflictingTagLines = @(Invoke-Git -Arguments @('ls-remote', '--tags', 'origin', "refs/tags/$conflictingTag") -FailureMessage 'Could not resolve the conflicting remote tag.')
+        $remoteConflictingTag = $remoteConflictingTagLines[0].Split("`t")[0]
+        if ($localConflictingTag -eq $remoteConflictingTag) {
+            throw 'The release fixture did not establish a conflicting historical local tag.'
+        }
+
         $env:TEST_RELEASE_VERSION = $releaseVersion
         $env:TEST_RELEASE_SHA = $expectedSha
         $env:TEST_RELEASE_CI_CONCLUSION = 'success'
@@ -211,6 +232,12 @@ exit 0
         $dryRunText = ConvertTo-PlainOutput -Output $dryRunOutput
         Assert-Contains -Content $dryRunText -Expected 'git push origin refs/tags/v1.2.3-alpha.4' -Message 'Dry run did not report the tag push.'
         Assert-Contains -Content $dryRunText -Expected 'No branch commit or branch push will be performed.' -Message 'Dry run did not state the protected-main invariant.'
+
+        $computedDryRunOutput = & $pwsh -NoProfile -File $workReleaseScript -Prerelease alpha -Base 1.2.3 -DryRun 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Computed release dry run failed.`n$($computedDryRunOutput | Out-String)"
+        }
+        Assert-Contains -Content (ConvertTo-PlainOutput -Output $computedDryRunOutput) -Expected 'Finalizing release for version: 1.2.3-alpha.4' -Message 'Remote prerelease tag discovery did not calculate the next version.'
 
         $tagBeforeRelease = Invoke-Git -Arguments @('ls-remote', '--tags', 'origin', "refs/tags/v$releaseVersion") -FailureMessage 'Could not inspect fixture tags.'
         Assert-Equal -Expected 0 -Actual $tagBeforeRelease.Count -Message 'Dry run created a remote tag.'

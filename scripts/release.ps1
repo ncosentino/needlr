@@ -62,9 +62,9 @@ function Ensure-Nbgv {
 }
 
 function Update-OriginState {
-  $fetchOutput = & git fetch --quiet origin main --tags 2>&1
+  $fetchOutput = & git fetch --quiet origin main 2>&1
   if ($LASTEXITCODE -ne 0) {
-    throw "Could not refresh origin/main and release tags.`n$($fetchOutput | Out-String)"
+    throw "Could not refresh origin/main.`n$($fetchOutput | Out-String)"
   }
 }
 
@@ -90,10 +90,19 @@ function Get-NextPrereleaseVersion {
     throw "Prerelease label '$Label' contains unsupported characters."
   }
 
-  $pattern = "v$([regex]::Escape($BaseVersion))-$([regex]::Escape($Label)).*"
-  $tags = @(& git tag --list $pattern | Where-Object { $_ })
+  $pattern = "refs/tags/v$BaseVersion-$Label.*"
+  $remoteTagLines = @(& git ls-remote --tags --refs origin $pattern 2>&1 | Where-Object { $_ })
   if ($LASTEXITCODE -ne 0) {
-    throw "Could not enumerate release tags."
+    throw "Could not enumerate release tags on origin.`n$($remoteTagLines | Out-String)"
+  }
+
+  $tags = @($remoteTagLines | ForEach-Object {
+    if ($_ -match '^[0-9a-fA-F]+\s+refs/tags/(?<tag>.+)$') {
+      $Matches['tag']
+    }
+  })
+  if ($tags.Count -ne $remoteTagLines.Count) {
+    throw "Origin returned an unexpected release-tag reference."
   }
 
   $max = 0
