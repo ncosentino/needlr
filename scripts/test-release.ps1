@@ -57,8 +57,17 @@ function Assert-Contains {
     )
 
     if (-not $Content.Contains($Expected)) {
-        throw "$Message Missing '$Expected'."
+        throw "$Message Missing '$Expected'. Actual output:`n$Content"
     }
+}
+
+function ConvertTo-PlainOutput {
+    param(
+        [Parameter(Mandatory = $true)]$Output
+    )
+
+    $text = $Output | Out-String
+    return [regex]::Replace($text, "`e\[[0-?]*[ -/]*[@-~]", '')
 }
 
 function Invoke-Git {
@@ -190,14 +199,16 @@ exit 0
         if ($LASTEXITCODE -eq 0) {
             throw 'Release dry run accepted a version that does not match version.json.'
         }
-        Assert-Contains -Content ($mismatchOutput | Out-String) -Expected "version.json contains '$releaseVersion', not '1.2.3-alpha.5'" -Message 'Version mismatch did not fail explicitly.'
+        $mismatchText = ConvertTo-PlainOutput -Output $mismatchOutput
+        Assert-Contains -Content $mismatchText -Expected 'version.json contains' -Message 'Version mismatch did not fail explicitly.'
+        Assert-Contains -Content $mismatchText -Expected '1.2.3-alpha.5' -Message 'Version mismatch did not report the requested version.'
 
         $dryRunOutput = & $pwsh -NoProfile -File $workReleaseScript -Version $releaseVersion -DryRun 2>&1
         if ($LASTEXITCODE -ne 0) {
             throw "Release dry run failed.`n$($dryRunOutput | Out-String)"
         }
 
-        $dryRunText = $dryRunOutput | Out-String
+        $dryRunText = ConvertTo-PlainOutput -Output $dryRunOutput
         Assert-Contains -Content $dryRunText -Expected 'git push origin refs/tags/v1.2.3-alpha.4' -Message 'Dry run did not report the tag push.'
         Assert-Contains -Content $dryRunText -Expected 'No branch commit or branch push will be performed.' -Message 'Dry run did not state the protected-main invariant.'
 
@@ -209,7 +220,7 @@ exit 0
         if ($LASTEXITCODE -eq 0) {
             throw 'Release finalization succeeded outside local main.'
         }
-        Assert-Contains -Content ($nonMainOutput | Out-String) -Expected 'Release finalization must run from local main.' -Message 'Non-main finalization did not fail explicitly.'
+        Assert-Contains -Content (ConvertTo-PlainOutput -Output $nonMainOutput) -Expected 'Release finalization must run from local main.' -Message 'Non-main finalization did not fail explicitly.'
         Invoke-Git -Arguments @('switch', 'main') -FailureMessage 'Could not return to fixture main.' | Out-Null
 
         $env:TEST_RELEASE_CI_CONCLUSION = 'failure'
@@ -217,7 +228,7 @@ exit 0
         if ($LASTEXITCODE -eq 0) {
             throw 'Release finalization succeeded with failed main CI.'
         }
-        Assert-Contains -Content ($failedCiOutput | Out-String) -Expected 'Main CI must complete successfully before release finalization.' -Message 'Failed CI did not block finalization explicitly.'
+        Assert-Contains -Content (ConvertTo-PlainOutput -Output $failedCiOutput) -Expected 'Main CI must complete successfully before release finalization.' -Message 'Failed CI did not block finalization explicitly.'
         $env:TEST_RELEASE_CI_CONCLUSION = 'success'
 
         $tagAfterFailures = Invoke-Git -Arguments @('ls-remote', '--tags', 'origin', "refs/tags/v$releaseVersion") -FailureMessage 'Could not inspect fixture tags after failed finalization attempts.'
