@@ -3,8 +3,8 @@
 
 |||
 |:---|:---|
-| Generated on: | 7/25/2026 - 1:12:45 AM |
-| Coverage date: | 7/25/2026 - 1:03:53 AM - 7/25/2026 - 1:12:31 AM |
+| Generated on: | 7/25/2026 - 4:35:46 AM |
+| Coverage date: | 7/25/2026 - 4:33:33 AM - 7/25/2026 - 4:35:42 AM |
 | Parser: | MultiReport (25x Cobertura) |
 | Assemblies: | 20 |
 | Classes: | 250 |
@@ -14,8 +14,8 @@
 | Uncovered lines: | 1508 |
 | Coverable lines: | 13962 |
 | Total lines: | 35266 |
-| **Branch coverage:** | 77.9% (5724 of 7343) |
-| Covered branches: | 5724 |
+| **Branch coverage:** | 77.9% (5723 of 7343) |
+| Covered branches: | 5723 |
 | Total branches: | 7343 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
@@ -299,8 +299,8 @@
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**78.1%**|
-|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|73%|
+|**NexusLabs.Needlr.Injection.Bundle**|**93.2%**|**75%**|
+|NexusLabs.Needlr.Injection.Bundle.ServiceProviderBuilder|95.2%|69.2%|
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
