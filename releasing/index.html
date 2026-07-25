@@ -1467,10 +1467,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-a-release-actually-is" class="md-nav__link">
+  <a href="#release-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What a release actually is
+        Release model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-a-release-contains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What a release contains
       
     </span>
   </a>
@@ -1512,21 +1523,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tag-format" class="md-nav__link">
+  <a href="#choosing-the-next-prerelease" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tag format
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#finding-the-next-version" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Finding the next version
+        Choosing the next prerelease
       
     </span>
   </a>
@@ -1539,22 +1539,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pre-release-gates" class="md-nav__link">
+  <a href="#phase-1-prepare-the-release-pull-request" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pre-release gates
+        Phase 1: prepare the release pull request
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Pre-release gates">
+    <nav class="md-nav" aria-label="Phase 1: prepare the release pull request">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-clean-working-tree" class="md-nav__link">
+  <a href="#create-the-branch" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Clean working tree
+        Create the branch
       
     </span>
   </a>
@@ -1562,10 +1562,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-nbgv-installed" class="md-nav__link">
+  <a href="#update-versionjson" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. nbgv installed
+        Update version.json
       
     </span>
   </a>
@@ -1573,10 +1573,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-ci-green-on-head" class="md-nav__link">
+  <a href="#ship-analyzer-diagnostics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. CI green on HEAD
+        Ship analyzer diagnostics
       
     </span>
   </a>
@@ -1584,10 +1584,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-analyzer-release-tracking" class="md-nav__link">
+  <a href="#create-the-changelog-section" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Analyzer release tracking
+        Create the changelog section
       
     </span>
   </a>
@@ -1595,10 +1595,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#5-build-pack-validation" class="md-nav__link">
+  <a href="#update-version-specific-documentation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Build + pack validation
+        Update version-specific documentation
       
     </span>
   </a>
@@ -1606,10 +1606,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#6-nuspec-validation" class="md-nav__link">
+  <a href="#validate-the-preparation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Nuspec validation
+        Validate the preparation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#open-and-merge-the-pull-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open and merge the pull request
       
     </span>
   </a>
@@ -1622,22 +1633,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#shipping-analyzers" class="md-nav__link">
+  <a href="#phase-2-finalize-the-release-tag" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Shipping analyzers
+        Phase 2: finalize the release tag
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Shipping analyzers">
+    <nav class="md-nav" aria-label="Phase 2: finalize the release tag">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#finding-what-needs-to-ship" class="md-nav__link">
+  <a href="#wait-for-same-commit-main-ci" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Finding what needs to ship
+        Wait for same-commit main CI
       
     </span>
   </a>
@@ -1645,10 +1656,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#version-header-format-the-non-obvious-rule" class="md-nav__link">
+  <a href="#synchronize-local-main" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Version header format — the non-obvious rule
+        Synchronize local main
       
     </span>
   </a>
@@ -1656,10 +1667,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#the-mechanical-move" class="md-nav__link">
+  <a href="#run-the-dry-run" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The mechanical move
+        Run the dry run
       
     </span>
   </a>
@@ -1667,21 +1678,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-diff" class="md-nav__link">
+  <a href="#run-finalization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example diff
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#if-you-add-a-new-analyzer-diagnostic-between-releases" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        If you add a new analyzer diagnostic between releases
+        Run finalization
       
     </span>
   </a>
@@ -1694,91 +1694,24 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#writing-the-changelog-entry" class="md-nav__link">
+  <a href="#gates-enforced-by-releaseps1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Writing the CHANGELOG entry
+        Gates enforced by release.ps1
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Writing the CHANGELOG entry">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#template" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Template
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#finding-what-changed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Finding what changed
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#running-the-release" class="md-nav__link">
+  <a href="#what-the-tag-triggers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Running the release
+        What the tag triggers
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Running the release">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#dry-run-first" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dry run first
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#real-run" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Real run
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#when-the-tag-lands-on-origin" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        When the tag lands on origin
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1787,17 +1720,6 @@
     <span class="md-ellipsis">
       
         Post-release verification
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rolling-back" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Rolling back
       
     </span>
   </a>
@@ -1817,10 +1739,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#nbgv-command-not-found" class="md-nav__link">
+  <a href="#versionjson-contains-old-not-new" class="md-nav__link">
     <span class="md-ellipsis">
       
-        nbgv: command not found
+        version.json contains '&lt;old&gt;', not '&lt;new&gt;'
       
     </span>
   </a>
@@ -1828,10 +1750,43 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#blocked-ci-is-not-fully-green-on-head" class="md-nav__link">
+  <a href="#nbgv-resolves-versiongsha" class="md-nav__link">
     <span class="md-ellipsis">
       
-        BLOCKED: CI is not fully green on HEAD
+        NBGV resolves '&lt;version&gt;.g&lt;sha&gt;'
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-main-must-exactly-match-originmain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local main must exactly match origin/main
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-ciyml-push-run-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No ci.yml push run exists
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#main-ci-must-complete-successfully" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Main CI must complete successfully
       
     </span>
   </a>
@@ -1850,10 +1805,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pack-validation-failed" class="md-nav__link">
+  <a href="#package-validation-fails" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pack validation failed
+        Package validation fails
       
     </span>
   </a>
@@ -1861,32 +1816,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#nuspec-validation-fails" class="md-nav__link">
+  <a href="#the-tag-exists-locally-after-a-failed-push" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Nuspec validation fails
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#the-workflow-fires-but-nothing-publishes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The workflow fires but nothing publishes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#docs-build-fails-in-mkdocs-strict-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Docs build fails in mkdocs strict mode
+        The tag exists locally after a failed push
       
     </span>
   </a>
@@ -1899,10 +1832,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#historical-gotchas-why-this-document-exists" class="md-nav__link">
+  <a href="#rolling-back-a-bad-release" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Historical gotchas (why this document exists)
+        Rolling back a bad release
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#historical-failure-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Historical failure modes
       
     </span>
   </a>
@@ -4967,30 +4911,45 @@
 
 
 <h1 id="releasing-needlr">Releasing Needlr<a class="headerlink" href="#releasing-needlr" title="Permanent link">&para;</a></h1>
-<p>This is the in-depth maintainer guide for cutting a new Needlr release
-(alpha, beta, rc, or stable). It exists so nobody — human or LLM
-assistant — has to rediscover the release process by reading commit
-history.</p>
-<p>The fast-lookup version lives at <a href="https://github.com/ncosentino/needlr/blob/main/RELEASING.md"><code>RELEASING.md</code></a> in the repo root.</p>
-<hr />
-<h2 id="what-a-release-actually-is">What a release actually is<a class="headerlink" href="#what-a-release-actually-is" title="Permanent link">&para;</a></h2>
-<p>A Needlr release is:</p>
+<p>This is the authoritative maintainer guide for cutting a Needlr release.
+The fast-lookup checklist is
+<a href="https://github.com/ncosentino/needlr/blob/main/RELEASING.md"><code>RELEASING.md</code></a>.</p>
+<h2 id="release-model">Release model<a class="headerlink" href="#release-model" title="Permanent link">&para;</a></h2>
+<p>Needlr uses protected <code>main</code>. A release is deliberately split into two
+operations:</p>
 <ol>
-<li>A move of every unshipped analyzer diagnostic from
-   <code>AnalyzerReleases.Unshipped.md</code> → <code>AnalyzerReleases.Shipped.md</code>.</li>
-<li>A <code>CHANGELOG.md</code> entry under a new <code>## [x.y.z-label.N]</code> heading.</li>
-<li>A version bump in <code>version.json</code> via Nerdbank.GitVersioning.</li>
-<li>A lightweight git tag <code>v&lt;version&gt;</code> on the bump commit.</li>
-<li>A push of the tag to <code>origin</code>, which triggers
-   <code>.github/workflows/release.yml</code> to build, test, pack, publish to
-   NuGet.org + GitHub Packages, and create a GitHub Release.</li>
+<li><strong>Release preparation through a pull request</strong></li>
+<li>update <code>version.json</code>;</li>
+<li>ship analyzer diagnostics;</li>
+<li>create the exact <code>CHANGELOG.md</code> release section;</li>
+<li>update version-specific documentation where applicable;</li>
+<li>pass required pull-request CI.</li>
+<li><strong>Tag-only finalization from synchronized <code>main</code></strong></li>
+<li>verify the prepared version and release metadata;</li>
+<li>verify successful same-commit <code>main</code> CI;</li>
+<li>validate build and package contents;</li>
+<li>create and push only the version tag.</li>
 </ol>
-<p>Steps 1-4 are orchestrated by <code>scripts/release.ps1</code>. Step 5 is the CI
-workflow. Everything after the tag push is automated.</p>
-<hr />
+<p>The split is a safety boundary. The release script cannot write a version
+commit to protected <code>main</code>, and package publication cannot begin from a
+commit that bypassed pull-request validation.</p>
+<h2 id="what-a-release-contains">What a release contains<a class="headerlink" href="#what-a-release-contains" title="Permanent link">&para;</a></h2>
+<p>A Needlr release consists of:</p>
+<ol>
+<li>Analyzer rule rows moved from every
+   <code>AnalyzerReleases.Unshipped.md</code> into the corresponding
+   <code>AnalyzerReleases.Shipped.md</code>.</li>
+<li>An exact dated <code>CHANGELOG.md</code> section:
+   <code>## [x.y.z-label.N] - YYYY-MM-DD</code>.</li>
+<li>The same version in <code>version.json</code>.</li>
+<li>A lightweight <code>v&lt;version&gt;</code> tag on the squash-merge commit.</li>
+<li>Automated build, test, packaging, publication, release creation, and
+   documentation deployment from <code>.github/workflows/release.yml</code>.</li>
+</ol>
+<p>The version, changelog, analyzer files, and documentation are reviewed in the
+preparation pull request. <code>scripts/release.ps1</code> only validates and tags the
+already-merged result.</p>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
-<p>You need all of the following installed and working before running
-the release script:</p>
 <table>
 <thead>
 <tr>
@@ -5002,553 +4961,397 @@ the release script:</p>
 <tbody>
 <tr>
 <td>.NET 10 SDK</td>
-<td>Build + pack</td>
+<td>Build and pack</td>
 <td><a href="https://dot.net">dot.net</a></td>
 </tr>
 <tr>
 <td>PowerShell 7+ (<code>pwsh</code>)</td>
-<td>Runs <code>release.ps1</code></td>
+<td>Run the release scripts</td>
 <td><a href="https://aka.ms/pwsh">aka.ms/pwsh</a></td>
 </tr>
 <tr>
 <td><code>nbgv</code></td>
-<td>Bumps <code>version.json</code> and tags</td>
+<td>Update <code>version.json</code>, resolve versions, and create the tag</td>
 <td><code>dotnet tool install -g nbgv</code></td>
 </tr>
 <tr>
 <td><code>gh</code> CLI</td>
-<td>CI gate queries GitHub check runs</td>
+<td>Query the exact <code>main</code> CI workflow run</td>
 <td><a href="https://cli.github.com">cli.github.com</a></td>
 </tr>
 <tr>
-<td>Python + mkdocs (optional)</td>
-<td>Local docs validation</td>
+<td>Python and MkDocs</td>
+<td>Local documentation validation</td>
 <td><code>python -m pip install -r docs/requirements.txt</code></td>
 </tr>
 </tbody>
 </table>
-<p>You also need:</p>
+<p>The maintainer needs permission to:</p>
 <ul>
-<li><strong>Push access to <code>origin/main</code></strong> on <code>ncosentino/needlr</code>.</li>
-<li><strong>A NuGet.org trusted publishing policy</strong> for package owner <code>ncosentino</code>,
-  repository <code>ncosentino/needlr</code>, workflow <code>release.yml</code>, and environment
-  <code>release</code>.</li>
-<li><strong>The GitHub-provided <code>GITHUB_TOKEN</code></strong> (automatic, no setup).</li>
+<li>create and merge a release-preparation pull request;</li>
+<li>push a version tag to <code>origin</code>;</li>
+<li>use the configured NuGet.org trusted-publishing policy indirectly through
+  <code>release.yml</code>.</li>
 </ul>
-<hr />
+<p>Direct push access to <code>main</code> is neither required nor permitted.</p>
 <h2 id="version-numbering">Version numbering<a class="headerlink" href="#version-numbering" title="Permanent link">&para;</a></h2>
-<p>Needlr uses <a href="https://semver.org/">SemVer 2.0.0</a> with a specific tag
-format enforced by <code>version.json</code>.</p>
+<p>Needlr uses SemVer 2.0.0. Prerelease tags use a dot before the counter:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>v0.0.3-alpha.3
+</span></code></pre></div>
+<p>Do not use <code>v0.0.3-alpha-0003</code>. NuGet may normalize the displayed package
+version, but <code>version.json</code>, the changelog, and the git tag use the dotted
+form.</p>
 <h3 id="source-of-truth">Source of truth<a class="headerlink" href="#source-of-truth" title="Permanent link">&para;</a></h3>
-<p><code>version.json</code> at the repo root contains the version Nerdbank.GitVersioning
-resolves at build time. Every <code>.csproj</code> inherits from it — <strong>there are
-zero hardcoded versions in individual project files</strong>.</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.0.3-alpha.1&quot;</span><span class="p">,</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;publicReleaseRefSpec&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="s2">&quot;^refs/heads/main$&quot;</span><span class="p">,</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="s2">&quot;^refs/heads/release/v\\d+\\.\\d+&quot;</span><span class="p">,</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="s2">&quot;^refs/tags/v\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z\\.]+)?$&quot;</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="p">]</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">}</span>
+<p><code>version.json</code> is the version source read by every project. Individual project
+files do not carry package versions.</p>
+<p>Use <code>nbgv set-version &lt;version&gt;</code> on the release-preparation branch. The
+tag-only release script intentionally does not call <code>nbgv set-version</code>.</p>
+<p>Needlr is configured for squash-only merges. The squash-merge commit therefore
+introduces the new <code>version.json</code> value and NBGV resolves exactly that version
+on the merge commit. If NBGV reports a suffix such as <code>.g&lt;sha&gt;</code>, the current
+commit is not the version-reset commit and must not be tagged.</p>
+<h3 id="choosing-the-next-prerelease">Choosing the next prerelease<a class="headerlink" href="#choosing-the-next-prerelease" title="Permanent link">&para;</a></h3>
+<p>Fetch all tags and inspect the current sequence:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">git</span> <span class="n">fetch</span> <span class="n">origin</span> <span class="n">main</span> <span class="p">-</span><span class="n">-tags</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">git</span> <span class="n">tag</span> <span class="p">-</span><span class="n">-list</span> <span class="s2">&quot;v0.0.3-alpha.*&quot;</span> <span class="p">-</span><span class="n">-sort</span><span class="p">=</span><span class="n">-version</span><span class="p">:</span><span class="n">refname</span> <span class="p">|</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  <span class="nb">Select-Object</span> <span class="n">-First</span> <span class="n">10</span>
 </span></code></pre></div>
-<p>Do not edit <code>version.json</code> by hand during a release. Always go through
-<code>nbgv set-version</code> or <code>release.ps1 -Prerelease alpha</code>.</p>
-<h3 id="tag-format">Tag format<a class="headerlink" href="#tag-format" title="Permanent link">&para;</a></h3>
-<p>Tags are lightweight (not annotated) and follow the pattern:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>v&lt;major&gt;.&lt;minor&gt;.&lt;patch&gt;-&lt;label&gt;.&lt;counter&gt;
+<p>Increment the highest published counter and confirm that neither the local nor
+remote tag exists:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">git</span> <span class="n">tag</span> <span class="p">-</span><span class="n">-list</span> <span class="s2">&quot;v0.0.3-alpha.3&quot;</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">git</span> <span class="n">ls-remote</span> <span class="p">-</span><span class="n">-tags</span> <span class="n">origin</span> <span class="s2">&quot;refs/tags/v0.0.3-alpha.3&quot;</span>
 </span></code></pre></div>
-<p>For alpha: <code>v0.0.3-alpha.1</code>, <code>v0.0.3-alpha.2</code>, ...</p>
-<p><strong>Watch the separator:</strong> it's a <strong>dot</strong> between <code>alpha</code> and the
-counter, not a dash. <code>v0.0.3-alpha-0002</code> is wrong; <code>v0.0.3-alpha.2</code> is
-right. NuGet displays the version with different normalization in its
-UI but the tag and <code>version.json</code> use the dotted form.</p>
-<p>For example, tag <code>v0.0.3-alpha.1</code> publishes NuGet package version
-<code>0.0.3-alpha-0001</code>.</p>
-<h3 id="finding-the-next-version">Finding the next version<a class="headerlink" href="#finding-the-next-version" title="Permanent link">&para;</a></h3>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">./</span><span class="n">scripts</span><span class="p">/</span><span class="n">release</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-Prerelease</span> <span class="n">alpha</span> <span class="n">-Base</span> <span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3</span> <span class="n">-DryRun</span>
+<p>The release script repeats both checks before tagging.</p>
+<h2 id="phase-1-prepare-the-release-pull-request">Phase 1: prepare the release pull request<a class="headerlink" href="#phase-1-prepare-the-release-pull-request" title="Permanent link">&para;</a></h2>
+<h3 id="create-the-branch">Create the branch<a class="headerlink" href="#create-the-branch" title="Permanent link">&para;</a></h3>
+<p>Start from the latest remote <code>main</code>:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">git</span> <span class="n">fetch</span> <span class="n">origin</span> <span class="n">main</span> <span class="p">-</span><span class="n">-tags</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">git</span> <span class="k">switch</span> <span class="p">-</span><span class="n">-create</span> <span class="n">release</span><span class="p">/</span><span class="n">prepare-v0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3-alpha</span><span class="p">.</span><span class="n">3</span> <span class="n">origin</span><span class="p">/</span><span class="n">main</span>
 </span></code></pre></div>
-<p>The <code>-Prerelease</code> flag scans existing tags for the highest
-<code>v0.0.3-alpha.*</code> and increments the counter. <code>-Base</code> pins the base
-version so a stale <code>version.json</code> doesn't confuse the calculation. The
-dry run prints what the real run would do.</p>
-<hr />
-<h2 id="pre-release-gates">Pre-release gates<a class="headerlink" href="#pre-release-gates" title="Permanent link">&para;</a></h2>
-<p>Before the script takes any destructive action (version bump, commit,
-tag, push) it runs the following gates. All must pass.</p>
-<h3 id="1-clean-working-tree">1. Clean working tree<a class="headerlink" href="#1-clean-working-tree" title="Permanent link">&para;</a></h3>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">git</span> <span class="nb">diff </span><span class="p">-</span><span class="n">-quiet</span>
+<p>Never prepare the release by committing directly on local <code>main</code>.</p>
+<h3 id="update-versionjson">Update <code>version.json</code><a class="headerlink" href="#update-versionjson" title="Permanent link">&para;</a></h3>
+<p>Run NBGV on the preparation branch:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">nbgv</span> <span class="nb">set-version</span> <span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3-alpha</span><span class="p">.</span><span class="n">3</span>
 </span></code></pre></div>
-<p>Dirty trees are rejected. Stash or commit first. This exists because
-<code>release.ps1</code> uses <code>git commit -am</code> for the version bump — any
-unrelated staged or unstaged changes would get dragged into the release
-commit.</p>
-<h3 id="2-nbgv-installed">2. <code>nbgv</code> installed<a class="headerlink" href="#2-nbgv-installed" title="Permanent link">&para;</a></h3>
-<p>The script checks <code>Get-Command nbgv</code> and falls back to
-<code>~/.dotnet/tools/nbgv.exe</code>. If neither is present it throws a
-remediation message pointing at <code>dotnet tool install -g nbgv</code>.</p>
-<h3 id="3-ci-green-on-head">3. CI green on HEAD<a class="headerlink" href="#3-ci-green-on-head" title="Permanent link">&para;</a></h3>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">gh</span> <span class="n">api</span> <span class="s2">&quot;repos/$repoSlug/commits/$sha/check-runs&quot;</span>
-</span></code></pre></div>
-<p>Every check run on the current commit must be <code>completed</code> with
-<code>conclusion</code> in <code>success</code> / <code>skipped</code> / <code>neutral</code>. Anything failing,
-pending, or neutral blocks the release.</p>
-<p>The rationale: the CI workflow on <code>main</code> runs the full test matrix
-(unit tests, integration tests, generator tests, AspNet tests, AOT
-publish, example builds). If any of those are red, the package you're
-about to ship is known-broken.</p>
-<p>Override with <code>-SkipCiCheck</code> only if you're deliberately cutting a
-release before CI finishes (for example, you just pushed a fix and
-don't want to wait five minutes, and you've personally verified the
-build locally). Never skip this on a release candidate or stable.</p>
-<h3 id="4-analyzer-release-tracking">4. Analyzer release tracking<a class="headerlink" href="#4-analyzer-release-tracking" title="Permanent link">&para;</a></h3>
-<blockquote>
-<p>This is the gate that was silently broken before
-<a href="https://github.com/ncosentino/needlr/commit/f66653c2"><code>f66653c2</code></a>. If
-you are reading this because a past release shipped with stale
-unshipped rules, welcome back.</p>
-</blockquote>
-<p>Every Needlr analyzer project includes two <code>AdditionalFiles</code>:</p>
+<p>Review the resulting <code>version.json</code> diff. Do not manually change unrelated
+NBGV settings.</p>
+<h3 id="ship-analyzer-diagnostics">Ship analyzer diagnostics<a class="headerlink" href="#ship-analyzer-diagnostics" title="Permanent link">&para;</a></h3>
+<p>Every Needlr analyzer project has:</p>
 <ul>
-<li><code>AnalyzerReleases.Shipped.md</code> — every diagnostic ID that has shipped
-  in a prior release, grouped under <code>## Release &lt;version&gt;</code> headers.</li>
-<li><code>AnalyzerReleases.Unshipped.md</code> — every diagnostic ID that is in code
-  but has not yet been included in a released version.</li>
+<li><code>AnalyzerReleases.Shipped.md</code> for diagnostics included in a release;</li>
+<li><code>AnalyzerReleases.Unshipped.md</code> for diagnostics added since the last
+  applicable release.</li>
 </ul>
-<p><code>Microsoft.CodeAnalysis.Analyzers</code> (referenced from every analyzer
-project) enforces these files via rules <strong>RS2000</strong>, <strong>RS2001</strong>, and
-<strong>RS2002</strong>:</p>
-<ul>
-<li><strong>RS2000</strong>: Add the new rule to <code>Unshipped.md</code> when you introduce it
-  in code.</li>
-<li><strong>RS2001</strong>: Rule IDs in <code>Unshipped.md</code> must eventually move to
-  <code>Shipped.md</code> before a release.</li>
-<li><strong>RS2002</strong>: Rules in <code>Shipped.md</code> must still exist in the analyzer.</li>
-</ul>
-<p><strong>Before every release</strong>, every unshipped rule must move. The release
-script refuses to proceed otherwise:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>BLOCKED: analyzer projects have unshipped rules.
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>Before releasing, move each rule below from its AnalyzerReleases.Unshipped.md
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>file into the matching AnalyzerReleases.Shipped.md under a new header:
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>  ## Release 0.0.2-alpha.26
+<p>Find pending rule rows:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">Get-ChildItem</span> <span class="n">src</span> <span class="n">-Recurse</span> <span class="n">-Filter</span> <span class="n">AnalyzerReleases</span><span class="p">.</span><span class="n">Unshipped</span><span class="p">.</span><span class="nb">md </span><span class="p">|</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  <span class="k">ForEach</span><span class="n">-Object</span> <span class="p">{</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="nv">$rules</span> <span class="p">=</span> <span class="nb">Get-Content</span> <span class="nv">$_</span><span class="p">.</span><span class="n">FullName</span> <span class="p">|</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>      <span class="nb">Where-Object</span> <span class="p">{</span> <span class="nv">$_</span> <span class="o">-match</span> <span class="s1">&#39;^NDLR&#39;</span> <span class="p">}</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="k">if</span> <span class="p">(</span><span class="nv">$rules</span><span class="p">)</span> <span class="p">{</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>      <span class="nb">Write-Host</span> <span class="nv">$_</span><span class="p">.</span><span class="n">FullName</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>      <span class="nv">$rules</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="p">}</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>  <span class="p">}</span>
 </span></code></pre></div>
-<p>See <a href="#shipping-analyzers">Shipping analyzers</a> below for the exact
-mechanical procedure.</p>
-<h3 id="5-build-pack-validation">5. Build + pack validation<a class="headerlink" href="#5-build-pack-validation" title="Permanent link">&para;</a></h3>
-<p>The script walks every <code>.csproj</code> under <code>src/</code> that is neither a test
-project nor has <code>&lt;IsPackable&gt;false&lt;/IsPackable&gt;</code>, and runs
-<code>dotnet pack -c Release -v q --no-restore</code> on each. First failure
-aborts the release. This catches:</p>
-<ul>
-<li>Projects that compile for <code>dotnet build</code> but fail at pack time
-  (missing <code>Description</code>, invalid package id, missing README).</li>
-<li>Projects that ship a new analyzer DLL via a custom <code>None Include</code>
-  entry whose <code>OutputPath</code> doesn't exist yet.</li>
-<li>Projects whose <code>netstandard2.0</code> target drifts against the generator
-  requirements.</li>
-</ul>
-<h3 id="6-nuspec-validation">6. Nuspec validation<a class="headerlink" href="#6-nuspec-validation" title="Permanent link">&para;</a></h3>
-<p>After successful packs, <code>scripts/test-packages.ps1 -NoBuild</code> runs. It
-extracts every <code>.nupkg</code> from <code>artifacts/</code>, parses the embedded
-<code>.nuspec</code>, and asserts:</p>
-<ul>
-<li>The <code>dependencies</code> graph matches expected shape.</li>
-<li>Analyzer and generator DLLs are placed at the correct package paths
-  (<code>analyzers/dotnet/cs/</code>).</li>
-<li>The <code>Needlr.Build</code> package correctly transitively delivers the
-  generator assembly (regression test for a past bug — see commit
-  <code>b77544fa</code>).</li>
-</ul>
-<p>This is the last gate before the version bump actually happens.</p>
-<hr />
-<h2 id="shipping-analyzers">Shipping analyzers<a class="headerlink" href="#shipping-analyzers" title="Permanent link">&para;</a></h2>
-<p>This is the step that historically got forgotten. <code>release.ps1</code> now
-blocks on it, but you still have to do the mechanical move yourself.</p>
-<h3 id="finding-what-needs-to-ship">Finding what needs to ship<a class="headerlink" href="#finding-what-needs-to-ship" title="Permanent link">&para;</a></h3>
-<p>The guardrail tells you exactly which files and which rule IDs. You
-can also check manually:</p>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nb">Get-ChildItem</span> <span class="n">src</span> <span class="n">-Recurse</span> <span class="n">-Filter</span> <span class="n">AnalyzerReleases</span><span class="p">.</span><span class="n">Unshipped</span><span class="p">.</span><span class="nb">md </span><span class="p">|</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>  <span class="k">ForEach</span><span class="n">-Object</span> <span class="p">{</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="nv">$rules</span> <span class="p">=</span> <span class="nb">Get-Content</span> <span class="nv">$_</span><span class="p">.</span><span class="n">FullName</span> <span class="p">|</span> <span class="nb">Where-Object</span> <span class="p">{</span> <span class="nv">$_</span> <span class="o">-match</span> <span class="s1">&#39;^NDLR&#39;</span> <span class="p">}</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="k">if</span> <span class="p">(</span><span class="nv">$rules</span><span class="p">)</span> <span class="p">{</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>      <span class="nb">Write-Host</span> <span class="nv">$_</span><span class="p">.</span><span class="n">FullName</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>      <span class="nv">$rules</span> <span class="p">|</span> <span class="k">ForEach</span><span class="n">-Object</span> <span class="p">{</span> <span class="nb">Write-Host</span> <span class="s2">&quot;  </span><span class="p">$(</span><span class="nv">$_</span> <span class="n">-split</span> <span class="s1">&#39;\s*\|\s*&#39;</span> <span class="p">|</span> <span class="nb">Select-Object</span> <span class="n">-First</span> <span class="n">1</span><span class="p">)</span><span class="s2">&quot;</span> <span class="p">}</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="p">}</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>  <span class="p">}</span>
-</span></code></pre></div>
-<h3 id="version-header-format-the-non-obvious-rule">Version header format — the non-obvious rule<a class="headerlink" href="#version-header-format-the-non-obvious-rule" title="Permanent link">&para;</a></h3>
-<p><strong><code>Microsoft.CodeAnalysis.Analyzers</code> rule RS2007 rejects pre-release
-labels in the release header.</strong> A header like <code>## Release 0.0.2-alpha.26</code>
-will fail the analyzer build with:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>error RS2007: Analyzer release file &#39;AnalyzerReleases.Shipped.md&#39; has a
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>missing or invalid release header &#39;## Release 0.0.2-alpha.26&#39;
-</span></code></pre></div>
-<p>The authoritative format is the <strong>base version only</strong>, no pre-release
-label, no <code>v</code> prefix, no date:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>## Release 0.0.2
-</span></code></pre></div>
-<p><strong>All alpha/beta/rc releases of <code>0.0.2</code> share the same
-<code>## Release 0.0.2</code> section.</strong> You don't add a new section per alpha
-bump — you append the newly-shipped rules to the existing section.</p>
-<p>This is the single rule that has bounced every past release attempt
-(see fix commits <code>83ef38ab</code>, <code>6b7e1166</code>, <code>22bd5b64</code>). The commit
-<code>22bd5b64</code> (<code>fix: use semver-only release header for analyzer tracking</code>)
-was a retroactive fix that merged <code>## Release 0.0.2-alpha.17</code> back into
-<code>## Release 0.0.2</code> after the analyzer build rejected it.</p>
-<p>When <code>0.0.3</code> is the next base version, that's when a new section gets
-created.</p>
-<h3 id="the-mechanical-move">The mechanical move<a class="headerlink" href="#the-mechanical-move" title="Permanent link">&para;</a></h3>
-<p>For each <code>AnalyzerReleases.Unshipped.md</code> with unshipped rules:</p>
+<p>For each file with rule rows:</p>
 <ol>
 <li>Open the paired <code>AnalyzerReleases.Shipped.md</code>.</li>
-<li>Find the existing <code>## Release &lt;base-version&gt;</code> section that
-   corresponds to the current base version (e.g. <code>## Release 0.0.2</code>
-   if you're shipping <code>v0.0.2-alpha.26</code>). If one does not exist —
-   for example, this is the first time the analyzer project has
-   ever shipped anything — create it with the base version only:</li>
+<li>Find or create the base-version section, such as:</li>
 </ol>
-<div class="language-markdown highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="gu">## Release 0.0.2</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="gu">### New Rules</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>Rule ID | Category | Severity | Notes
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>--------|----------|----------|-------
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>&lt;paste every unshipped row here, unchanged&gt;
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="gu">## Release 0.0.3</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="gu">### New Rules</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>Rule ID | Category | Severity | Notes
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>--------|----------|----------|-------
 </span></code></pre></div>
 <ol>
-<li>
-<p>If the section already exists, append the new rule rows to its
-   table in <strong>alphanumeric order</strong> by Rule ID (so <code>NDLRCOR012</code> goes
-   between <code>NDLRCOR011</code> and <code>NDLRCOR015</code>, not at the end of the
-   section). Consistent ordering makes diffs easier to review.</p>
-</li>
-<li>
-<p>Open <code>AnalyzerReleases.Unshipped.md</code> and <strong>delete only the rule
-   data rows</strong>. Keep:</p>
-</li>
-<li>The <code>; Unshipped analyzer releases</code> comment at the top</li>
-<li>The help link comment</li>
-<li>The <code>### New Rules</code> heading</li>
-<li>The table header row (<code>Rule ID | Category | Severity | Notes</code>)</li>
-<li>The separator row (<code>--------|----------|----------|-------</code>)</li>
+<li>Move every pending row into that section in alphanumeric diagnostic-ID
+   order.</li>
+<li>Delete only the rule data rows from <code>AnalyzerReleases.Unshipped.md</code>.
+   Keep its comments, heading, table header, and separator.</li>
 </ol>
-<p>The post-ship file should look like:</p>
-<div class="language-markdown highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>; Unshipped analyzer releases
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>; https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="gu">### New Rules</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>Rule ID | Category | Severity | Notes
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>--------|----------|----------|-------
+<p>The header uses the base version only. Roslyn rule RS2007 rejects a header such
+as <code>## Release 0.0.3-alpha.3</code>.</p>
+<p>The release script fails if any line beginning with <code>NDLR</code> remains in an
+unshipped file.</p>
+<h3 id="create-the-changelog-section">Create the changelog section<a class="headerlink" href="#create-the-changelog-section" title="Permanent link">&para;</a></h3>
+<p>Move the content being released out of <code>## [Unreleased]</code> and into an exact,
+dated section:</p>
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="gu">## [0.0.3-alpha.3] - 2026-07-24</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="gu">### Added</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="k">-</span><span class="w"> </span>...
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="gu">### Fixed</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="k">-</span><span class="w"> </span>...
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="gu">### Changed</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="k">-</span><span class="w"> </span>...
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="gu">### Shipped analyzers</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="k">-</span><span class="w"> </span><span class="sb">`NDLRGEN057`</span>, <span class="sb">`NDLRGEN058`</span>, ...
 </span></code></pre></div>
-<ol>
-<li>
-<p>Repeat for each analyzer project with unshipped rules.</p>
-</li>
-<li>
-<p>Build each analyzer project locally to verify the updated files
-   are accepted by <code>Microsoft.CodeAnalysis.Analyzers</code>:</p>
-</li>
-</ol>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">dotnet</span> <span class="n">build</span> <span class="n">src</span><span class="p">/</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Analyzers</span><span class="p">/</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Analyzers</span><span class="p">.</span><span class="n">csproj</span> <span class="n">-c</span> <span class="n">Release</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">dotnet</span> <span class="n">build</span> <span class="n">src</span><span class="p">/</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Generators</span><span class="p">/</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">Generators</span><span class="p">.</span><span class="n">csproj</span> <span class="n">-c</span> <span class="n">Release</span>
+<p>The release workflow and <code>release.ps1</code> both require the exact
+<code>## [&lt;version&gt;]</code> heading. The optional <code>### Shipped analyzers</code> section records
+which diagnostics moved into the shipped files.</p>
+<h3 id="update-version-specific-documentation">Update version-specific documentation<a class="headerlink" href="#update-version-specific-documentation" title="Permanent link">&para;</a></h3>
+<p>Update any documentation whose examples, compatibility statements, or API
+links refer to the release version. Routine feature documentation should
+already be present before release preparation.</p>
+<h3 id="validate-the-preparation">Validate the preparation<a class="headerlink" href="#validate-the-preparation" title="Permanent link">&para;</a></h3>
+<p>Use the repository NuGet cache on this machine:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nv">$env:NUGET_PACKAGES</span> <span class="p">=</span> <span class="s1">&#39;G:\dev\caches\nuget\packages&#39;</span>
 </span></code></pre></div>
-<p>If the build fails with <code>RS2001</code>, <code>RS2002</code>, or <code>RS2007</code>, re-read
-   the <a href="#version-header-format-the-non-obvious-rule">Version header format</a>
-   section above and fix the header before proceeding.</p>
-<ol>
-<li>Commit with the conventional message:</li>
-</ol>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>chore: ship analyzers for 0.0.2-alpha.26
+<p>Run the targeted release regression test:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">pwsh</span> <span class="n">-NoProfile</span> <span class="o">-File</span> <span class="n">scripts</span><span class="p">/</span><span class="nb">test-release</span><span class="p">.</span><span class="n">ps1</span>
 </span></code></pre></div>
-<h3 id="example-diff">Example diff<a class="headerlink" href="#example-diff" title="Permanent link">&para;</a></h3>
-<p>From the fix for <code>v0.0.2-alpha.26</code> (commits <code>f66653c2</code> + follow-up),
-the shipping change for <code>NexusLabs.Needlr.Analyzers</code> looked like:</p>
-<div class="language-diff highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="w"> </span> ## Release 0.0.2
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w"> </span> ### New Rules
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w"> </span> Rule ID | Category | Severity | Notes
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w"> </span> --------|----------|----------|-------
-</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w"> </span> ...
-</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w"> </span> NDLRCOR011 | NexusLabs.Needlr | Info | KeyedServiceResolutionAnalyzer, ...
-</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="gi">+ NDLRCOR012 | NexusLabs.Needlr | Error | Disposable captive dependency - ...</span>
-</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w"> </span> NDLRCOR015 | NexusLabs.Needlr | Error | [RegisterAs&lt;T&gt;] type argument ...
-</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="gi">+ NDLRCOR016 | NexusLabs.Needlr | Warning | [DoNotAutoRegister] applied ...</span>
-</span></code></pre></div>
-<p>Note how <code>NDLRCOR012</code> is inserted <strong>in order</strong> between <code>NDLRCOR011</code>
-and <code>NDLRCOR015</code>, not appended at the end.</p>
-<h3 id="if-you-add-a-new-analyzer-diagnostic-between-releases">If you add a new analyzer diagnostic between releases<a class="headerlink" href="#if-you-add-a-new-analyzer-diagnostic-between-releases" title="Permanent link">&para;</a></h3>
-<ol>
-<li>Add the <code>DiagnosticDescriptor</code> in the analyzer project.</li>
-<li>Add a row to that project's <code>AnalyzerReleases.Unshipped.md</code> under
-   <code>### New Rules</code> with the same <code>Rule ID | Category | Severity | Notes</code>
-   format. <strong>Build immediately</strong> — if you forget, the next release
-   script run will tell you, but it's much easier to fix at the source.</li>
-<li>Write the doc page at <code>docs/analyzers/NDLRXXX.md</code> following the
-   template in <code>.claude/rules/generated/docs.md</code>.</li>
-<li>Add a nav entry in <code>mkdocs.yml</code> under the appropriate analyzer
-   subgroup.</li>
-<li>Add a row to <code>docs/analyzers/README.md</code> in the matching table.</li>
-</ol>
-<p>The release script handles the shipping; you only have to remember the
-Unshipped.md row on the day you add the rule.</p>
-<hr />
-<h2 id="writing-the-changelog-entry">Writing the CHANGELOG entry<a class="headerlink" href="#writing-the-changelog-entry" title="Permanent link">&para;</a></h2>
-<p><code>CHANGELOG.md</code> follows <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>.</p>
-<p>The release workflow extracts release notes by searching for a section
-matching <code>## [&lt;version&gt;]</code> — it takes everything from that header up
-until the next <code>## [</code> header.</p>
-<h3 id="template">Template<a class="headerlink" href="#template" title="Permanent link">&para;</a></h3>
-<div class="language-markdown highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="gu">## [0.0.2-alpha.26] - 2026-04-10</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="gu">### Added</span>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="k">-</span><span class="w"> </span><span class="gs">**Feature name**</span> — One-sentence description. Link to the PR or
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>  feature docs if relevant.
-</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>
-</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="gu">### Fixed</span>
-</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>
-</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="k">-</span><span class="w"> </span><span class="gs">**Bug description**</span> — What broke, how it was fixed, observable
-</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>  symptom before the fix. Include issue/PR links.
-</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>
-</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="gu">### Changed</span>
-</span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>
-</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="k">-</span><span class="w"> </span>Internal refactors or breaking changes. Breaking changes should be
-</span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>  clearly flagged.
-</span><span id="__span-14-17"><a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>
-</span><span id="__span-14-18"><a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a><span class="gu">### Shipped analyzers</span>
-</span><span id="__span-14-19"><a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a>
-</span><span id="__span-14-20"><a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a><span class="k">-</span><span class="w"> </span><span class="sb">`NDLRXXX001`</span>, <span class="sb">`NDLRXXX002`</span>, ... (list every ID moved to Shipped.md
-</span><span id="__span-14-21"><a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a>  in this release, even if they were added in a prior alpha).
-</span></code></pre></div>
-<p>The <code>### Shipped analyzers</code> section is a Needlr convention. It lets
-downstream consumers see at a glance which diagnostic IDs are now
-"released" in a given version, which helps them triage RS2000 errors
-that pop up when they upgrade.</p>
-<h3 id="finding-what-changed">Finding what changed<a class="headerlink" href="#finding-what-changed" title="Permanent link">&para;</a></h3>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c"># Commits since the previous release tag.</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">git</span> <span class="n">log</span> <span class="n">v0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">2-alpha</span><span class="p">.</span><span class="n">25</span><span class="p">..</span><span class="n">HEAD</span> <span class="p">-</span><span class="n">-oneline</span>
-</span></code></pre></div>
-<p>Turn that list into CHANGELOG sections manually, or use the
-<code>skills/changelog-generator/scripts/generate.py</code> helper referenced by
-the dry-run output:</p>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">python</span> <span class="n">skills</span><span class="p">/</span><span class="n">changelog-generator</span><span class="p">/</span><span class="n">scripts</span><span class="p">/</span><span class="n">generate</span><span class="p">.</span><span class="n">py</span> <span class="p">\</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>  <span class="p">-</span><span class="n">-from</span> <span class="n">v0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">2-alpha</span><span class="p">.</span><span class="n">25</span> <span class="p">\</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>  <span class="p">-</span><span class="n">-to</span> <span class="n">HEAD</span> <span class="p">\</span>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>  <span class="p">-</span><span class="n">-version</span> <span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">2-alpha</span><span class="p">.</span><span class="n">26</span>
-</span></code></pre></div>
-<p>Review the output, edit for tone, and append to <code>CHANGELOG.md</code>.</p>
-<hr />
-<h2 id="running-the-release">Running the release<a class="headerlink" href="#running-the-release" title="Permanent link">&para;</a></h2>
-<h3 id="dry-run-first">Dry run first<a class="headerlink" href="#dry-run-first" title="Permanent link">&para;</a></h3>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="p">./</span><span class="n">scripts</span><span class="p">/</span><span class="n">release</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-Prerelease</span> <span class="n">alpha</span> <span class="n">-Base</span> <span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3</span> <span class="n">-DryRun</span>
-</span></code></pre></div>
-<p>Dry run:</p>
+<p>That test creates an isolated local remote, exercises dry-run and real
+finalization with command shims, and proves:</p>
 <ul>
-<li>Runs every gate listed in <a href="#pre-release-gates">Pre-release gates</a>
-  except the clean-working-tree check (so you can iterate).</li>
-<li>Computes the next version number.</li>
-<li>Extracts the <code>CHANGELOG.md</code> entry for that version and prints it.</li>
-<li>Prints what it would commit, tag, and push — without doing any of it.</li>
+<li>no branch commit is created;</li>
+<li><code>origin/main</code> does not move;</li>
+<li>the expected tag is the only remote write;</li>
+<li>the tag points at the prepared <code>main</code> commit.</li>
 </ul>
-<p>If the dry run reports a missing CHANGELOG entry or unshipped
-analyzers, fix those and re-run.</p>
-<h3 id="real-run">Real run<a class="headerlink" href="#real-run" title="Permanent link">&para;</a></h3>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="p">./</span><span class="n">scripts</span><span class="p">/</span><span class="n">release</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-Prerelease</span> <span class="n">alpha</span> <span class="n">-Base</span> <span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3</span>
+<p>Then run the normal validation appropriate to the release content, including:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">dotnet</span> <span class="n">build</span> <span class="n">src</span><span class="p">/</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">slnx</span> <span class="n">-c</span> <span class="n">Release</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">pwsh</span> <span class="n">-NoProfile</span> <span class="o">-File</span> <span class="n">scripts</span><span class="p">/</span><span class="nb">test-packages</span><span class="p">.</span><span class="n">ps1</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">python</span> <span class="n">-m</span> <span class="n">mkdocs</span> <span class="n">build</span> <span class="p">-</span><span class="n">-strict</span>
 </span></code></pre></div>
-<p>The real run, in order:</p>
+<h3 id="open-and-merge-the-pull-request">Open and merge the pull request<a class="headerlink" href="#open-and-merge-the-pull-request" title="Permanent link">&para;</a></h3>
+<p>Push only the feature branch and open the release-preparation pull request:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">git</span> <span class="n">push</span> <span class="n">-u</span> <span class="n">origin</span> <span class="n">release</span><span class="p">/</span><span class="n">prepare-v0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3-alpha</span><span class="p">.</span><span class="n">3</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">gh</span> <span class="n">pr</span> <span class="n">create</span>
+</span></code></pre></div>
+<p>Wait for all required checks:</p>
+<ul>
+<li><code>build-and-test</code>;</li>
+<li><code>package-validation</code>;</li>
+<li><code>aot-console-app</code>;</li>
+<li><code>aot-web-app</code>.</li>
+</ul>
+<p>Resolve review conversations and squash-merge the pull request. The
+path-filtered <code>build-maui-example</code> workflow is not a required branch check;
+when it runs for relevant changes, it must still pass.</p>
+<h2 id="phase-2-finalize-the-release-tag">Phase 2: finalize the release tag<a class="headerlink" href="#phase-2-finalize-the-release-tag" title="Permanent link">&para;</a></h2>
+<h3 id="wait-for-same-commit-main-ci">Wait for same-commit main CI<a class="headerlink" href="#wait-for-same-commit-main-ci" title="Permanent link">&para;</a></h3>
+<p>After the preparation pull request merges, wait for the <code>ci.yml</code> <strong>push</strong> run
+on the squash-merge commit to complete successfully. Pull-request CI is not a
+substitute because the release workflow independently verifies the exact
+<code>main</code> commit.</p>
+<h3 id="synchronize-local-main">Synchronize local main<a class="headerlink" href="#synchronize-local-main" title="Permanent link">&para;</a></h3>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">git</span> <span class="n">fetch</span> <span class="n">origin</span> <span class="n">main</span> <span class="p">-</span><span class="n">-tags</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">git</span> <span class="k">switch</span> <span class="n">main</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">git</span> <span class="n">pull</span> <span class="p">-</span><span class="n">-ff-only</span> <span class="n">origin</span> <span class="n">main</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">git</span> <span class="n">status</span> <span class="p">-</span><span class="n">-short</span>
+</span></code></pre></div>
+<p>The status output must be empty. The script fetches again and requires:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>local HEAD == origin/main
+</span></code></pre></div>
+<p>It never pulls, rebases, commits, or pushes a branch on the maintainer's
+behalf.</p>
+<h3 id="run-the-dry-run">Run the dry run<a class="headerlink" href="#run-the-dry-run" title="Permanent link">&para;</a></h3>
+<p>Use the exact prepared version:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="p">./</span><span class="n">scripts</span><span class="p">/</span><span class="n">release</span><span class="p">.</span><span class="n">ps1</span> <span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3-alpha</span><span class="p">.</span><span class="n">3</span> <span class="n">-DryRun</span>
+</span></code></pre></div>
+<p>Dry run validates:</p>
+<ul>
+<li>a completely clean working tree;</li>
+<li>NBGV availability;</li>
+<li>exact <code>version.json</code> and NBGV version agreement;</li>
+<li>exact changelog section;</li>
+<li>empty analyzer unshipped rule tables;</li>
+<li>local and remote tag availability.</li>
+</ul>
+<p>It prints the real tag-only write operation. Dry run intentionally skips the
+real-run-only main-position, hosted-CI, pack, and package-content gates.</p>
+<p>The <code>-Prerelease</code> form remains available after the release version has already
+been prepared:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="p">./</span><span class="n">scripts</span><span class="p">/</span><span class="n">release</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-Prerelease</span> <span class="n">alpha</span> <span class="n">-Base</span> <span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3</span> <span class="n">-DryRun</span>
+</span></code></pre></div>
+<p>The computed version must still exactly match <code>version.json</code>.</p>
+<h3 id="run-finalization">Run finalization<a class="headerlink" href="#run-finalization" title="Permanent link">&para;</a></h3>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="p">./</span><span class="n">scripts</span><span class="p">/</span><span class="n">release</span><span class="p">.</span><span class="n">ps1</span> <span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3-alpha</span><span class="p">.</span><span class="n">3</span>
+</span></code></pre></div>
+<p>The real run:</p>
 <ol>
-<li>Runs all gates.</li>
-<li>Runs <code>nbgv set-version &lt;new&gt;</code> to bump <code>version.json</code>.</li>
-<li>Creates a commit: <code>chore: bump version to 0.0.3-alpha.2</code>.</li>
-<li>Rebases and pushes the version commit to <code>main</code>, retrying a bounded number
-   of times if the coverage-badge bot wins the push race.</li>
-<li>Creates a lightweight tag via <code>nbgv tag</code> on the exact commit now present on
-   <code>main</code>.</li>
-<li>Pushes that tag to trigger the release workflow.</li>
+<li>Repeats every metadata and tag-availability check.</li>
+<li>Requires local <code>main</code> to equal freshly fetched <code>origin/main</code>.</li>
+<li>Requires a successful <code>ci.yml</code> push run for that exact SHA.</li>
+<li>Runs solution-level Release pack validation.</li>
+<li>Runs <code>scripts/test-packages.ps1 -NoBuild</code>.</li>
+<li>Rechecks the clean tree, remote <code>main</code>, and tag availability to close race
+   windows.</li>
+<li>Runs <code>nbgv tag</code>.</li>
+<li>Verifies the local tag resolves to <code>HEAD</code>.</li>
+<li>Pushes only <code>refs/tags/v&lt;version&gt;</code>.</li>
 </ol>
-<h3 id="when-the-tag-lands-on-origin">When the tag lands on origin<a class="headerlink" href="#when-the-tag-lands-on-origin" title="Permanent link">&para;</a></h3>
-<p><code>.github/workflows/release.yml</code> fires on the tag push. Its steps:</p>
+<p>There is no <code>-SkipCiCheck</code> bypass. If same-commit <code>main</code> CI is missing,
+pending, or failing, the release is not ready.</p>
+<h2 id="gates-enforced-by-releaseps1">Gates enforced by <code>release.ps1</code><a class="headerlink" href="#gates-enforced-by-releaseps1" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Failure means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Clean repository</td>
+<td>Tracked, staged, or untracked content could contaminate validation</td>
+</tr>
+<tr>
+<td>NBGV installed</td>
+<td>The prepared version or tag cannot be resolved reliably</td>
+</tr>
+<tr>
+<td>Exact prepared version</td>
+<td><code>version.json</code>, NBGV, and the requested tag would disagree</td>
+</tr>
+<tr>
+<td>Exact changelog section</td>
+<td>Release notes are incomplete or use the wrong version</td>
+</tr>
+<tr>
+<td>Analyzer release tracking</td>
+<td>Diagnostics would ship while still marked unshipped</td>
+</tr>
+<tr>
+<td>Tag availability</td>
+<td>The version was already used or a tag race occurred</td>
+</tr>
+<tr>
+<td>Synchronized protected main</td>
+<td>The tag would not identify the reviewed merged commit</td>
+</tr>
+<tr>
+<td>Successful same-commit CI</td>
+<td>The exact release commit has not passed <code>main</code> CI</td>
+</tr>
+<tr>
+<td>Solution pack</td>
+<td>One or more packages cannot be built</td>
+</tr>
+<tr>
+<td>Package assertions</td>
+<td>A NuGet dependency or packaged asset regressed</td>
+</tr>
+<tr>
+<td>Final race checks</td>
+<td><code>main</code>, the working tree, or tag state changed during validation</td>
+</tr>
+</tbody>
+</table>
+<p>Every gate fails closed. API errors, missing tools, and unparsable repository
+identity are release blockers rather than warnings.</p>
+<h2 id="what-the-tag-triggers">What the tag triggers<a class="headerlink" href="#what-the-tag-triggers" title="Permanent link">&para;</a></h2>
+<p>Pushing <code>v&lt;version&gt;</code> starts <code>.github/workflows/release.yml</code>.</p>
+<p>Before publication, the workflow:</p>
 <ol>
-<li>Wait for the <code>ci.yml</code> push run on <code>main</code> for the exact tag commit to
-   complete successfully.</li>
-<li>Checkout + setup .NET 10.</li>
-<li>Restore, build <code>src/NexusLabs.Needlr.slnx</code> with <code>-p:PublicRelease=true</code>.</li>
-<li>Run full test suite with coverage collection.</li>
-<li>Pack every <code>NexusLabs.Needlr*.csproj</code> except tests, benchmarks,
-   integration tests, then validate every package version.</li>
-<li>Extract the release notes, provision an action-managed Python environment,
-   install <code>docs/requirements.txt</code>, build the versioned documentation site, and
-   provision Node.js for the Cloudflare deployment.</li>
-<li>Exchange the GitHub OIDC identity for a short-lived NuGet.org API key
-   through <code>NuGet/login@v1</code>.</li>
-<li><code>dotnet nuget push</code> every <code>.nupkg</code> to NuGet.org with
-   <code>--skip-duplicate</code>.</li>
-<li><code>dotnet nuget push</code> every <code>.nupkg</code> to GitHub Packages using
-   <code>${{ secrets.GITHUB_TOKEN }}</code> with <code>--skip-duplicate</code>.</li>
-<li>Deploy the merged documentation site to GitHub Pages and Cloudflare Pages.</li>
-<li>Create a GitHub Release via <code>softprops/action-gh-release@v2</code>
-   flagged as pre-release because the tag contains <code>-</code>, attaching
-   every <code>.nupkg</code> and <code>.snupkg</code> file.</li>
+<li>Finds the <code>ci.yml</code> push run for <code>main</code> whose SHA equals the tag SHA.</li>
+<li>Waits for that run to complete.</li>
+<li>Fails unless its conclusion is <code>success</code>.</li>
+<li>Checks that the tag version equals NBGV's semantic version.</li>
+<li>Checks that the exact changelog section exists.</li>
+<li>Restores, builds, tests, packs, validates package versions, and builds
+   documentation.</li>
 </ol>
-<p>The publish job defaults to the PitCrew self-hosted Linux runner and supports
-<code>CI_RUNNER=ubuntu-latest</code> as a manual fallback. <code>actions/setup-python</code> provides
-the isolated Python environment on either runner; do not install documentation
-dependencies into the runner's system Python or bypass PEP 668 protections.</p>
-<p>Watch the workflow run at
-<a href="https://github.com/ncosentino/needlr/actions/workflows/release.yml">Actions</a>
-while it runs. It typically takes 6-10 minutes.</p>
-<hr />
+<p>After those gates, trusted publishing:</p>
+<ul>
+<li>exchanges the workflow OIDC identity for a short-lived NuGet.org key;</li>
+<li>pushes packages to NuGet.org and GitHub Packages;</li>
+<li>deploys stable and versioned API documentation;</li>
+<li>creates the GitHub Release and attaches package artifacts.</li>
+</ul>
+<p>Tag pushes are separate from protected branch updates, so main protection does
+not block release finalization.</p>
 <h2 id="post-release-verification">Post-release verification<a class="headerlink" href="#post-release-verification" title="Permanent link">&para;</a></h2>
-<p>After the workflow succeeds:</p>
+<p>After <code>release.yml</code> succeeds:</p>
 <ol>
-<li><strong>NuGet.org:</strong> visit
-   <a href="https://www.nuget.org/packages/NexusLabs.Needlr">nuget.org/packages/NexusLabs.Needlr</a>
-   and verify the new version appears under the Versions tab. Check a
-   few other key packages too (<code>NexusLabs.Needlr.AspNet</code>,
-   <code>NexusLabs.Needlr.Generators</code>, <code>NexusLabs.Needlr.SignalR</code>).</li>
-<li><strong>GitHub Release:</strong> visit
-   <a href="https://github.com/ncosentino/needlr/releases">releases</a> and verify
-   the new tag shows up, is marked as pre-release, has the CHANGELOG
-   section as the release notes, and has the <code>.nupkg</code> + <code>.snupkg</code>
-   assets attached.</li>
-<li><strong>GitHub Packages:</strong> visit
-   <a href="https://github.com/ncosentino/needlr/packages">Packages</a> and verify
-   the new version is present.</li>
-<li><strong>Smoke test:</strong> create a scratch project that references the new
-   version and verifies the most critical feature still works. For a
-   web-path fix like <code>v0.0.2-alpha.26</code>, that means running the
-   <code>MinimalWebApiSourceGen</code> example against the new package reference.</li>
+<li>Verify the new version on
+   <a href="https://www.nuget.org/packages/NexusLabs.Needlr">NuGet.org</a>.</li>
+<li>Verify the GitHub Release is marked correctly and has <code>.nupkg</code> and
+   <code>.snupkg</code> assets.</li>
+<li>Verify the release notes match the exact changelog section.</li>
+<li>Verify stable and versioned API documentation.</li>
+<li>Perform a focused consumer smoke test when the released change warrants it.</li>
 </ol>
-<p>If any verification step fails, open an issue immediately and start
-the rollback conversation. See <a href="#rolling-back">Rolling back</a>.</p>
-<hr />
-<h2 id="rolling-back">Rolling back<a class="headerlink" href="#rolling-back" title="Permanent link">&para;</a></h2>
-<p>NuGet.org packages can be <strong>unlisted</strong> (hidden from search and version
-resolution) but not deleted. GitHub Releases can be deleted. Tags can
-be deleted (but doing so does not unpublish the NuGet packages).</p>
-<p>If a released version is broken:</p>
-<ol>
-<li><strong>Unlist the bad version on NuGet.org</strong> via the web UI
-   (Manage Package → Listing). This stops new consumers from pulling
-   it but preserves package integrity for anyone who already has it
-   cached.</li>
-<li><strong>Delete the GitHub Release</strong> (optional, only if the release page
-   itself is misleading).</li>
-<li><strong>Delete the local and remote tag</strong> (optional, only if the tag
-   commit itself needs to be revised):
-   <div class="language-powershell highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">git</span> <span class="n">tag</span> <span class="n">-d</span> <span class="n">v0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">2-alpha</span><span class="p">.</span><span class="n">26</span>
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="p">:</span><span class="n">refs</span><span class="p">/</span><span class="n">tags</span><span class="p">/</span><span class="n">v0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">2-alpha</span><span class="p">.</span><span class="n">26</span>
-</span></code></pre></div></li>
-<li><strong>Cut a new release</strong> with the fix and a higher counter
-   (<code>v0.0.2-alpha.27</code>). Never re-use a version number that has been
-   pushed to NuGet.org.</li>
-<li><strong>Write a CHANGELOG entry</strong> for the new release explaining the
-   rollback and what was broken in the unlisted version.</li>
-</ol>
-<p>Unlisting is cheap and reversible; deletion is not. Prefer unlist.</p>
-<hr />
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
-<h3 id="nbgv-command-not-found"><code>nbgv: command not found</code><a class="headerlink" href="#nbgv-command-not-found" title="Permanent link">&para;</a></h3>
-<p>Install the tool:</p>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">dotnet</span> <span class="n">tool</span> <span class="n">install</span> <span class="n">-g</span> <span class="n">nbgv</span>
-</span></code></pre></div>
-<p>Make sure <code>~/.dotnet/tools</code> is on your <code>PATH</code> (the script also looks
-there directly as a fallback).</p>
-<h3 id="blocked-ci-is-not-fully-green-on-head"><code>BLOCKED: CI is not fully green on HEAD</code><a class="headerlink" href="#blocked-ci-is-not-fully-green-on-head" title="Permanent link">&para;</a></h3>
-<p>One of the GitHub check runs for the current commit is failing,
-pending, or neutral. Open the Actions tab for the commit on GitHub,
-find the failing run, fix the underlying issue, push, wait for the
-re-run to go green, then re-run the release script.</p>
-<p>Override with <code>-SkipCiCheck</code> only in true emergencies and only when
-you've personally verified the build and tests locally.</p>
+<h3 id="versionjson-contains-old-not-new"><code>version.json contains '&lt;old&gt;', not '&lt;new&gt;'</code><a class="headerlink" href="#versionjson-contains-old-not-new" title="Permanent link">&para;</a></h3>
+<p>The release-preparation pull request did not update <code>version.json</code>, or local
+<code>main</code> has not been synchronized after merge. Do not let the release script
+change it. Prepare or merge the correct pull request, then update local
+<code>main</code>.</p>
+<h3 id="nbgv-resolves-versiongsha"><code>NBGV resolves '&lt;version&gt;.g&lt;sha&gt;'</code><a class="headerlink" href="#nbgv-resolves-versiongsha" title="Permanent link">&para;</a></h3>
+<p>The current commit is after the commit that introduced the version. A release
+tag must point at the exact squash-merge commit that resets the version height.
+Inspect the preparation pull request and repository merge method rather than
+tagging the suffixed version.</p>
+<h3 id="local-main-must-exactly-match-originmain"><code>Local main must exactly match origin/main</code><a class="headerlink" href="#local-main-must-exactly-match-originmain" title="Permanent link">&para;</a></h3>
+<p>Another commit reached <code>main</code>, or local <code>main</code> is behind/ahead. Fetch and use a
+fast-forward update. If the new remote commit changes release content, review
+it and wait for its same-commit CI before retrying.</p>
+<h3 id="no-ciyml-push-run-exists"><code>No ci.yml push run exists</code><a class="headerlink" href="#no-ciyml-push-run-exists" title="Permanent link">&para;</a></h3>
+<p>Wait for the <code>main</code> push workflow to be created. Confirm the tag candidate is
+the actual <code>main</code> SHA and that Actions is enabled.</p>
+<h3 id="main-ci-must-complete-successfully"><code>Main CI must complete successfully</code><a class="headerlink" href="#main-ci-must-complete-successfully" title="Permanent link">&para;</a></h3>
+<p>Open the run URL printed by the script. Fix failures through another pull
+request, merge it, update local <code>main</code>, and rerun all release checks.</p>
 <h3 id="blocked-analyzer-projects-have-unshipped-rules"><code>BLOCKED: analyzer projects have unshipped rules</code><a class="headerlink" href="#blocked-analyzer-projects-have-unshipped-rules" title="Permanent link">&para;</a></h3>
-<p>See <a href="#shipping-analyzers">Shipping analyzers</a>. The script prints every
-file and every rule ID that needs to be moved; just walk the list.</p>
-<h3 id="pack-validation-failed"><code>Pack validation failed</code><a class="headerlink" href="#pack-validation-failed" title="Permanent link">&para;</a></h3>
-<p>Some <code>.csproj</code> failed <code>dotnet pack</code>. Run the failing pack command
-manually to see the full error:</p>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">dotnet</span> <span class="n">pack</span> <span class="n">src</span><span class="p">/</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.&lt;</span><span class="n">Whatever</span><span class="p">&gt;/</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.&lt;</span><span class="n">Whatever</span><span class="p">&gt;.</span><span class="n">csproj</span> <span class="n">-c</span> <span class="n">Release</span>
+<p>Return to the preparation phase. Move every printed rule into the paired
+shipped file under the base-version header, commit that change through a pull
+request, and do not tag until it merges.</p>
+<h3 id="package-validation-fails">Package validation fails<a class="headerlink" href="#package-validation-fails" title="Permanent link">&para;</a></h3>
+<p>Run the failing command directly:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">dotnet</span> <span class="n">pack</span> <span class="n">src</span><span class="p">/</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">slnx</span> <span class="n">-c</span> <span class="n">Release</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="n">pwsh</span> <span class="n">-NoProfile</span> <span class="o">-File</span> <span class="n">scripts</span><span class="p">/</span><span class="nb">test-packages</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-NoBuild</span>
 </span></code></pre></div>
-<p>Common causes:</p>
+<p>Typical causes include missing package metadata, an incorrect analyzer asset
+path, or a transitive dependency exclusion regression.</p>
+<h3 id="the-tag-exists-locally-after-a-failed-push">The tag exists locally after a failed push<a class="headerlink" href="#the-tag-exists-locally-after-a-failed-push" title="Permanent link">&para;</a></h3>
+<p>Inspect it before retrying:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">git</span> <span class="n">show</span> <span class="n">v0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3-alpha</span><span class="p">.</span><span class="n">3</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">git</span> <span class="n">ls-remote</span> <span class="p">-</span><span class="n">-tags</span> <span class="n">origin</span> <span class="n">refs</span><span class="p">/</span><span class="n">tags</span><span class="p">/</span><span class="n">v0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3-alpha</span><span class="p">.</span><span class="n">3</span>
+</span></code></pre></div>
+<p>If the remote tag does not exist and the local tag points at the correct,
+unchanged <code>main</code> commit, retrying the push manually is possible. If there is
+any mismatch, stop and investigate; never move or reuse a published version
+tag casually.</p>
+<h2 id="rolling-back-a-bad-release">Rolling back a bad release<a class="headerlink" href="#rolling-back-a-bad-release" title="Permanent link">&para;</a></h2>
+<p>NuGet.org packages can be unlisted but not deleted.</p>
+<ol>
+<li>Unlist the bad package version on NuGet.org.</li>
+<li>Delete the GitHub Release only if its page is misleading.</li>
+<li>Avoid deleting the tag unless the release record itself must be withdrawn.</li>
+<li>Fix the defect through a new pull request.</li>
+<li>Release a higher version. Never reuse a version that reached a package
+   feed.</li>
+</ol>
+<h2 id="historical-failure-modes">Historical failure modes<a class="headerlink" href="#historical-failure-modes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Missing <code>&lt;Description&gt;</code> property on a new project.</li>
-<li><code>PackageReadmeFile</code> pointing at a README that wasn't marked as
-  included in the pack.</li>
-<li>A newly-added analyzer DLL whose <code>OutputPath</code> doesn't resolve because
-  the build matrix is wrong (check the <code>&lt;None Include&gt;</code> entry in the
-  <code>.csproj</code>).</li>
+<li>Forgetting to move analyzer rules before release.</li>
+<li>Using prerelease text in Roslyn analyzer release headers.</li>
+<li>Using <code>alpha-0003</code> instead of <code>alpha.3</code>.</li>
+<li>Tagging a commit whose NBGV version contains a commit-height suffix.</li>
+<li>Creating or pushing a release version commit directly on <code>main</code>.</li>
+<li>Treating pull-request CI as proof that the exact merged <code>main</code> commit passed.</li>
+<li>Releasing from a dirty repository.</li>
 </ul>
-<h3 id="nuspec-validation-fails">Nuspec validation fails<a class="headerlink" href="#nuspec-validation-fails" title="Permanent link">&para;</a></h3>
-<p><code>scripts/test-packages.ps1</code> caught a packaging regression. Look at the
-specific assertion that fired in the output. Most common: a change to
-<code>Directory.Build.props</code> that broke a transitive dependency for one of
-the bundle packages.</p>
-<h3 id="the-workflow-fires-but-nothing-publishes">The workflow fires but nothing publishes<a class="headerlink" href="#the-workflow-fires-but-nothing-publishes" title="Permanent link">&para;</a></h3>
-<p>Check the Actions tab for the workflow run. Common causes:</p>
-<ul>
-<li>The same-commit <code>ci.yml</code> push run on <code>main</code> is missing, still running, or
-  did not complete successfully.</li>
-<li>A manually-created tag points to a commit that was never pushed to <code>main</code>.
-  <code>release.ps1</code> avoids this by landing the version commit before creating the
-  tag.</li>
-<li>The NuGet trusted publishing policy does not match the repository owner,
-  repository, workflow filename, or <code>release</code> environment.</li>
-<li>The publish job is missing <code>id-token: write</code>, <code>environment: release</code>, or the
-  <code>NuGet/login@v1</code> token exchange.</li>
-<li>A transient NuGet.org outage. Re-run the workflow from the Actions
-  tab.</li>
-<li>A package was already published at that version (<code>--skip-duplicate</code>
-  in the push command silently swallows this — it's usually a sign
-  someone manually published before the workflow ran, which shouldn't
-  happen).</li>
-</ul>
-<h3 id="docs-build-fails-in-mkdocs-strict-mode">Docs build fails in <code>mkdocs</code> strict mode<a class="headerlink" href="#docs-build-fails-in-mkdocs-strict-mode" title="Permanent link">&para;</a></h3>
-<p>If your release adds new analyzer diagnostic doc pages, ensure:</p>
-<ul>
-<li>Each new <code>docs/analyzers/NDLRXXX.md</code> exists.</li>
-<li>Each new page has a nav entry in <code>mkdocs.yml</code> under the correct
-  analyzer subgroup.</li>
-<li>Each new page has a row in <code>docs/analyzers/README.md</code>.</li>
-</ul>
-<p>This is documented in <code>.claude/rules/generated/docs.md</code>. The <code>api/stable/*</code>
-warnings emitted by strict mode are pre-existing and expected locally;
-CI handles them with a placeholder step.</p>
-<hr />
-<h2 id="historical-gotchas-why-this-document-exists">Historical gotchas (why this document exists)<a class="headerlink" href="#historical-gotchas-why-this-document-exists" title="Permanent link">&para;</a></h2>
-<p>Every item here has bitten past releases. They're listed not to shame
-anybody, but so the next maintainer can recognize the failure mode:</p>
-<ul>
-<li><strong>Forgetting the analyzer Unshipped→Shipped move.</strong> Commits
-  <code>83ef38ab</code>, <code>6b7e1166</code>, <code>22bd5b64</code>, <code>6e0b08bb</code>, <code>22c7e284</code> are all
-  retroactive fixes or ship-catch-up commits. This is the single most
-  common release-day mistake, which is why
-  <code>scripts/release.ps1</code> now blocks on it.</li>
-<li><strong>Wrong version header format.</strong> Early releases used
-  <code>## Release &lt;date&gt;</code> or omitted the version entirely. The correct
-  format is <code>## Release &lt;version&gt;</code> with no date, no <code>v</code> prefix.</li>
-<li><strong>Using <code>alpha-0026</code> instead of <code>alpha.26</code>.</strong> The dot-separated form
-  is what <code>version.json</code>, <code>nbgv</code>, and the release workflow expect.
-  NuGet displays it differently in the web UI but the source of truth
-  uses the dot.</li>
-<li><strong>Pushing to <code>origin/main</code> before CI runs.</strong> Always wait for CI to
-  go green on the version-bump commit before the tag push. The release
-  script's CI gate enforces this for you.</li>
-<li><strong>Releasing from a dirty working tree.</strong> Early releases accidentally
-  included uncommitted changes in the version bump commit. The clean
-  tree gate catches this now.</li>
-</ul>
-<hr />
+<p>The current process converts each failure mode into an explicit gate.</p>
 <h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="https://github.com/ncosentino/needlr/blob/main/RELEASING.md"><code>RELEASING.md</code></a> — the
-  fast-lookup version at the repo root.</li>
+<li><a href="https://github.com/ncosentino/needlr/blob/main/RELEASING.md"><code>RELEASING.md</code></a></li>
 <li><a href="https://github.com/ncosentino/needlr/blob/main/scripts/release.ps1"><code>scripts/release.ps1</code></a></li>
+<li><a href="https://github.com/ncosentino/needlr/blob/main/scripts/test-release.ps1"><code>scripts/test-release.ps1</code></a></li>
 <li><a href="https://github.com/ncosentino/needlr/blob/main/.github/workflows/release.yml"><code>.github/workflows/release.yml</code></a></li>
 <li><a href="https://github.com/ncosentino/needlr/blob/main/CHANGELOG.md"><code>CHANGELOG.md</code></a></li>
-<li><a href="https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md">Roslyn analyzer release tracking docs</a></li>
+<li><a href="https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md">Roslyn analyzer release tracking</a></li>
 </ul>
 
 
