@@ -5011,10 +5011,10 @@ introduces the new <code>version.json</code> value and NBGV resolves exactly tha
 on the merge commit. If NBGV reports a suffix such as <code>.g&lt;sha&gt;</code>, the current
 commit is not the version-reset commit and must not be tagged.</p>
 <h3 id="choosing-the-next-prerelease">Choosing the next prerelease<a class="headerlink" href="#choosing-the-next-prerelease" title="Permanent link">&para;</a></h3>
-<p>Fetch all tags and inspect the current sequence:</p>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">git</span> <span class="n">fetch</span> <span class="n">origin</span> <span class="n">main</span> <span class="p">-</span><span class="n">-tags</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">git</span> <span class="n">tag</span> <span class="p">-</span><span class="n">-list</span> <span class="s2">&quot;v0.0.3-alpha.*&quot;</span> <span class="p">-</span><span class="n">-sort</span><span class="p">=</span><span class="n">-version</span><span class="p">:</span><span class="n">refname</span> <span class="p">|</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  <span class="nb">Select-Object</span> <span class="n">-First</span> <span class="n">10</span>
+<p>Refresh <code>main</code>, then inspect the remote tag sequence without importing or
+rewriting local tag refs:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">git</span> <span class="n">fetch</span> <span class="n">origin</span> <span class="n">main</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">git</span> <span class="n">ls-remote</span> <span class="p">-</span><span class="n">-tags</span> <span class="p">-</span><span class="n">-refs</span> <span class="n">origin</span> <span class="s2">&quot;refs/tags/v0.0.3-alpha.*&quot;</span>
 </span></code></pre></div>
 <p>Increment the highest published counter and confirm that neither the local nor
 remote tag exists:</p>
@@ -5022,10 +5022,15 @@ remote tag exists:</p>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">git</span> <span class="n">ls-remote</span> <span class="p">-</span><span class="n">-tags</span> <span class="n">origin</span> <span class="s2">&quot;refs/tags/v0.0.3-alpha.3&quot;</span>
 </span></code></pre></div>
 <p>The release script repeats both checks before tagging.</p>
+<p>Do not require <code>git fetch --tags</code> for release preparation. Historical local
+tags may intentionally or accidentally differ from remote tag objects, and Git
+rejects an all-tags fetch rather than clobbering them. The release script reads
+the authoritative remote sequence with <code>git ls-remote</code> and leaves every local
+historical tag unchanged.</p>
 <h2 id="phase-1-prepare-the-release-pull-request">Phase 1: prepare the release pull request<a class="headerlink" href="#phase-1-prepare-the-release-pull-request" title="Permanent link">&para;</a></h2>
 <h3 id="create-the-branch">Create the branch<a class="headerlink" href="#create-the-branch" title="Permanent link">&para;</a></h3>
 <p>Start from the latest remote <code>main</code>:</p>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">git</span> <span class="n">fetch</span> <span class="n">origin</span> <span class="n">main</span> <span class="p">-</span><span class="n">-tags</span>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">git</span> <span class="n">fetch</span> <span class="n">origin</span> <span class="n">main</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">git</span> <span class="k">switch</span> <span class="p">-</span><span class="n">-create</span> <span class="n">release</span><span class="p">/</span><span class="n">prepare-v0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3-alpha</span><span class="p">.</span><span class="n">3</span> <span class="n">origin</span><span class="p">/</span><span class="n">main</span>
 </span></code></pre></div>
 <p>Never prepare the release by committing directly on local <code>main</code>.</p>
@@ -5145,7 +5150,7 @@ on the squash-merge commit to complete successfully. Pull-request CI is not a
 substitute because the release workflow independently verifies the exact
 <code>main</code> commit.</p>
 <h3 id="synchronize-local-main">Synchronize local main<a class="headerlink" href="#synchronize-local-main" title="Permanent link">&para;</a></h3>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">git</span> <span class="n">fetch</span> <span class="n">origin</span> <span class="n">main</span> <span class="p">-</span><span class="n">-tags</span>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">git</span> <span class="n">fetch</span> <span class="n">origin</span> <span class="n">main</span>
 </span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">git</span> <span class="k">switch</span> <span class="n">main</span>
 </span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">git</span> <span class="n">pull</span> <span class="p">-</span><span class="n">-ff-only</span> <span class="n">origin</span> <span class="n">main</span>
 </span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">git</span> <span class="n">status</span> <span class="p">-</span><span class="n">-short</span>
