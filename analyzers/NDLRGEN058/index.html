@@ -4619,7 +4619,9 @@
 positional record class.</p>
 <h2 id="rule-description">Rule Description<a class="headerlink" href="#rule-description" title="Permanent link">&para;</a></h2>
 <p>Ordinary classes, record structs, body-only records, file-local records, nested records,
-and inherited records cannot use this feature.</p>
+and inherited records cannot use this feature. A positional record whose primary
+constructor declares a pointer-typed parameter is also unsupported, because the generated
+file is not compiled in an unsafe context.</p>
 <h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// WRONG</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">public</span><span class="w"> </span><span class="k">partial</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">Request</span>

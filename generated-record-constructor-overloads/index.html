@@ -4857,14 +4857,20 @@ Sealed, unsealed, and generic records are supported.</p>
 <li>have an assignable <code>init</code> or <code>set</code> accessor;</li>
 <li>not be synthesized from a positional parameter;</li>
 <li>not be <code>required</code>;</li>
-<li>use a type accessible from the generated public constructor.</li>
+<li>use a type accessible from the generated public constructor;</li>
+<li>not use a pointer type, because the generated file is not compiled in an unsafe context.</li>
 </ul>
+<p>The record's positional parameters must also avoid pointer types for the same reason.</p>
 <p>Record structs, body-only records, nested records, inherited records, ordinary classes,
 and invalid properties are diagnosed and produce no overload.</p>
 <h2 id="constructor-collisions">Constructor Collisions<a class="headerlink" href="#constructor-collisions" title="Permanent link">&para;</a></h2>
 <p>Needlr compares the complete proposed parameter sequence with every existing constructor.
 Parameter names, nullable reference annotations, <code>params</code>, <code>dynamic</code> versus <code>object</code>, and
-optional values do not create distinct C# signatures.</p>
+optional values do not create distinct C# signatures. The comparison is recursive, so
+<code>dynamic</code> and <code>object</code> are also interchangeable inside array element types and generic
+type arguments.</p>
+<p>Array ranks, <code>ref</code> kinds, generic type definitions, generic type arguments, and the type
+arguments of an enclosing generic type all keep signatures distinct.</p>
 <p>If the overload would collide with an explicit or synthesized constructor, Needlr reports
 <a href="../analyzers/NDLRGEN062/">NDLRGEN062</a> and emits no source.</p>
 <h2 id="xml-documentation">XML Documentation<a class="headerlink" href="#xml-documentation" title="Permanent link">&para;</a></h2>

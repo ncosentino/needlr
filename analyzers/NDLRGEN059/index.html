@@ -4620,7 +4620,8 @@ constructor.</p>
 <h2 id="rule-description">Rule Description<a class="headerlink" href="#rule-description" title="Permanent link">&para;</a></h2>
 <p>The property must be directly declared, instance, non-indexed, non-positional,
 non-required, assignable through <code>init</code> or <code>set</code>, and typed accessibly enough for the
-generated public constructor.</p>
+generated public constructor. Pointer types are unsupported because the generated file is
+not compiled in an unsafe context.</p>
 <h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// WRONG</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">public</span><span class="w"> </span><span class="k">partial</span><span class="w"> </span><span class="k">record</span><span class="w"> </span><span class="nf">Request</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">Name</span><span class="p">)</span>

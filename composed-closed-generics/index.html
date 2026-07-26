@@ -4743,6 +4743,49 @@
 <h2 id="constraint-validation">Constraint Validation<a class="headerlink" href="#constraint-validation" title="Permanent link">&para;</a></h2>
 <p>If a discovered type argument does not satisfy the composition type's generic constraints, the registration is <strong>skipped</strong> and the generator reports <a href="../analyzers/NDLRGEN038/">NDLRGEN038</a> at build time — turning a would-be runtime absence into a build-time signal.</p>
 <p>This diagnostic is only <em>reachable</em> when the composition's constraints are <strong>stricter</strong> than the source interface's. If both carry the same constraint (e.g. <code>where TData : class</code>), every discovered implementation can always close the composition, so the diagnostic acts as a safety net for future divergence rather than something you hit day one.</p>
+<p>Needlr validates the constraints it can decide on its own, and defers the rest to the C# compiler so a variance or substitution subtlety can never skip a valid registration:</p>
+<table>
+<thead>
+<tr>
+<th>Constraint</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>class</code></td>
+<td>Validated — a value type argument is skipped</td>
+</tr>
+<tr>
+<td><code>struct</code></td>
+<td>Validated — a reference type or nullable value type argument is skipped</td>
+</tr>
+<tr>
+<td><code>unmanaged</code></td>
+<td>Validated — a managed struct argument is skipped</td>
+</tr>
+<tr>
+<td><code>notnull</code></td>
+<td>Validated — a nullable value type argument is skipped</td>
+</tr>
+<tr>
+<td><code>new()</code></td>
+<td>Validated — an abstract class, an array, or a class without a public parameterless constructor is skipped</td>
+</tr>
+<tr>
+<td>Non-generic base class or interface</td>
+<td>Validated by assignability — the exact type, a derived type, and an interface inherited through a base class all satisfy it</td>
+</tr>
+<tr>
+<td>Generic constraint types (<code>IProducer&lt;Animal&gt;</code>, <code>IComparable&lt;T&gt;</code>)</td>
+<td>Deferred to the C# compiler — never skipped by Needlr</td>
+</tr>
+<tr>
+<td>Bare type parameter (<code>where TValue : TKey</code>)</td>
+<td>Deferred to the C# compiler — never skipped by Needlr</td>
+</tr>
+</tbody>
+</table>
 <h2 id="what-this-does-and-does-not-catch">What This Does and Does Not Catch<a class="headerlink" href="#what-this-does-and-does-not-catch" title="Permanent link">&para;</a></h2>
 <p>The feature eliminates the <strong>"I added a definition and forgot to wire it"</strong> drift entirely: valid definitions auto-wire.</p>
 <p>It does <strong>not</strong> make the whole dependency graph statically provable. Transitive dependencies that the closed composition needs — such as an open-generic store registered in a plugin, or <code>ILogger&lt;&gt;</code> from <code>AddLogging</code> — are not visible to the source generator. If such a dependency is missing, resolution still throws at runtime (the same behavior as a hand-written factory). There is no regression; the failure simply remains a runtime one.</p>
