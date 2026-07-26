@@ -84,69 +84,75 @@ internal static class OptionsDiscoveryHelper
             return properties; // Already visited - circular reference
         }
 
-        foreach (var member in typeSymbol.GetMembers())
+        try
         {
-            if (member is not IPropertySymbol property)
-                continue;
-
-            // Skip static, indexers, readonly properties without init
-            if (property.IsStatic || property.IsIndexer)
-                continue;
-
-            // Must have a setter (set or init)
-            if (property.SetMethod == null)
-                continue;
-
-            // Check if it's init-only
-            var isInitOnly = property.SetMethod.IsInitOnly;
-
-            // Get nullability info
-            var isNullable = property.NullableAnnotation == NullableAnnotation.Annotated ||
-                             (property.Type is INamedTypeSymbol namedType &&
-                              namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T);
-
-            var typeName = property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
-            // Check if it's an enum type
-            var isEnum = false;
-            string? enumTypeName = null;
-            var actualType = property.Type;
-
-            // For nullable types, get the underlying type
-            if (actualType is INamedTypeSymbol nullableType &&
-                nullableType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
-                nullableType.TypeArguments.Length == 1)
+            foreach (var member in typeSymbol.GetMembers())
             {
-                actualType = nullableType.TypeArguments[0];
+                if (member is not IPropertySymbol property)
+                    continue;
+
+                // Skip static, indexers, readonly properties without init
+                if (property.IsStatic || property.IsIndexer)
+                    continue;
+
+                // Must have a setter (set or init)
+                if (property.SetMethod == null)
+                    continue;
+
+                // Check if it's init-only
+                var isInitOnly = property.SetMethod.IsInitOnly;
+
+                // Get nullability info
+                var isNullable = property.NullableAnnotation == NullableAnnotation.Annotated ||
+                                 (property.Type is INamedTypeSymbol namedType &&
+                                  namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T);
+
+                var typeName = property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+                // Check if it's an enum type
+                var isEnum = false;
+                string? enumTypeName = null;
+                var actualType = property.Type;
+
+                // For nullable types, get the underlying type
+                if (actualType is INamedTypeSymbol nullableType &&
+                    nullableType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
+                    nullableType.TypeArguments.Length == 1)
+                {
+                    actualType = nullableType.TypeArguments[0];
+                }
+
+                if (actualType.TypeKind == TypeKind.Enum)
+                {
+                    isEnum = true;
+                    enumTypeName = actualType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                }
+
+                // Detect complex types
+                var (complexKind, elementTypeName, nestedProps) = AnalyzeComplexType(property.Type, visitedTypes);
+
+                // Extract DataAnnotation attributes
+                var dataAnnotations = ExtractDataAnnotations(property);
+
+                properties.Add(new OptionsPropertyInfo(
+                    property.Name,
+                    typeName,
+                    isNullable,
+                    isInitOnly,
+                    isEnum,
+                    enumTypeName,
+                    complexKind,
+                    elementTypeName,
+                    nestedProps,
+                    dataAnnotations));
             }
 
-            if (actualType.TypeKind == TypeKind.Enum)
-            {
-                isEnum = true;
-                enumTypeName = actualType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-            }
-
-            // Detect complex types
-            var (complexKind, elementTypeName, nestedProps) = AnalyzeComplexType(property.Type, visitedTypes);
-
-            // Extract DataAnnotation attributes
-            var dataAnnotations = ExtractDataAnnotations(property);
-
-            properties.Add(new OptionsPropertyInfo(
-                property.Name,
-                typeName,
-                isNullable,
-                isInitOnly,
-                isEnum,
-                enumTypeName,
-                complexKind,
-                elementTypeName,
-                nestedProps,
-                dataAnnotations));
+            return properties;
         }
-
-        visitedTypes.Remove(typeFullName);
-        return properties;
+        finally
+        {
+            visitedTypes.Remove(typeFullName);
+        }
     }
 
     /// <summary>
