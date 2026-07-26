@@ -81,6 +81,19 @@ public sealed class PluginConstructorDependenciesAnalyzer : DiagnosticAnalyzer
         }
     }
 
+    /// <summary>
+    /// True when <paramref name="classDeclaration"/> lists a Needlr plugin interface,
+    /// directly or through any base type or inherited interface.
+    /// </summary>
+    /// <remarks>
+    /// Matching is exclusively symbol based: a base-list entry the semantic model cannot
+    /// resolve to a type at all is skipped rather than matched on its simple name, since
+    /// a bare <c>IServiceCollectionPlugin</c> identifier in incomplete code may just as
+    /// easily refer to an unrelated same-named interface from another namespace. An
+    /// unresolved but namespace-qualified entry (an error symbol still carrying the
+    /// <c>NexusLabs.Needlr</c> namespace and a plugin interface name) is unambiguous and
+    /// is still diagnosed.
+    /// </remarks>
     private static bool ImplementsPluginInterface(
         ClassDeclarationSyntax classDeclaration,
         SemanticModel semanticModel)
@@ -97,12 +110,6 @@ public sealed class PluginConstructorDependenciesAnalyzer : DiagnosticAnalyzer
 
             if (typeSymbol == null)
             {
-                // Fallback to syntax-based check
-                var typeName = GetTypeName(baseType.Type);
-                if (typeName != null && PluginInterfaceNames.Contains(typeName))
-                {
-                    return true;
-                }
                 continue;
             }
 
@@ -128,15 +135,5 @@ public sealed class PluginConstructorDependenciesAnalyzer : DiagnosticAnalyzer
     {
         return PluginInterfaceNames.Contains(typeSymbol.Name) &&
                typeSymbol.ContainingNamespace?.ToString() == "NexusLabs.Needlr";
-    }
-
-    private static string? GetTypeName(TypeSyntax typeSyntax)
-    {
-        return typeSyntax switch
-        {
-            IdentifierNameSyntax identifier => identifier.Identifier.Text,
-            QualifiedNameSyntax qualified => qualified.Right.Identifier.Text,
-            _ => null
-        };
     }
 }

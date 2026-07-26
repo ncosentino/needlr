@@ -59,6 +59,19 @@ public class MyPlugin : IServiceCollectionPlugin
 }
 ```
 
+## Detection
+
+The rule matches plugin interfaces by symbol, so it also fires when the interface is
+inherited indirectly -- through a custom interface that extends a Needlr plugin
+interface, or through a base class that implements one -- and never fires for an
+unrelated interface that merely shares the same simple name in another namespace.
+
+A base-list entry the compiler cannot resolve at all (for example a bare
+`IServiceCollectionPlugin` identifier while a `using` or package reference is still
+missing) is deliberately ignored, because its simple name alone cannot distinguish a
+Needlr plugin interface from any other. An unresolved but namespace-qualified entry such
+as `NexusLabs.Needlr.IServiceCollectionPlugin` is unambiguous and is still reported.
+
 ## When to Suppress
 
 Suppress this warning if:
