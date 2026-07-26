@@ -538,9 +538,17 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     var methodName = optionsAttr.ValidateMethod ?? "Validate"; // Convention: "Validate"
 
                     // Find validation method using convention-based discovery
-                    var validatorMethodInfo = OptionsAttributeHelper.FindValidationMethod(targetType, methodName);
+                    var validatorMethodInfo = OptionsAttributeHelper.FindValidationMethod(
+                        targetType,
+                        typeSymbol,
+                        methodName,
+                        validatorTypeSymbol is not null,
+                        optionsAttr.ValidateMethod is null);
                     OptionsValidatorInfo? validatorInfo = validatorMethodInfo.HasValue
-                        ? new OptionsValidatorInfo(validatorMethodInfo.Value.MethodName, validatorMethodInfo.Value.IsStatic)
+                        ? new OptionsValidatorInfo(
+                            validatorMethodInfo.Value.MethodName,
+                            validatorMethodInfo.Value.IsStatic,
+                            validatorMethodInfo.Value.UsesOptionsValidatorInterface)
                         : null;
 
                     // Infer section name if not provided

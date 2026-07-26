@@ -78,7 +78,12 @@ internal static class OptionsCodeGenerator
             string validationCall;
             if (opt.HasExternalValidator)
             {
-                if (opt.ValidatorMethod.Value.IsStatic)
+                if (opt.ValidatorMethod.Value.UsesOptionsValidatorInterface)
+                {
+                    validationCall =
+                        $"((global::NexusLabs.Needlr.Generators.IOptionsValidator<{opt.TypeName}>)_validator).Validate(options)";
+                }
+                else if (opt.ValidatorMethod.Value.IsStatic)
                 {
                     // Static method on external type: ExternalValidator.ValidateMethod(options)
                     validationCall = $"{validatorTargetType}.{opt.ValidatorMethod.Value.MethodName}(options)";

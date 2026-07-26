@@ -200,6 +200,77 @@ public sealed class OptionsValidatorUnifiedTests
     }
 
     [Fact]
+    public void Generator_ExplicitOptionsValidatorImplementation_InvokesThroughInterface()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+            using System.Collections.Generic;
+
+            [assembly: GenerateTypeRegistry]
+
+            namespace TestApp
+            {
+                [Options(ValidateOnStart = true, Validator = typeof(PaymentOptionsValidator))]
+                public class PaymentOptions
+                {
+                    public string MerchantId { get; set; } = "";
+                }
+
+                public class PaymentOptionsValidator : IOptionsValidator<PaymentOptions>
+                {
+                    IEnumerable<ValidationError> IOptionsValidator<PaymentOptions>.Validate(
+                        PaymentOptions options) => [];
+                }
+            }
+            """;
+
+        var runner = GeneratorTestRunner.ForOptions().WithSource(source);
+        var generated = runner.RunTypeRegistryGenerator();
+
+        Assert.Contains(
+            "((global::NexusLabs.Needlr.Generators.IOptionsValidator<global::TestApp.PaymentOptions>)_validator).Validate(options)",
+            generated);
+        Assert.Contains(
+            "AddSingleton<global::TestApp.PaymentOptionsValidator>()",
+            generated);
+        AssertGeneratedValidatorCompiles(
+            source,
+            runner.GetFileContaining("OptionsValidators"));
+    }
+
+    [Fact]
+    public void Generator_ValidationOverloads_SelectsTheSupportedMethod()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+            using System.Collections.Generic;
+
+            [assembly: GenerateTypeRegistry]
+
+            namespace TestApp
+            {
+                [Options(ValidateOnStart = true, Validator = typeof(TestValidator))]
+                public class TestOptions;
+
+                public class TestValidator
+                {
+                    public int Validate(int value) => value;
+
+                    public IEnumerable<ValidationError> Validate(TestOptions options) => [];
+                }
+            }
+            """;
+
+        var runner = GeneratorTestRunner.ForOptions().WithSource(source);
+        var generated = runner.RunTypeRegistryGenerator();
+
+        Assert.Contains("_validator.Validate(options)", generated);
+        AssertGeneratedValidatorCompiles(
+            source,
+            runner.GetFileContaining("OptionsValidators"));
+    }
+
+    [Fact]
     public void Generator_ExternalValidator_WithCustomMethodName_UsesSpecifiedMethod()
     {
         // External validator with custom method name
@@ -311,5 +382,36 @@ public sealed class OptionsValidatorUnifiedTests
         return GeneratorTestRunner.ForOptions()
             .WithSource(source)
             .RunTypeRegistryGenerator();
+    }
+
+    private static void AssertGeneratedValidatorCompiles(
+        string source,
+        string generatedValidatorSource)
+    {
+        var references = Basic.Reference.Assemblies.Net100.References.All
+            .Concat(
+            [
+                Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(
+                    typeof(OptionsAttribute).Assembly.Location),
+                Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(
+                    typeof(Microsoft.Extensions.Options.IValidateOptions<>).Assembly.Location)
+            ])
+            .ToArray();
+
+        var compilation = Microsoft.CodeAnalysis.CSharp.CSharpCompilation.Create(
+            "OptionsValidatorCompilation",
+            [
+                Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(source),
+                Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(
+                    generatedValidatorSource)
+            ],
+            references,
+            new Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions(
+                Microsoft.CodeAnalysis.OutputKind.DynamicallyLinkedLibrary));
+
+        Assert.Empty(
+            compilation.GetDiagnostics().Where(diagnostic =>
+                diagnostic.Severity ==
+                Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
     }
 }
