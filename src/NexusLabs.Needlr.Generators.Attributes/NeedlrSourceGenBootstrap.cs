@@ -150,8 +150,19 @@ public static class NeedlrSourceGenBootstrap
     /// Parameters are (IServiceCollection, IConfiguration), typed as object to avoid dependencies.
     /// </param>
     /// <remarks>
+    /// <para>
     /// Use this method from extension package module initializers to register additional services.
     /// For example, FluentValidation can register its validators without modifying core Needlr.
+    /// </para>
+    /// <para>
+    /// Needlr's own runtime composition (<c>ConfiguredSyringe</c>, <c>WebApplicationSyringe</c>,
+    /// and <c>MauiSyringe</c>) reads options and extension registrars from
+    /// <c>NexusLabs.Needlr.SourceGenRegistry</c> so that <c>NexusLabs.Needlr.Injection</c> does not
+    /// need a dependency on this assembly. Extension packages that already depend on
+    /// <c>NexusLabs.Needlr.Generators.Attributes</c> may keep using this registry; extension
+    /// packages that only depend on <c>NexusLabs.Needlr</c> should use
+    /// <c>SourceGenRegistry.RegisterExtension</c> instead.
+    /// </para>
     /// </remarks>
     public static void RegisterExtension(Action<object, object> extensionRegistrar)
     {
@@ -242,6 +253,13 @@ public static class NeedlrSourceGenBootstrap
     /// Parameters are (IServiceCollection, IConfiguration), typed as object to avoid dependencies.
     /// </param>
     /// <returns>True if an options registrar is registered.</returns>
+    /// <remarks>
+    /// The options registrar is supplied by the generated module initializer through the
+    /// four-argument <see cref="Register(Func{IReadOnlyList{InjectableTypeInfo}}, Func{IReadOnlyList{PluginTypeInfo}}, Action{object}, Action{object, object})"/>
+    /// overload. Needlr's own runtime composition reads options registrars from
+    /// <c>NexusLabs.Needlr.SourceGenRegistry</c>; this accessor exists for hosts that compose
+    /// generated registrations directly against this assembly.
+    /// </remarks>
     public static bool TryGetOptionsRegistrar(out Action<object, object>? optionsRegistrar)
     {
         var local = _asyncLocalOverride.Value;
@@ -277,6 +295,10 @@ public static class NeedlrSourceGenBootstrap
     /// Parameters are (IServiceCollection, IConfiguration), typed as object to avoid dependencies.
     /// </param>
     /// <returns>True if any extension registrars are registered.</returns>
+    /// <remarks>
+    /// The returned action invokes every registrar in registration order. Unlike
+    /// <see cref="TryGetProviders"/>, extension registrars are not affected by test scopes.
+    /// </remarks>
     public static bool TryGetExtensionRegistrar(out Action<object, object>? extensionRegistrar)
     {
         lock (_gate)
@@ -299,11 +321,16 @@ public static class NeedlrSourceGenBootstrap
         }
     }
 
+    /// <summary>
+    /// Clears every global registration, including extension registrars and the cached
+    /// combined registration. For testing purposes only.
+    /// </summary>
     internal static void ClearRegistrationsForTesting()
     {
         lock (_gate)
         {
             _registrations.Clear();
+            _extensionRegistrars.Clear();
             _cachedCombined = null;
         }
     }
