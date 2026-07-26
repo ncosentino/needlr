@@ -137,13 +137,45 @@ internal static class RecordConstructorOverloadDiscoveryHelper
         if (typeSymbol.ContainingType is not null)
             return "a nested record";
 
-        if (GetPrimaryRecordDeclaration(typeSymbol) is null)
+        var primaryDeclaration = GetPrimaryRecordDeclaration(typeSymbol);
+        if (primaryDeclaration is null)
             return "a non-positional record with no primary parameter list";
 
         if (typeSymbol.BaseType is not null &&
             typeSymbol.BaseType.SpecialType != SpecialType.System_Object)
         {
             return "an inherited record";
+        }
+
+        if (GetPrimaryConstructor(typeSymbol, primaryDeclaration) is
+            { } primaryConstructor)
+        {
+            foreach (var parameter in primaryConstructor.Parameters)
+            {
+                if (ContainsPointerType(parameter.Type))
+                {
+                    return $"a positional record whose primary constructor parameter '{parameter.Name}' is typed as '{parameter.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}', which the generated constructor cannot declare outside an unsafe context";
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the primary constructor declared by the positional record declaration.
+    /// </summary>
+    internal static IMethodSymbol? GetPrimaryConstructor(
+        INamedTypeSymbol typeSymbol,
+        RecordDeclarationSyntax primaryDeclaration)
+    {
+        foreach (var constructor in typeSymbol.InstanceConstructors)
+        {
+            foreach (var reference in constructor.DeclaringSyntaxReferences)
+            {
+                if (reference.GetSyntax() == primaryDeclaration)
+                    return constructor;
+            }
         }
 
         return null;
@@ -194,6 +226,11 @@ internal static class RecordConstructorOverloadDiscoveryHelper
         if (property.IsRequired)
         {
             return "required; the generated overload does not claim to satisfy the record's complete required-member contract";
+        }
+
+        if (ContainsPointerType(property.Type))
+        {
+            return $"typed as '{property.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}', which the generated constructor cannot declare outside an unsafe context";
         }
 
         if (!IsTypeAccessibleFromGeneratedConstructor(
@@ -510,6 +547,18 @@ internal static class RecordConstructorOverloadDiscoveryHelper
         return $"{constructor.ContainingType.Name}({string.Join(", ", constructor.Parameters.Select(parameter => parameter.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)))})";
     }
 
+    private static bool ContainsPointerType(ITypeSymbol type)
+    {
+        return type switch
+        {
+            IPointerTypeSymbol => true,
+            IFunctionPointerTypeSymbol => true,
+            IArrayTypeSymbol arrayType => ContainsPointerType(
+                arrayType.ElementType),
+            _ => false,
+        };
+    }
+
     private static bool AreSignatureTypesEquivalent(
         ITypeSymbol left,
         ITypeSymbol right)
@@ -534,20 +583,20 @@ internal static class RecordConstructorOverloadDiscoveryHelper
                     rightArray.ElementType);
         }
 
-        if (left is IPointerTypeSymbol leftPointer &&
-            right is IPointerTypeSymbol rightPointer)
-        {
-            return AreSignatureTypesEquivalent(
-                leftPointer.PointedAtType,
-                rightPointer.PointedAtType);
-        }
-
         if (left is not INamedTypeSymbol leftNamed ||
             right is not INamedTypeSymbol rightNamed ||
             !SymbolEqualityComparer.Default.Equals(
                 leftNamed.OriginalDefinition,
-                rightNamed.OriginalDefinition) ||
-            leftNamed.TypeArguments.Length != rightNamed.TypeArguments.Length)
+                rightNamed.OriginalDefinition))
+        {
+            return false;
+        }
+
+        if (leftNamed.ContainingType is not null &&
+            rightNamed.ContainingType is not null &&
+            !AreSignatureTypesEquivalent(
+                leftNamed.ContainingType,
+                rightNamed.ContainingType))
         {
             return false;
         }
@@ -574,10 +623,6 @@ internal static class RecordConstructorOverloadDiscoveryHelper
             case IArrayTypeSymbol arrayType:
                 return IsTypeAccessibleFromGeneratedConstructor(
                     arrayType.ElementType,
-                    containingTypeAccessibility);
-            case IPointerTypeSymbol pointerType:
-                return IsTypeAccessibleFromGeneratedConstructor(
-                    pointerType.PointedAtType,
                     containingTypeAccessibility);
             case ITypeParameterSymbol:
             case IDynamicTypeSymbol:

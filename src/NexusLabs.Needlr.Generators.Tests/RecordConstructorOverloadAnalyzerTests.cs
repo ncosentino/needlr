@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
 
@@ -19,6 +20,26 @@ public sealed class RecordConstructorOverloadAnalyzerTests
     {
         TestCode = code + Attributes,
     };
+
+    /// <summary>
+    /// Creates a test whose project allows unsafe code so pointer-typed members can be
+    /// declared at all; the analyzer must still reject them for overload generation.
+    /// </summary>
+    private static CSharpAnalyzerTest<RecordConstructorOverloadAnalyzer, DefaultVerifier> CreateUnsafeTest(string code)
+    {
+        var test = CreateTest(code);
+        test.SolutionTransforms.Add((solution, projectId) =>
+        {
+            var options = (CSharpCompilationOptions)solution
+                .GetProject(projectId)!
+                .CompilationOptions!;
+            return solution.WithProjectCompilationOptions(
+                projectId,
+                options.WithAllowUnsafe(true));
+        });
+
+        return test;
+    }
 
     [Fact]
     public async Task NoDiagnostic_ForValidPositionalRecordAndMarkedProperty()
@@ -466,6 +487,381 @@ public sealed class RecordConstructorOverloadAnalyzerTests
             new DiagnosticResult("NDLRGEN062", DiagnosticSeverity.Error)
                 .WithLocation(0)
                 .WithArguments("Request", "Request(string, object)"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN062_WhenCollisionOnlyDiffersByDynamicNestedInsideGenericArguments()
+    {
+        var test = CreateTest("""
+            using System.Collections.Generic;
+            using NexusLabs.Needlr.Generators;
+
+            public partial record {|#0:Request|}(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                public Dictionary<string, List<dynamic>> Scope { get; init; }
+
+                public Request(string Name, Dictionary<string, List<object>> Scope)
+                    : this(Name)
+                {
+                    this.Scope = Scope;
+                }
+            }
+            """);
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN062", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments(
+                    "Request",
+                    "Request(string, Dictionary<string, List<object>>)"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN062_WhenCollisionOnlyDiffersByDynamicArrayElementType()
+    {
+        var test = CreateTest("""
+            using NexusLabs.Needlr.Generators;
+
+            public partial record {|#0:Request|}(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                public dynamic[] Scopes { get; init; }
+
+                public Request(string Name, object[] Scopes) : this(Name)
+                {
+                    this.Scopes = Scopes;
+                }
+            }
+            """);
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN062", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments("Request", "Request(string, object[])"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_WhenArrayRanksDiffer()
+    {
+        var test = CreateTest("""
+            using NexusLabs.Needlr.Generators;
+
+            public partial record Request(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                public string[,] Scopes { get; init; }
+
+                public Request(string Name, string[] Scopes) : this(Name)
+                {
+                    this.Scopes = new string[0, 0];
+                }
+            }
+            """);
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_WhenGenericOriginalDefinitionsDiffer()
+    {
+        var test = CreateTest("""
+            using System.Collections.Generic;
+            using NexusLabs.Needlr.Generators;
+
+            public partial record Request(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                public List<string> Scopes { get; init; }
+
+                public Request(string Name, HashSet<string> Scopes) : this(Name)
+                {
+                    this.Scopes = new List<string>(Scopes);
+                }
+            }
+            """);
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_WhenGenericTypeArgumentsDiffer()
+    {
+        var test = CreateTest("""
+            using System.Collections.Generic;
+            using NexusLabs.Needlr.Generators;
+
+            public partial record Request(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                public Dictionary<string, int> Scopes { get; init; }
+
+                public Request(string Name, Dictionary<string, string> Scopes)
+                    : this(Name)
+                {
+                    this.Scopes = new Dictionary<string, int>();
+                }
+            }
+            """);
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_WhenOnlyTheNestedGenericContainingTypeArgumentsDiffer()
+    {
+        var test = CreateTest("""
+            using NexusLabs.Needlr.Generators;
+
+            public class Outer<T>
+            {
+                public sealed class Inner;
+            }
+
+            public partial record Request(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                public Outer<int>.Inner Scope { get; init; }
+
+                public Request(string Name, Outer<string>.Inner Scope) : this(Name)
+                {
+                }
+            }
+            """);
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_WhenExistingConstructorParameterUsesDifferentRefKind()
+    {
+        var test = CreateTest("""
+            using NexusLabs.Needlr.Generators;
+
+            public partial record Request(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                public int Count { get; init; }
+
+                public Request(string Name, ref int Count) : this(Name)
+                {
+                    this.Count = Count;
+                }
+            }
+            """);
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN059_WhenPropertyTypeIsAnInternalTypeInsideAPublicRecord()
+    {
+        var test = CreateTest("""
+            using NexusLabs.Needlr.Generators;
+
+            internal sealed class Scope;
+
+            public partial record Request(string Name)
+            {
+                [{|#0:RecordConstructorOverloadParameter|}]
+                internal Scope? PreparedScope { get; init; }
+            }
+            """);
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN059", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments(
+                    "PreparedScope",
+                    "typed as 'Scope?', which is less accessible than the generated public constructor"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN059_WhenPropertyTypeIsAnArrayOfALessAccessibleElementType()
+    {
+        var test = CreateTest("""
+            using NexusLabs.Needlr.Generators;
+
+            internal sealed class Scope;
+
+            public partial record Request(string Name)
+            {
+                [{|#0:RecordConstructorOverloadParameter|}]
+                internal Scope[]? PreparedScopes { get; init; }
+            }
+            """);
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN059", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments(
+                    "PreparedScopes",
+                    "typed as 'Scope[]?', which is less accessible than the generated public constructor"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN059_WhenPropertyTypeHasALessAccessibleGenericArgument()
+    {
+        var test = CreateTest("""
+            using System.Collections.Generic;
+            using NexusLabs.Needlr.Generators;
+
+            internal sealed class Scope;
+
+            public partial record Request(string Name)
+            {
+                [{|#0:RecordConstructorOverloadParameter|}]
+                internal List<Scope>? PreparedScopes { get; init; }
+            }
+            """);
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN059", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments(
+                    "PreparedScopes",
+                    "typed as 'List<Scope>?', which is less accessible than the generated public constructor"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN059_WhenPropertyTypeIsNestedInsideALessAccessibleContainingType()
+    {
+        var test = CreateTest("""
+            using NexusLabs.Needlr.Generators;
+
+            public static class Outer
+            {
+                internal sealed class Inner;
+            }
+
+            public partial record Request(string Name)
+            {
+                [{|#0:RecordConstructorOverloadParameter|}]
+                internal Outer.Inner? PreparedScope { get; init; }
+            }
+            """);
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN059", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments(
+                    "PreparedScope",
+                    "typed as 'Inner?', which is less accessible than the generated public constructor"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN059_WhenInternalRecordUsesAPrivateNestedPropertyType()
+    {
+        var test = CreateTest("""
+            using NexusLabs.Needlr.Generators;
+
+            internal partial record Request(string Name)
+            {
+                private sealed class Scope;
+
+                [{|#0:RecordConstructorOverloadParameter|}]
+                private Scope? PreparedScope { get; init; }
+            }
+            """);
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN059", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments(
+                    "PreparedScope",
+                    "typed as 'Scope?', which is less accessible than the generated public constructor"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_ForInternalRecordUsingProtectedInternalNestedPropertyType()
+    {
+        var test = CreateTest("""
+            using NexusLabs.Needlr.Generators;
+
+            internal partial record Request(string Name)
+            {
+                protected internal sealed class Scope;
+
+                [RecordConstructorOverloadParameter]
+                internal Scope? PreparedScope { get; init; }
+            }
+            """);
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_ForPublicRecordUsingTypeParameterDynamicAndSpecialTypes()
+    {
+        var test = CreateTest("""
+            using System.Collections.Generic;
+            using NexusLabs.Needlr.Generators;
+
+            public partial record Request<T>(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                public T? Value { get; init; }
+
+                [RecordConstructorOverloadParameter]
+                public dynamic? Scope { get; init; }
+
+                [RecordConstructorOverloadParameter]
+                public IReadOnlyList<string>? Tags { get; init; }
+            }
+            """);
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN059_WhenMarkedPropertyIsPointerTyped()
+    {
+        var test = CreateUnsafeTest("""
+            using NexusLabs.Needlr.Generators;
+
+            public unsafe partial record Request(string Name)
+            {
+                [{|#0:RecordConstructorOverloadParameter|}]
+                public int* Pointer { get; init; }
+            }
+            """);
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN059", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments(
+                    "Pointer",
+                    "typed as 'int*', which the generated constructor cannot declare outside an unsafe context"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN058_WhenPrimaryConstructorParameterIsPointerTyped()
+    {
+        var test = CreateUnsafeTest("""
+            using NexusLabs.Needlr.Generators;
+
+            public unsafe partial record {|#0:Request|}(int* Pointer)
+            {
+                [RecordConstructorOverloadParameter]
+                public int Count { get; init; }
+            }
+            """);
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN058", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments(
+                    "Request",
+                    "a positional record whose primary constructor parameter 'Pointer' is typed as 'int*', which the generated constructor cannot declare outside an unsafe context"));
 
         await test.RunAsync(TestContext.Current.CancellationToken);
     }

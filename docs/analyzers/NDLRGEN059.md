@@ -9,7 +9,8 @@ constructor.
 
 The property must be directly declared, instance, non-indexed, non-positional,
 non-required, assignable through `init` or `set`, and typed accessibly enough for the
-generated public constructor.
+generated public constructor. Pointer types are unsupported because the generated file is
+not compiled in an unsafe context.
 
 ## How to Fix
 
