@@ -52,8 +52,12 @@ public sealed class RecordConstructorOverloadIncrementalCachingTests
 
         var secondRun = RunIncremental(before, after);
 
-        AssertAllOutputsCachedOrUnchanged(secondRun, RecordConstructorOverloadTrackingNames.Models);
-        AssertAllOutputsCachedOrUnchanged(secondRun, RecordConstructorOverloadTrackingNames.Output);
+        IncrementalCachingAssertions.AssertAllOutputsCachedOrUnchanged(
+            secondRun,
+            RecordConstructorOverloadTrackingNames.Models);
+        IncrementalCachingAssertions.AssertAllOutputsCachedOrUnchanged(
+            secondRun,
+            RecordConstructorOverloadTrackingNames.Output);
     }
 
     [Fact]
@@ -111,15 +115,96 @@ public sealed class RecordConstructorOverloadIncrementalCachingTests
 
         var secondRun = RunIncremental(before, after);
 
-        var modelReasons = GetReasons(secondRun, RecordConstructorOverloadTrackingNames.Models);
-        var outputReasons = GetReasons(secondRun, RecordConstructorOverloadTrackingNames.Output);
+        IncrementalCachingAssertions.AssertExactlyOneChangedAndOneCached(
+            secondRun,
+            RecordConstructorOverloadTrackingNames.Models);
+        IncrementalCachingAssertions.AssertExactlyOneChangedAndOneCached(
+            secondRun,
+            RecordConstructorOverloadTrackingNames.Output);
+    }
 
-        Assert.Equal(2, modelReasons.Length);
-        Assert.Equal(1, modelReasons.Count(reason => reason is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged));
-        Assert.Equal(1, modelReasons.Count(reason => reason is IncrementalStepRunReason.Modified or IncrementalStepRunReason.New));
-        Assert.Equal(2, outputReasons.Length);
-        Assert.Equal(1, outputReasons.Count(reason => reason is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged));
-        Assert.Equal(1, outputReasons.Count(reason => reason is IncrementalStepRunReason.Modified or IncrementalStepRunReason.New));
+    [Theory]
+    [InlineData(
+        "string Name",
+        "string Title",
+        "[RecordConstructorOverloadParameter]\npublic int Count { get; init; }",
+        "[RecordConstructorOverloadParameter]\npublic int Count { get; init; }")]
+    [InlineData(
+        "string Name",
+        "object Name",
+        "[RecordConstructorOverloadParameter]\npublic int Count { get; init; }",
+        "[RecordConstructorOverloadParameter]\npublic int Count { get; init; }")]
+    [InlineData(
+        "string Name, int Age",
+        "int Age, string Name",
+        "[RecordConstructorOverloadParameter]\npublic int Count { get; init; }",
+        "[RecordConstructorOverloadParameter]\npublic int Count { get; init; }")]
+    [InlineData(
+        "string Name",
+        "string? Name",
+        "[RecordConstructorOverloadParameter]\npublic int Count { get; init; }",
+        "[RecordConstructorOverloadParameter]\npublic int Count { get; init; }")]
+    [InlineData(
+        "string Name",
+        "string Name",
+        "[RecordConstructorOverloadParameter]\npublic int Count { get; init; }",
+        "[RecordConstructorOverloadParameter]\npublic int Total { get; init; }")]
+    [InlineData(
+        "string Name",
+        "string Name",
+        "[RecordConstructorOverloadParameter]\npublic int Count { get; init; }",
+        "[RecordConstructorOverloadParameter]\npublic long Count { get; init; }")]
+    [InlineData(
+        "string Name",
+        "string Name",
+        "[RecordConstructorOverloadParameter]\npublic int Count { get; init; }\n[RecordConstructorOverloadParameter]\npublic bool Enabled { get; init; }",
+        "[RecordConstructorOverloadParameter]\npublic bool Enabled { get; init; }\n[RecordConstructorOverloadParameter]\npublic int Count { get; init; }")]
+    [InlineData(
+        "string Name",
+        "string Name",
+        "[RecordConstructorOverloadParameter]\n[ConstructorGuard(ConstructorGuardKind.NotNull)]\npublic string? Label { get; init; }",
+        "[RecordConstructorOverloadParameter]\n[ConstructorGuard(ConstructorGuardKind.NotNullOrEmpty)]\npublic string? Label { get; init; }")]
+    [InlineData(
+        "string Name",
+        "string Name",
+        "[RecordConstructorOverloadParameter]\n[ConstructorGuard(typeof(CustomGuard), nameof(CustomGuard.Validate))]\npublic string Label { get; init; } = \"\";",
+        "[RecordConstructorOverloadParameter]\n[ConstructorGuard(typeof(CustomGuard), nameof(CustomGuard.Check))]\npublic string Label { get; init; } = \"\";")]
+    [InlineData(
+        "string Name",
+        "string Name",
+        "[RecordConstructorOverloadParameter]\n[MinLength(3)]\npublic string Label { get; init; } = \"\";",
+        "[RecordConstructorOverloadParameter]\n[MinLength(5)]\npublic string Label { get; init; } = \"\";")]
+    public void SemanticRecordEdit_InvalidatesOnlyAffectedRecordsModelAndOutput(
+        string beforePrimaryParameters,
+        string afterPrimaryParameters,
+        string beforeProperties,
+        string afterProperties)
+    {
+        var beforeSource = CreateSemanticEditSource(beforePrimaryParameters, beforeProperties);
+        var afterSource = CreateSemanticEditSource(afterPrimaryParameters, afterProperties);
+        var parseOptions = new CSharpParseOptions();
+        var beforeTree = CSharpSyntaxTree.ParseText(
+            beforeSource,
+            parseOptions,
+            "Records.cs",
+            cancellationToken: TestContext.Current.CancellationToken);
+        var beforeCompilation = CreateCompilation(beforeTree);
+        var afterCompilation = beforeCompilation.ReplaceSyntaxTree(
+            beforeTree,
+            CSharpSyntaxTree.ParseText(
+                afterSource,
+                parseOptions,
+                "Records.cs",
+                cancellationToken: TestContext.Current.CancellationToken));
+
+        var secondRun = RunIncremental(beforeCompilation, afterCompilation);
+
+        IncrementalCachingAssertions.AssertExactlyOneChangedAndOneCached(
+            secondRun,
+            RecordConstructorOverloadTrackingNames.Models);
+        IncrementalCachingAssertions.AssertExactlyOneChangedAndOneCached(
+            secondRun,
+            RecordConstructorOverloadTrackingNames.Output);
     }
 
     private static CSharpCompilation CreateCompilation(params SyntaxTree[] syntaxTrees)
@@ -140,31 +225,62 @@ public sealed class RecordConstructorOverloadIncrementalCachingTests
                 disabledOutputs: IncrementalGeneratorOutputKind.None,
                 trackIncrementalGeneratorSteps: true));
 
-        driver = (CSharpGeneratorDriver)driver.RunGenerators(before);
-        driver = (CSharpGeneratorDriver)driver.RunGenerators(after);
+        driver = (CSharpGeneratorDriver)driver.RunGenerators(
+            before,
+            TestContext.Current.CancellationToken);
+        driver = (CSharpGeneratorDriver)driver.RunGenerators(
+            after,
+            TestContext.Current.CancellationToken);
         return driver.GetRunResult().Results.Single();
     }
 
-    private static void AssertAllOutputsCachedOrUnchanged(GeneratorRunResult result, string trackingName)
+    private static string CreateSemanticEditSource(
+        string primaryParameters,
+        string properties)
     {
-        var reasons = GetReasons(result, trackingName);
-        Assert.NotEmpty(reasons);
-        Assert.All(
-            reasons,
-            reason => Assert.True(
-                reason is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged,
-                $"Expected '{trackingName}' to be cached or unchanged, but found '{reason}'"));
+        const string template = """
+            using System;
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp;
+
+            public static class CustomGuard
+            {
+                public static void Validate(string value, string parameterName) { }
+                public static void Check(string value, string parameterName) { }
+            }
+
+            public static class MinLengthGuard
+            {
+                public static void Validate(string value, int minimum, string parameterName) { }
+            }
+
+            [ConstructorGuardDefinition(typeof(MinLengthGuard))]
+            [AttributeUsage(AttributeTargets.Property)]
+            public sealed class MinLengthAttribute : Attribute
+            {
+                public MinLengthAttribute(int minimum) { }
+            }
+
+            public partial record First(PRIMARY_PARAMETERS)
+            {
+            PROPERTIES
+            }
+
+            public partial record Second(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                public int Count { get; init; }
+            }
+            """;
+
+        const string indentation = "    ";
+        return template
+            .Replace("PRIMARY_PARAMETERS", primaryParameters, StringComparison.Ordinal)
+            .Replace(
+                "PROPERTIES",
+                indentation + properties.Replace("\n", "\n" + indentation, StringComparison.Ordinal),
+                StringComparison.Ordinal);
     }
 
-    private static IncrementalStepRunReason[] GetReasons(GeneratorRunResult result, string trackingName)
-    {
-        Assert.True(
-            result.TrackedSteps.TryGetValue(trackingName, out var steps),
-            $"Expected tracked step '{trackingName}'");
-
-        return steps
-            .SelectMany(step => step.Outputs)
-            .Select(output => output.Reason)
-            .ToArray();
-    }
 }

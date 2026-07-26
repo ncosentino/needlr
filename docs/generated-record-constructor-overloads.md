@@ -193,7 +193,10 @@ A marked property must:
 - have an assignable `init` or `set` accessor;
 - not be synthesized from a positional parameter;
 - not be `required`;
-- use a type accessible from the generated public constructor.
+- use a type accessible from the generated public constructor;
+- not use a pointer type, because the generated file is not compiled in an unsafe context.
+
+The record's positional parameters must also avoid pointer types for the same reason.
 
 Record structs, body-only records, nested records, inherited records, ordinary classes,
 and invalid properties are diagnosed and produce no overload.
@@ -202,7 +205,12 @@ and invalid properties are diagnosed and produce no overload.
 
 Needlr compares the complete proposed parameter sequence with every existing constructor.
 Parameter names, nullable reference annotations, `params`, `dynamic` versus `object`, and
-optional values do not create distinct C# signatures.
+optional values do not create distinct C# signatures. The comparison is recursive, so
+`dynamic` and `object` are also interchangeable inside array element types and generic
+type arguments.
+
+Array ranks, `ref` kinds, generic type definitions, generic type arguments, and the type
+arguments of an enclosing generic type all keep signatures distinct.
 
 If the overload would collide with an explicit or synthesized constructor, Needlr reports
 [NDLRGEN062](analyzers/NDLRGEN062.md) and emits no source.

@@ -68,8 +68,13 @@ public sealed class GeneratedConstructorIncrementalCachingTests
 
         var (_, secondRun) = RunIncremental(before, after);
 
-        AssertAllOutputsCachedOrUnchanged(secondRun, GeneratedConstructorTrackingNames.Models);
-        AssertAllOutputsCachedOrUnchanged(secondRun, GeneratedConstructorTrackingNames.Output);
+        var generatorResult = secondRun.Results.Single();
+        IncrementalCachingAssertions.AssertAllOutputsCachedOrUnchanged(
+            generatorResult,
+            GeneratedConstructorTrackingNames.Models);
+        IncrementalCachingAssertions.AssertAllOutputsCachedOrUnchanged(
+            generatorResult,
+            GeneratedConstructorTrackingNames.Output);
     }
 
     [Fact]
@@ -127,16 +132,13 @@ public sealed class GeneratedConstructorIncrementalCachingTests
 
         var (_, secondRun) = RunIncremental(beforeCompilation, afterCompilation);
 
-        var modelOutputs = GetTrackedOutputs(secondRun, GeneratedConstructorTrackingNames.Models);
-        var emissionOutputs = GetTrackedOutputs(secondRun, GeneratedConstructorTrackingNames.Output);
-
-        Assert.Equal(2, modelOutputs.Length);
-        Assert.Contains(modelOutputs, o => o.Reason is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged);
-        Assert.Contains(modelOutputs, o => o.Reason is IncrementalStepRunReason.Modified or IncrementalStepRunReason.New);
-
-        Assert.Equal(2, emissionOutputs.Length);
-        Assert.Contains(emissionOutputs, o => o.Reason is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged);
-        Assert.Contains(emissionOutputs, o => o.Reason is IncrementalStepRunReason.Modified or IncrementalStepRunReason.New);
+        var generatorResult = secondRun.Results.Single();
+        IncrementalCachingAssertions.AssertExactlyOneChangedAndOneCached(
+            generatorResult,
+            GeneratedConstructorTrackingNames.Models);
+        IncrementalCachingAssertions.AssertExactlyOneChangedAndOneCached(
+            generatorResult,
+            GeneratedConstructorTrackingNames.Output);
     }
 
     [Fact]
@@ -223,20 +225,59 @@ public sealed class GeneratedConstructorIncrementalCachingTests
 
         var (_, secondRun) = RunIncremental(beforeCompilation, afterCompilation);
 
-        var modelOutputs = GetTrackedOutputs(secondRun, GeneratedConstructorTrackingNames.Models);
-        var emissionOutputs = GetTrackedOutputs(secondRun, GeneratedConstructorTrackingNames.Output);
+        var generatorResult = secondRun.Results.Single();
+        IncrementalCachingAssertions.AssertExactlyOneChangedAndOneCached(
+            generatorResult,
+            GeneratedConstructorTrackingNames.Models);
+        IncrementalCachingAssertions.AssertExactlyOneChangedAndOneCached(
+            generatorResult,
+            GeneratedConstructorTrackingNames.Output);
 
-        Assert.Equal(2, modelOutputs.Length);
-        Assert.Contains(modelOutputs, o => o.Reason is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged);
-        Assert.Contains(modelOutputs, o => o.Reason is IncrementalStepRunReason.Modified or IncrementalStepRunReason.New);
-
-        Assert.Equal(2, emissionOutputs.Length);
-        Assert.Contains(emissionOutputs, o => o.Reason is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged);
-        Assert.Contains(emissionOutputs, o => o.Reason is IncrementalStepRunReason.Modified or IncrementalStepRunReason.New);
-
-        var secondRunResult = secondRun.Results.Single();
-        var generatedContent = string.Join("\n\n", secondRunResult.GeneratedSources.Select(s => s.SourceText.ToString()));
+        var generatedContent = string.Join("\n\n", generatorResult.GeneratedSources.Select(s => s.SourceText.ToString()));
         Assert.Contains("global::TestApp.MinCountGuard.Validate(value, 5, nameof(value));", generatedContent);
+    }
+
+    [Theory]
+    [InlineData(
+        "[ConstructorGuard(ConstructorGuardKind.NotNullOrEmpty)]\nprivate readonly string _value;",
+        "[ConstructorGuard(ConstructorGuardKind.NotNullOrWhiteSpace)]\nprivate readonly string _value;")]
+    [InlineData(
+        "[ConstructorGuard(typeof(CustomGuard), nameof(CustomGuard.Validate))]\nprivate readonly IRepository _repository;",
+        "[ConstructorGuard(typeof(CustomGuard), nameof(CustomGuard.Check))]\nprivate readonly IRepository _repository;")]
+    [InlineData(
+        "private readonly IRepository _dependency;",
+        "private readonly ILogger _dependency;")]
+    [InlineData(
+        "private readonly IRepository _repository;",
+        "private readonly IRepository _store;")]
+    [InlineData(
+        "private readonly IRepository _repository;\nprivate readonly ILogger _logger;",
+        "private readonly ILogger _logger;\nprivate readonly IRepository _repository;")]
+    [InlineData(
+        "private readonly IRepository _repository;",
+        "private readonly IRepository? _repository;")]
+    public void SemanticConstructorEdit_InvalidatesOnlyAffectedTypesModelAndOutput(
+        string beforeBody,
+        string afterBody)
+    {
+        var beforeSource = CreateSemanticEditSource(beforeBody);
+        var afterSource = CreateSemanticEditSource(afterBody);
+        var (beforeCompilation, tree) = CreateCompilationWithTrackedTree(
+            "Types.cs",
+            ("Types.cs", beforeSource));
+        var afterCompilation = beforeCompilation.ReplaceSyntaxTree(
+            tree,
+            EditTree(tree, beforeSource, afterSource));
+
+        var (_, secondRun) = RunIncremental(beforeCompilation, afterCompilation);
+        var generatorResult = secondRun.Results.Single();
+
+        IncrementalCachingAssertions.AssertExactlyOneChangedAndOneCached(
+            generatorResult,
+            GeneratedConstructorTrackingNames.Models);
+        IncrementalCachingAssertions.AssertExactlyOneChangedAndOneCached(
+            generatorResult,
+            GeneratedConstructorTrackingNames.Output);
     }
 
     [Fact]
@@ -317,23 +358,6 @@ public sealed class GeneratedConstructorIncrementalCachingTests
             driverOptions: driverOptions);
     }
 
-    private static void AssertAllOutputsCachedOrUnchanged(GeneratorDriverRunResult result, string trackingName)
-    {
-        var outputs = GetTrackedOutputs(result, trackingName);
-
-        Assert.NotEmpty(outputs);
-        Assert.All(outputs, o => Assert.True(
-            o.Reason is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged,
-            $"Expected '{trackingName}' output to be Cached or Unchanged but was {o.Reason}."));
-    }
-
-    private static (object Value, IncrementalStepRunReason Reason)[] GetTrackedOutputs(GeneratorDriverRunResult result, string trackingName)
-    {
-        return result.Results.Single().TrackedSteps[trackingName]
-            .SelectMany(step => step.Outputs)
-            .ToArray();
-    }
-
     private static (CSharpCompilation Compilation, SyntaxTree TrackedTree) CreateCompilationWithTrackedTree(
         string trackedFilePath,
         params (string Path, string Source)[] files)
@@ -359,6 +383,43 @@ public sealed class GeneratedConstructorIncrementalCachingTests
             trees,
             references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+    }
+
+    private static string CreateSemanticEditSource(string typeABody)
+    {
+        const string template = """
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp
+            {
+                public interface IRepository { }
+                public interface ILogger { }
+
+                public static class CustomGuard
+                {
+                    public static void Validate(IRepository value, string parameterName) { }
+                    public static void Check(IRepository value, string parameterName) { }
+                }
+
+                [GenerateConstructor(ConstructorNullGuardMode.NonNullableReferences)]
+                public partial class TypeA
+                {
+            TYPE_A_BODY
+                }
+
+                [GenerateConstructor]
+                public partial class TypeB
+                {
+                    private readonly ILogger _logger;
+                }
+            }
+            """;
+
+        const string indentation = "        ";
+        return template.Replace(
+            "TYPE_A_BODY",
+            indentation + typeABody.Replace("\n", "\n" + indentation, StringComparison.Ordinal),
+            StringComparison.Ordinal);
     }
 
     /// <summary>

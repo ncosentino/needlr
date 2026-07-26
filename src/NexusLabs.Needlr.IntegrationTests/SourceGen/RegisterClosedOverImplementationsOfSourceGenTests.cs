@@ -48,6 +48,20 @@ public sealed class RegisterClosedOverImplementationsOfSourceGenTests
     }
 
     [Fact]
+    public void Composition_SingletonLifetime_SharesInstanceAcrossScopes()
+    {
+        var provider = BuildProvider();
+
+        using var firstScope = provider.CreateScope();
+        using var secondScope = provider.CreateScope();
+
+        var first = firstScope.ServiceProvider.GetServices<IShape>().Single(s => s.Name == "circle");
+        var second = secondScope.ServiceProvider.GetServices<IShape>().Single(s => s.Name == "circle");
+
+        Assert.Same(first, second);
+    }
+
+    [Fact]
     public void Composition_EnumerationRoutesByDiscriminatorWithoutKnowingTypeArgument()
     {
         var provider = BuildProvider();
