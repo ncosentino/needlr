@@ -79,10 +79,12 @@ public sealed class GeneratorHelpersTests
     [Theory]
     [InlineData("MyClass", "MyClass")]
     [InlineData("IOptions<SmtpOptions>", "IOptions_SmtpOptions_")]
-    [InlineData("Dictionary<string, int>", "Dictionary_string_ int_")]
+    [InlineData("Dictionary<string, int>", "Dictionary_string__int_")]
+    [InlineData("global::TestApp.Repository<global::TestApp.Order?>", "Repository_Order__")]
     public void GetMermaidNodeId_SanitizesSpecialChars(string input, string expected)
     {
         var result = GeneratorHelpers.GetMermaidNodeId(input);
         Assert.Equal(expected, result);
+        Assert.Matches("^[A-Za-z0-9_]+$", result);
     }
 }
