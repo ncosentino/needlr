@@ -127,7 +127,8 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
             var validMethod = validationMethods.FirstOrDefault(method =>
                 ValidateMethodSignature(method, optionsType, validatorType != null) == null &&
                 (validatorType == null ||
-                 SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, optionsType)));
+                 (method.Parameters.Length == 1 &&
+                  SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, optionsType))));
 
             if (validMethod != null)
                 return;

@@ -749,6 +749,7 @@ public sealed class OptionsAttributeAnalyzerTests
         Assert.Equal(message, diagnostic.GetMessage());
 
         var attributeStart = source.IndexOf("[Options", StringComparison.Ordinal);
+        Assert.NotEqual(-1, attributeStart);
         var expectedStart = attributeStart + 1;
         Assert.Equal(expectedStart, diagnostic.Location.SourceSpan.Start);
         Assert.Equal(source.AsSpan(attributeStart).IndexOf(']') - 1, diagnostic.Location.SourceSpan.Length);
