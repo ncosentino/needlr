@@ -274,6 +274,24 @@ public sealed class RegisterClosedOverImplementationsOfConstraintTests
     }
 
     [Fact]
+    public void NewConstraint_ViolatedByArrayTypeArgument_ReportsDiagnosticAndSkips()
+    {
+        var result = ClosedOverConstraintCaseRunner.Run("""
+                public sealed class RefData { }
+                public sealed class ArrayHolder : ICaseDefinition<RefData[]> { }
+
+                [RegisterClosedOverImplementationsOf(typeof(ICaseDefinition<>), As = typeof(ICase))]
+                public sealed class CaseCore<TData> : ICase where TData : new()
+                {
+                    public CaseCore(ICaseDefinition<TData> definition) { }
+                }
+            """);
+
+        ClosedOverConstraintCaseRunner.AssertClosedRegistrationCount(result, "CaseCore", 0);
+        ClosedOverConstraintCaseRunner.AssertConstraintViolations(result, "global::TestNamespace.RefData[]");
+    }
+
+    [Fact]
     public void BaseClassConstraint_SatisfiedByExactTypeAndDerivedType_RegistersBothClosedCompositions()
     {
         var result = ClosedOverConstraintCaseRunner.Run("""
