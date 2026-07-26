@@ -944,7 +944,7 @@ public partial class OrderService
 
 
     [Fact]
-    public async Task NDLRGEN052_WhenMultipleOverloadsMatch()
+    public async Task NoDiagnostic_WhenExactNonGenericOverloadIsBetterThanGenericOverload()
     {
         var test = CreateTest(@"
 using NexusLabs.Needlr.Generators;
@@ -957,15 +957,10 @@ public static class AmbiguousGuard
 
 public partial class OrderService
 {
-    [{|#0:ConstructorGuard(typeof(AmbiguousGuard))|}]
+    [ConstructorGuard(typeof(AmbiguousGuard))]
     private readonly string _orderId;
 }
 ");
-        test.ExpectedDiagnostics.Add(
-            new DiagnosticResult("NDLRGEN052", DiagnosticSeverity.Error)
-                .WithLocation(0)
-                .WithArguments("Validate", "AmbiguousGuard", "_orderId", "string"));
-
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
 
@@ -1707,7 +1702,7 @@ namespace FrameworkLib
     }
 
     [Fact]
-    public async Task NDLRGEN052_WhenMultipleOverloadsMatchForwardedArguments()
+    public async Task NoDiagnostic_WhenExactForwardedOverloadIsBetterThanGenericOverload()
     {
         var test = CreateTest(@"
 using NexusLabs.Needlr.Generators;
@@ -1727,14 +1722,523 @@ public sealed class MinCountAttribute : System.Attribute
 
 public partial class Basket
 {
-    [{|#0:MinCount(3)|}]
+    [MinCount(3)]
+    private readonly int _value;
+}
+");
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN052_WhenOverloadsHaveNoBetterConversion()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+public static class AmbiguousGuard
+{
+    public static void Validate(System.IComparable value, string parameterName) { }
+    public static void Validate(System.IFormattable value, string parameterName) { }
+}
+
+public partial class Container
+{
+    [{|#0:ConstructorGuard(typeof(AmbiguousGuard))|}]
     private readonly int _value;
 }
 ");
         test.ExpectedDiagnostics.Add(
             new DiagnosticResult("NDLRGEN052", DiagnosticSeverity.Error)
                 .WithLocation(0)
-                .WithArguments("Validate", "AmbiguousRangeGuard", "_value", "int"));
+                .WithArguments("Validate", "AmbiguousGuard", "_value", "int"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_ForImplicitGuardedValueConversion()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+public static class NumericGuard
+{
+    public static void Validate(long value, string parameterName) { }
+}
+
+public partial class Container
+{
+    [ConstructorGuard(typeof(NumericGuard))]
+    private readonly int _value;
+}
+");
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN051_WhenGenericArrayRankIsIncompatible()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+public static class ArrayGuard
+{
+    public static void Validate<T>(T[] value, string parameterName) { }
+}
+
+public partial class Container
+{
+    [{|#0:ConstructorGuard(typeof(ArrayGuard))|}]
+    private readonly int[,] _value;
+}
+");
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN051", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments("Validate", "ArrayGuard", "_value", "int[*,*]", "its value parameter type is not compatible with the field's type"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_WhenRepeatedGenericParameterUsesImplicitConversion()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+public static class MinimumGuard
+{
+    public static void Validate<T>(T value, T minimum, string parameterName) { }
+}
+
+[ConstructorGuardDefinition(typeof(MinimumGuard))]
+[System.AttributeUsage(System.AttributeTargets.Field)]
+public sealed class MinimumAttribute : System.Attribute
+{
+    public MinimumAttribute(int minimum) { }
+}
+
+public partial class Container
+{
+    [Minimum(1)]
+    private readonly long _value;
+}
+");
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_WhenGenericConstraintsAreSatisfied()
+    {
+        var test = CreateTest(@"
+#nullable enable
+using NexusLabs.Needlr.Generators;
+
+public interface IMarker { }
+public class Base { }
+public sealed class ReferenceValue : Base, IMarker
+{
+    public ReferenceValue() { }
+}
+public struct UnmanagedValue { public int Value; }
+
+public static class ConstraintGuards
+{
+    public static void Class<T>(T value, string parameterName) where T : class { }
+    public static void NullableClass<T>(T value, string parameterName) where T : class? { }
+    public static void Struct<T>(T value, string parameterName) where T : struct { }
+    public static void Unmanaged<T>(T value, string parameterName) where T : unmanaged { }
+    public static void NotNull<T>(T value, string parameterName) where T : notnull { }
+    public static void Constructible<T>(T value, string parameterName) where T : new() { }
+    public static void Interface<T>(T value, string parameterName) where T : IMarker { }
+    public static void BaseClass<T>(T value, string parameterName) where T : Base { }
+}
+
+public partial class Container
+{
+    [ConstructorGuard(typeof(ConstraintGuards), nameof(ConstraintGuards.Class))]
+    private readonly ReferenceValue _classValue;
+    [ConstructorGuard(typeof(ConstraintGuards), nameof(ConstraintGuards.NullableClass))]
+    private readonly string? _nullableClassValue;
+    [ConstructorGuard(typeof(ConstraintGuards), nameof(ConstraintGuards.Struct))]
+    private readonly int _structValue;
+    [ConstructorGuard(typeof(ConstraintGuards), nameof(ConstraintGuards.Unmanaged))]
+    private readonly UnmanagedValue _unmanagedValue;
+    [ConstructorGuard(typeof(ConstraintGuards), nameof(ConstraintGuards.NotNull))]
+    private readonly string _notNullValue;
+    [ConstructorGuard(typeof(ConstraintGuards), nameof(ConstraintGuards.Constructible))]
+    private readonly ReferenceValue _constructibleValue;
+    [ConstructorGuard(typeof(ConstraintGuards), nameof(ConstraintGuards.Interface))]
+    private readonly ReferenceValue _interfaceValue;
+    [ConstructorGuard(typeof(ConstraintGuards), nameof(ConstraintGuards.BaseClass))]
+    private readonly ReferenceValue _baseValue;
+}
+");
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN051_WhenStructConstraintReceivesNullableValueType()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+public static class StructGuard
+{
+    public static void Validate<T>(T value, string parameterName) where T : struct { }
+}
+
+public partial class Container
+{
+    [{|#0:ConstructorGuard(typeof(StructGuard))|}]
+    private readonly int? _value;
+}
+");
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN051", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments("Validate", "StructGuard", "_value", "int?", "its type parameter 'T' requires a non-nullable value type, but 'int?' is not"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN051_WhenNotNullConstraintReceivesNullableReference()
+    {
+        var test = CreateTest(@"
+#nullable enable
+using NexusLabs.Needlr.Generators;
+
+public static class NotNullGuard
+{
+    public static void Validate<T>(T value, string parameterName) where T : notnull { }
+}
+
+public partial class Container
+{
+    [{|#0:ConstructorGuard(typeof(NotNullGuard))|}]
+    private readonly string? _value;
+}
+");
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN051", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments("Validate", "NotNullGuard", "_value", "string?", "its type parameter 'T' requires a non-nullable type, but 'string?' is nullable"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN051_WhenNonNullableClassConstraintReceivesNullableReference()
+    {
+        var test = CreateTest(@"
+#nullable enable
+using NexusLabs.Needlr.Generators;
+
+public static class ClassGuard
+{
+    public static void Validate<T>(T value, string parameterName) where T : class { }
+}
+
+public partial class Container
+{
+    [{|#0:ConstructorGuard(typeof(ClassGuard))|}]
+    private readonly string? _value;
+}
+");
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN051", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments("Validate", "ClassGuard", "_value", "string?", "its type parameter 'T' requires a non-nullable reference type, but 'string?' is nullable"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN051_WhenConstructorConstraintReceivesAbstractType()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+public abstract class AbstractValue
+{
+    public AbstractValue() { }
+}
+
+public static class ConstructibleGuard
+{
+    public static void Validate<T>(T value, string parameterName) where T : new() { }
+}
+
+public partial class Container
+{
+    [{|#0:ConstructorGuard(typeof(ConstructibleGuard))|}]
+    private readonly AbstractValue _value;
+}
+");
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN051", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments("Validate", "ConstructibleGuard", "_value", "AbstractValue", "its type parameter 'T' requires a non-abstract type with a public parameterless constructor, which 'AbstractValue' does not have"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_ForInternalGuardAndMethodInSameAssembly()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+internal static class InternalGuard
+{
+    internal static void Validate(string value, string parameterName) { }
+}
+
+public partial class Container
+{
+    [ConstructorGuard(typeof(InternalGuard))]
+    private readonly string _value;
+}
+");
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN051_WhenGuardMethodIsPrivate()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+public static class PrivateMethodGuard
+{
+    private static void Validate(string value, string parameterName) { }
+}
+
+public partial class Container
+{
+    [{|#0:ConstructorGuard(typeof(PrivateMethodGuard))|}]
+    private readonly string _value;
+}
+");
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN051", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments("Validate", "PrivateMethodGuard", "_value", "string", "it is not accessible"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN051_WhenReferencedAssemblyGuardMethodIsInternal()
+    {
+        var test = CreateTest(@"
+using FrameworkLib;
+using NexusLabs.Needlr.Generators;
+
+public partial class Container
+{
+    [{|#0:ConstructorGuard(typeof(PublicGuard))|}]
+    private readonly string _value;
+}
+");
+        test.TestState.AdditionalProjects["FrameworkLib"].Sources.Add(@"
+namespace FrameworkLib
+{
+    public static class PublicGuard
+    {
+        internal static void Validate(string value, string parameterName) { }
+    }
+}
+");
+        test.TestState.AdditionalProjectReferences.Add("FrameworkLib");
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN051", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments("Validate", "FrameworkLib.PublicGuard", "_value", "string", "it is not accessible"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN051_WhenGuardHasTooFewParameters()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+public static class OneParameterGuard
+{
+    public static void Validate(string value) { }
+}
+
+public partial class Container
+{
+    [{|#0:ConstructorGuard(typeof(OneParameterGuard))|}]
+    private readonly string _value;
+}
+");
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN051", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments("Validate", "OneParameterGuard", "_value", "string", "it does not have at least a value parameter and a trailing string parameter name"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN051_WhenUnmanagedConstraintReceivesManagedStruct()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+public struct ManagedValue { public string Value; }
+public static class UnmanagedGuard
+{
+    public static void Validate<T>(T value, string parameterName) where T : unmanaged { }
+}
+
+public partial class Container
+{
+    [{|#0:ConstructorGuard(typeof(UnmanagedGuard))|}]
+    private readonly ManagedValue _value;
+}
+");
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN051", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments("Validate", "UnmanagedGuard", "_value", "ManagedValue", "its type parameter 'T' requires an unmanaged type, but 'ManagedValue' is not unmanaged"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN051_WhenBaseClassConstraintIsNotSatisfied()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+public class RequiredBase { }
+public sealed class Unrelated { }
+public static class BaseGuard
+{
+    public static void Validate<T>(T value, string parameterName) where T : RequiredBase { }
+}
+
+public partial class Container
+{
+    [{|#0:ConstructorGuard(typeof(BaseGuard))|}]
+    private readonly Unrelated _value;
+}
+");
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN051", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments("Validate", "BaseGuard", "_value", "Unrelated", "its type parameter 'T' requires 'RequiredBase', which 'Unrelated' does not satisfy"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_WhenGenericArrayRankMatches()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+public static class ArrayGuard
+{
+    public static void Validate<T>(T[,] value, string parameterName) { }
+}
+
+public partial class Container
+{
+    [ConstructorGuard(typeof(ArrayGuard))]
+    private readonly int[,] _value;
+}
+");
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN051_WhenNotNullConstraintReceivesNullableValueType()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+public static class NotNullGuard
+{
+    public static void Validate<T>(T value, string parameterName) where T : notnull { }
+}
+
+public partial class Container
+{
+    [{|#0:ConstructorGuard(typeof(NotNullGuard))|}]
+    private readonly int? _value;
+}
+");
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN051", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments("Validate", "NotNullGuard", "_value", "int?", "its type parameter 'T' requires a non-nullable type, but 'int?' is nullable"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN051_WhenConstructorConstraintReceivesProtectedConstructor()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+public class ProtectedValue
+{
+    protected ProtectedValue() { }
+}
+
+public static class ConstructibleGuard
+{
+    public static void Validate<T>(T value, string parameterName) where T : new() { }
+}
+
+public partial class Container
+{
+    [{|#0:ConstructorGuard(typeof(ConstructibleGuard))|}]
+    private readonly ProtectedValue _value;
+}
+");
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN051", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments("Validate", "ConstructibleGuard", "_value", "ProtectedValue", "its type parameter 'T' requires a non-abstract type with a public parameterless constructor, which 'ProtectedValue' does not have"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task NDLRGEN051_WhenConstructorConstraintReceivesArrayType()
+    {
+        var test = CreateTest(@"
+using NexusLabs.Needlr.Generators;
+
+public static class ConstructibleGuard
+{
+    public static void Validate<T>(T value, string parameterName) where T : new() { }
+}
+
+public partial class Container
+{
+    [{|#0:ConstructorGuard(typeof(ConstructibleGuard))|}]
+    private readonly int[] _value;
+}
+");
+        test.ExpectedDiagnostics.Add(
+            new DiagnosticResult("NDLRGEN051", DiagnosticSeverity.Error)
+                .WithLocation(0)
+                .WithArguments("Validate", "ConstructibleGuard", "_value", "int[]", "its type parameter 'T' requires a non-abstract type with a public parameterless constructor, which 'int[]' does not have"));
 
         await test.RunAsync(TestContext.Current.CancellationToken);
     }

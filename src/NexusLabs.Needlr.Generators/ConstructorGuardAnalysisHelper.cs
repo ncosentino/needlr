@@ -439,6 +439,27 @@ internal static class ConstructorGuardAnalysisHelper
             return GuardMethodResolution.Found;
         }
 
+        if (matches.Count > 1 && memberType is not null)
+        {
+            matches = matches
+                .Where(candidate => !matches.Any(other =>
+                    !SymbolEqualityComparer.Default.Equals(candidate, other) &&
+                    IsBetterGuardMethod(
+                        other,
+                        candidate,
+                        memberType,
+                        forwardedArgumentTypes,
+                        compilation)))
+                .ToList();
+        }
+
+        if (matches.Count == 1)
+        {
+            method = matches[0];
+            failureKind = GuardResolutionFailureKind.None;
+            return GuardMethodResolution.Found;
+        }
+
         if (matches.Count > 1)
         {
             failureKind = GuardResolutionFailureKind.None;
@@ -452,6 +473,58 @@ internal static class ConstructorGuardAnalysisHelper
         }
 
         return GuardMethodResolution.NotFound;
+    }
+
+    private static bool IsBetterGuardMethod(
+        IMethodSymbol candidate,
+        IMethodSymbol other,
+        ITypeSymbol memberType,
+        ImmutableArray<ITypeSymbol> forwardedArgumentTypes,
+        Compilation compilation)
+    {
+        var argumentTypes = forwardedArgumentTypes.Insert(0, memberType);
+        var candidateIsBetter = false;
+        var otherIsBetter = false;
+
+        for (var i = 0; i < argumentTypes.Length; i++)
+        {
+            var argumentType = argumentTypes[i];
+            var candidateType = candidate.Parameters[i].Type;
+            var otherType = other.Parameters[i].Type;
+            if (SymbolEqualityComparer.Default.Equals(candidateType, otherType))
+                continue;
+
+            var candidateIdentity = SymbolEqualityComparer.Default.Equals(
+                argumentType,
+                candidateType);
+            var otherIdentity = SymbolEqualityComparer.Default.Equals(
+                argumentType,
+                otherType);
+            if (candidateIdentity != otherIdentity)
+            {
+                candidateIsBetter |= candidateIdentity;
+                otherIsBetter |= otherIdentity;
+                continue;
+            }
+
+            var candidateToOther = IsAssignableTo(
+                candidateType,
+                otherType,
+                compilation);
+            var otherToCandidate = IsAssignableTo(
+                otherType,
+                candidateType,
+                compilation);
+            candidateIsBetter |= candidateToOther && !otherToCandidate;
+            otherIsBetter |= otherToCandidate && !candidateToOther;
+        }
+
+        if (candidateIsBetter != otherIsBetter)
+            return candidateIsBetter;
+
+        return !candidateIsBetter &&
+            !candidate.IsGenericMethod &&
+            other.IsGenericMethod;
     }
 
     /// <summary>
@@ -922,7 +995,11 @@ internal static class ConstructorGuardAnalysisHelper
         string? lastReason = null;
         var lastFailureKind = GuardResolutionFailureKind.General;
 
-        foreach (var candidateType in GetTypeAndSupertypes(memberType))
+        var candidateTypes = parameterType is ITypeParameterSymbol typeParameter &&
+            methodTypeParameters.Contains(typeParameter)
+                ? new[] { memberType }
+                : GetTypeAndSupertypes(memberType);
+        foreach (var candidateType in candidateTypes)
         {
             var substitution = new Dictionary<ITypeSymbol, ITypeSymbol>(
                 SymbolEqualityComparer.Default);
@@ -930,7 +1007,10 @@ internal static class ConstructorGuardAnalysisHelper
                 parameterType,
                 candidateType,
                 methodTypeParameters,
-                substitution))
+                substitution,
+                compilation,
+                allowImplicitTypeParameterConversion:
+                    parameterType is ITypeParameterSymbol))
             {
                 continue;
             }
@@ -942,7 +1022,10 @@ internal static class ConstructorGuardAnalysisHelper
                     middleParameters[i].Type,
                     forwardedArgumentTypes[i],
                     methodTypeParameters,
-                    substitution))
+                    substitution,
+                    compilation,
+                    allowImplicitTypeParameterConversion:
+                        middleParameters[i].Type is ITypeParameterSymbol))
                 {
                     continue;
                 }
@@ -1063,8 +1146,18 @@ internal static class ConstructorGuardAnalysisHelper
                 return $"its type parameter '{typeParameter.Name}' requires a reference type, but '{argumentType.ToDisplayString()}' is a value type";
             }
 
+            if (typeParameter.HasReferenceTypeConstraint &&
+                typeParameter.ReferenceTypeConstraintNullableAnnotation !=
+                    NullableAnnotation.Annotated &&
+                argumentType.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                violatingTypeParameter = typeParameter;
+                return $"its type parameter '{typeParameter.Name}' requires a non-nullable reference type, but '{argumentType.ToDisplayString()}' is nullable";
+            }
+
             if (typeParameter.HasValueTypeConstraint &&
-                !argumentType.IsValueType)
+                (!argumentType.IsValueType ||
+                    IsNullableValueType(argumentType)))
             {
                 violatingTypeParameter = typeParameter;
                 return $"its type parameter '{typeParameter.Name}' requires a non-nullable value type, but '{argumentType.ToDisplayString()}' is not";
@@ -1077,14 +1170,19 @@ internal static class ConstructorGuardAnalysisHelper
                 return $"its type parameter '{typeParameter.Name}' requires an unmanaged type, but '{argumentType.ToDisplayString()}' is not unmanaged";
             }
 
-            if (typeParameter.HasConstructorConstraint &&
-                argumentType is INamedTypeSymbol namedArgumentType &&
-                namedArgumentType.TypeKind != TypeKind.Struct &&
-                !GeneratedConstructorEligibility.HasAccessibleParameterlessConstructor(
-                    namedArgumentType))
+            if (typeParameter.HasNotNullConstraint &&
+                (argumentType.NullableAnnotation == NullableAnnotation.Annotated ||
+                    IsNullableValueType(argumentType)))
             {
                 violatingTypeParameter = typeParameter;
-                return $"its type parameter '{typeParameter.Name}' requires a public parameterless constructor, which '{argumentType.ToDisplayString()}' does not have";
+                return $"its type parameter '{typeParameter.Name}' requires a non-nullable type, but '{argumentType.ToDisplayString()}' is nullable";
+            }
+
+            if (typeParameter.HasConstructorConstraint &&
+                !SatisfiesConstructorConstraint(argumentType))
+            {
+                violatingTypeParameter = typeParameter;
+                return $"its type parameter '{typeParameter.Name}' requires a non-abstract type with a public parameterless constructor, which '{argumentType.ToDisplayString()}' does not have";
             }
 
             foreach (var constraintType in typeParameter.ConstraintTypes)
@@ -1135,13 +1233,30 @@ internal static class ConstructorGuardAnalysisHelper
         ITypeSymbol parameterType,
         ITypeSymbol candidateType,
         HashSet<ITypeSymbol> methodTypeParameters,
-        Dictionary<ITypeSymbol, ITypeSymbol> substitution)
+        Dictionary<ITypeSymbol, ITypeSymbol> substitution,
+        Compilation compilation,
+        bool allowImplicitTypeParameterConversion)
     {
         if (parameterType is ITypeParameterSymbol typeParameter &&
             methodTypeParameters.Contains(typeParameter))
         {
             if (substitution.TryGetValue(typeParameter, out var bound))
-                return SymbolEqualityComparer.Default.Equals(bound, candidateType);
+            {
+                if (SymbolEqualityComparer.Default.Equals(bound, candidateType))
+                    return true;
+
+                if (!allowImplicitTypeParameterConversion)
+                    return false;
+
+                if (IsAssignableTo(candidateType, bound, compilation))
+                    return true;
+
+                if (!IsAssignableTo(bound, candidateType, compilation))
+                    return false;
+
+                substitution[typeParameter] = candidateType;
+                return true;
+            }
 
             substitution[typeParameter] = candidateType;
             return true;
@@ -1169,7 +1284,9 @@ internal static class ConstructorGuardAnalysisHelper
                     namedParameter.TypeArguments[i],
                     namedCandidate.TypeArguments[i],
                     methodTypeParameters,
-                    substitution))
+                    substitution,
+                    compilation,
+                    allowImplicitTypeParameterConversion: false))
                 {
                     return false;
                 }
@@ -1181,14 +1298,46 @@ internal static class ConstructorGuardAnalysisHelper
         if (parameterType is IArrayTypeSymbol arrayParameter &&
             candidateType is IArrayTypeSymbol arrayCandidate)
         {
+            if (arrayParameter.Rank != arrayCandidate.Rank)
+                return false;
+
             return TryUnify(
                 arrayParameter.ElementType,
                 arrayCandidate.ElementType,
                 methodTypeParameters,
-                substitution);
+                substitution,
+                compilation,
+                allowImplicitTypeParameterConversion: false);
         }
 
         return SymbolEqualityComparer.Default.Equals(parameterType, candidateType);
+    }
+
+    private static bool IsNullableValueType(ITypeSymbol type)
+    {
+        return type is INamedTypeSymbol
+        {
+            OriginalDefinition.SpecialType: SpecialType.System_Nullable_T,
+        };
+    }
+
+    private static bool SatisfiesConstructorConstraint(ITypeSymbol type)
+    {
+        if (type.IsValueType)
+            return true;
+
+        if (type is ITypeParameterSymbol typeParameter)
+        {
+            return typeParameter.HasConstructorConstraint ||
+                typeParameter.HasValueTypeConstraint ||
+                typeParameter.HasUnmanagedTypeConstraint;
+        }
+
+        return type is INamedTypeSymbol namedType &&
+            !namedType.IsAbstract &&
+            namedType.InstanceConstructors.Any(constructor =>
+                constructor.Parameters.Length == 0 &&
+                constructor.DeclaredAccessibility == Accessibility.Public);
     }
 
     private static bool InheritsFromSystemAttribute(INamedTypeSymbol type)
