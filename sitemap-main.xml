@@ -5,50 +5,6 @@
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/options/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/getting-started/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/interceptors/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/http-clients/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/generated-record-constructor-overloads/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/releasing/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/articles/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/keyed-services/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/hosted-services/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/solution-wide-source-generation/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/maui/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
     <loc>https://www.devleader.ca/projects/needlr/video-tutorials/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
@@ -57,31 +13,7 @@
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/providers/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/core-concepts/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/cancellation-aware-logging/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/factories/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/benchmarks/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/plugin-development/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/options/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
@@ -89,23 +21,7 @@
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/ide-extensions/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/cross-generator-plugins/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/open-generic-decorators/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
     <loc>https://www.devleader.ca/projects/needlr/local-runners/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/service-catalog/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
@@ -113,11 +29,7 @@
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/serilog/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/breadcrumbs/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
@@ -129,7 +41,91 @@
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/adr/adr-0006-generate-record-constructor-overloads/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/articles/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/factories/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/open-generic-decorators/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/interceptors/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/plugin-development/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/providers/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/solution-wide-source-generation/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/generated-record-constructor-overloads/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/hosted-services/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/core-concepts/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/keyed-services/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/releasing/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/breadcrumbs/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/getting-started/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/cross-generator-plugins/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/service-catalog/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/ide-extensions/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/benchmarks/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/http-clients/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/maui/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/cancellation-aware-logging/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/serilog/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
@@ -141,7 +137,7 @@
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/adr/adr-0004-extract-ai-platform-to-foundry/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/adr/adr-0006-generate-record-constructor-overloads/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
@@ -149,43 +145,39 @@
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN049/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/adr/adr-0004-extract-ai-platform-to-foundry/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP005/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRSIG002/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN045/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN044/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN035/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR002/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP003/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG006/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR011/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN007/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN043/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN004/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN018/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN054/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN062/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN021/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN005/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
@@ -193,7 +185,39 @@
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN048/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN060/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN049/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN051/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN006/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG003/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN034/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN047/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR007/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
@@ -201,7 +225,7 @@
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG004/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN035/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
@@ -209,7 +233,71 @@
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR015/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN003/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR011/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN058/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN016/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP002/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN055/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN050/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN057/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN019/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR006/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN043/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR010/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN038/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN056/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN036/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN059/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN031/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
@@ -217,11 +305,151 @@
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN022/</loc>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN020/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG001/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN018/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN039/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG005/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR003/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN001/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN032/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP003/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN061/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP001/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
     <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP006/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG002/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR001/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG004/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR016/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN002/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP004/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN021/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN015/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN052/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR012/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN008/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRSIG001/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR015/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP005/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN042/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN045/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR004/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN017/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN041/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR008/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN022/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN062/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN037/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR005/</loc>
+    <lastmod>2026-07-26</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN033/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
   <url>
@@ -230,234 +458,6 @@
   </url>
   <url>
     <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR009/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN044/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN057/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG005/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN059/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN047/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN038/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN060/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR010/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP002/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR007/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN019/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN055/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN058/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRSIG002/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR003/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN016/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR016/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG002/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN001/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN004/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN052/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN002/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN054/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN017/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR004/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP001/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP004/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR001/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN042/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN003/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR006/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR002/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRSIG001/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN005/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN020/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN033/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN050/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN037/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN051/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG003/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR012/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN036/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN048/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG001/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN031/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN041/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN008/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN039/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN015/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR005/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR008/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN032/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN007/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN056/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN006/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG006/</loc>
-    <lastmod>2026-07-26</lastmod>
-  </url>
-  <url>
-    <loc>https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN061/</loc>
     <lastmod>2026-07-26</lastmod>
   </url>
 </urlset>

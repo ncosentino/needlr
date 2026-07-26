@@ -396,7 +396,7 @@ var assemblies = [
       { "name": "NexusLabs.Needlr.Generators.CodeGen.ServiceCatalogCodeGenerator", "rp": "NexusLabs.Needlr.Generators_ServiceCatalogCodeGenerator.html", "cl": 157, "ucl": 7, "cal": 164, "tl": 295, "cb": 52, "tb": 66, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.ComposedRegistrationDiscoveryHelper", "rp": "NexusLabs.Needlr.Generators_ComposedRegistrationDiscoveryHelper.html", "cl": 146, "ucl": 1, "cal": 147, "tl": 376, "cb": 136, "tb": 142, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.ConstructorGenerationDiscoveryHelper", "rp": "NexusLabs.Needlr.Generators_ConstructorGenerationDiscoveryHelper.html", "cl": 100, "ucl": 7, "cal": 107, "tl": 299, "cb": 81, "tb": 92, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "rp": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "cl": 572, "ucl": 91, "cal": 663, "tl": 1207, "cb": 254, "tb": 326, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "rp": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "cl": 673, "ucl": 87, "cal": 760, "tl": 1356, "cb": 324, "tb": 392, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.ConstructorGuardDiscoveryHelper", "rp": "NexusLabs.Needlr.Generators_ConstructorGuardDiscoveryHelper.html", "cl": 66, "ucl": 2, "cal": 68, "tl": 161, "cb": 42, "tb": 46, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.DiagnosticDescriptors", "rp": "NexusLabs.Needlr.Generators_DiagnosticDescriptors.html", "cl": 505, "ucl": 0, "cal": 505, "tl": 813, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.DiagnosticOptions", "rp": "NexusLabs.Needlr.Generators_DiagnosticOptions.html", "cl": 25, "ucl": 0, "cal": 25, "tl": 74, "cb": 14, "tb": 16, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -486,7 +486,7 @@ var assemblies = [
       { "name": "NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute", "rp": "NexusLabs.Needlr.Generators.Attributes_GenerateTypeRegistryAttribute.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 79, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.HttpClientOptionsAttribute", "rp": "NexusLabs.Needlr.Generators.Attributes_HttpClientOptionsAttribute.html", "cl": 6, "ucl": 1, "cal": 7, "tl": 92, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.InjectableTypeInfo", "rp": "NexusLabs.Needlr.Generators.Attributes_InjectableTypeInfo.html", "cl": 15, "ucl": 2, "cal": 17, "tl": 274, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap", "rp": "NexusLabs.Needlr.Generators.Attributes_NeedlrSourceGenBootstrap.html", "cl": 93, "ucl": 39, "cal": 132, "tl": 406, "cb": 20, "tb": 42, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap", "rp": "NexusLabs.Needlr.Generators.Attributes_NeedlrSourceGenBootstrap.html", "cl": 93, "ucl": 39, "cal": 132, "tl": 406, "cb": 19, "tb": 42, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.OpenDecoratorForAttribute", "rp": "NexusLabs.Needlr.Generators.Attributes_OpenDecoratorForAttribute.html", "cl": 4, "ucl": 1, "cal": 5, "tl": 101, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.OptionsAttribute", "rp": "NexusLabs.Needlr.Generators.Attributes_OptionsAttribute.html", "cl": 9, "ucl": 1, "cal": 10, "tl": 173, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.PluginTypeInfo", "rp": "NexusLabs.Needlr.Generators.Attributes_PluginTypeInfo.html", "cl": 19, "ucl": 5, "cal": 24, "tl": 274, "cb": 4, "tb": 8, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -779,12 +779,6 @@ var riskHotspots = [
       { "value": 26, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "reportPath": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "methodName": "FindConstraintViolation(System.Collections.Immutable.ImmutableArray\u00601\u003CMicrosoft.CodeAnalysis.ITypeParameterSymbol\u003E,System.Collections.Generic.Dictionary\u00602\u003CMicrosoft.CodeAnalysis.ITypeSymbol,Microsoft.CodeAnalysis.ITypeSymbol\u003E,Microsoft.CodeAnalysis.Compilation,Microsoft.CodeAnalysis.ITypeParameterSymbol\u0026)", "methodShortName": "FindConstraintViolation(...)", "fileIndex": 0, "line": 1054,
-    "metrics": [
-      { "value": 49, "exceeded": true },
-      { "value": 34, "exceeded": true },
-    ]},
-  {
     "assembly": "NexusLabs.Needlr.Analyzers", "class": "NexusLabs.Needlr.Roslyn.Shared.GeneratedConstructorEligibility", "reportPath": "NexusLabs.Needlr.Analyzers_GeneratedConstructorEligibility.html", "methodName": "IsEligibleForGeneratedConstructor(Microsoft.CodeAnalysis.INamedTypeSymbol)", "methodShortName": "IsEligibleForGeneratedConstructor(...)", "fileIndex": 0, "line": 173,
     "metrics": [
       { "value": 48, "exceeded": true },
@@ -809,10 +803,10 @@ var riskHotspots = [
       { "value": 26, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "reportPath": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "methodName": "TryUnify(Microsoft.CodeAnalysis.ITypeSymbol,Microsoft.CodeAnalysis.ITypeSymbol,System.Collections.Generic.HashSet\u00601\u003CMicrosoft.CodeAnalysis.ITypeSymbol\u003E,System.Collections.Generic.Dictionary\u00602\u003CMicrosoft.CodeAnalysis.ITypeSymbol,Microsoft.CodeAnalysis.ITypeSymbol\u003E)", "methodShortName": "TryUnify(...)", "fileIndex": 0, "line": 1140,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "reportPath": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "methodName": "FindConstraintViolation(System.Collections.Immutable.ImmutableArray\u00601\u003CMicrosoft.CodeAnalysis.ITypeParameterSymbol\u003E,System.Collections.Generic.Dictionary\u00602\u003CMicrosoft.CodeAnalysis.ITypeSymbol,Microsoft.CodeAnalysis.ITypeSymbol\u003E,Microsoft.CodeAnalysis.Compilation,Microsoft.CodeAnalysis.ITypeParameterSymbol\u0026)", "methodShortName": "FindConstraintViolation(...)", "fileIndex": 0, "line": 1137,
     "metrics": [
       { "value": 44, "exceeded": true },
-      { "value": 22, "exceeded": true },
+      { "value": 44, "exceeded": true },
     ]},
   {
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.HttpClientOptionsAnalyzer", "reportPath": "NexusLabs.Needlr.Generators_HttpClientOptionsAnalyzer.html", "methodName": "AnalyzeNamedType(Microsoft.CodeAnalysis.Diagnostics.SymbolAnalysisContext,System.Collections.Concurrent.ConcurrentDictionary\u00602\u003CSystem.String,System.Collections.Generic.List\u00601\u003CSystem.ValueTuple\u00602\u003CMicrosoft.CodeAnalysis.INamedTypeSymbol,Microsoft.CodeAnalysis.Location\u003E\u003E\u003E)", "methodShortName": "AnalyzeNamedType(...)", "fileIndex": 0, "line": 99,
@@ -846,6 +840,12 @@ var riskHotspots = [
     ]},
   {
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.AssemblyDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_AssemblyDiscoveryHelper.html", "methodName": "DiscoverReferencedAssemblyTypesForGraph(Microsoft.CodeAnalysis.Compilation)", "methodShortName": "DiscoverReferencedAssemblyTypesForGraph(...)", "fileIndex": 0, "line": 138,
+    "metrics": [
+      { "value": 42, "exceeded": true },
+      { "value": 42, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "reportPath": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "methodName": "TryResolveGuardMethod(Microsoft.CodeAnalysis.Compilation,Microsoft.CodeAnalysis.INamedTypeSymbol,Microsoft.CodeAnalysis.ITypeSymbol,System.String,Microsoft.CodeAnalysis.ITypeSymbol,System.String,System.Collections.Immutable.ImmutableArray\u00601\u003CMicrosoft.CodeAnalysis.ITypeSymbol\u003E,Microsoft.CodeAnalysis.IMethodSymbol\u0026,System.String\u0026,NexusLabs.Needlr.Generators.Models.GuardResolutionFailureKind\u0026)", "methodShortName": "TryResolveGuardMethod(...)", "fileIndex": 0, "line": 308,
     "metrics": [
       { "value": 42, "exceeded": true },
       { "value": 42, "exceeded": true },
@@ -899,10 +899,10 @@ var riskHotspots = [
       { "value": 32, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "reportPath": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "methodName": "TryResolveGuardMethod(Microsoft.CodeAnalysis.Compilation,Microsoft.CodeAnalysis.INamedTypeSymbol,Microsoft.CodeAnalysis.ITypeSymbol,System.String,Microsoft.CodeAnalysis.ITypeSymbol,System.String,System.Collections.Immutable.ImmutableArray\u00601\u003CMicrosoft.CodeAnalysis.ITypeSymbol\u003E,Microsoft.CodeAnalysis.IMethodSymbol\u0026,System.String\u0026,NexusLabs.Needlr.Generators.Models.GuardResolutionFailureKind\u0026)", "methodShortName": "TryResolveGuardMethod(...)", "fileIndex": 0, "line": 308,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "reportPath": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "methodName": "TryInferGenericParameterCompatibility(Microsoft.CodeAnalysis.IMethodSymbol,Microsoft.CodeAnalysis.ITypeSymbol,Microsoft.CodeAnalysis.ITypeSymbol,System.String,System.Collections.Generic.List\u00601\u003CMicrosoft.CodeAnalysis.IParameterSymbol\u003E,System.Collections.Immutable.ImmutableArray\u00601\u003CMicrosoft.CodeAnalysis.ITypeSymbol\u003E,Microsoft.CodeAnalysis.Compilation,System.String\u0026,NexusLabs.Needlr.Generators.Models.GuardResolutionFailureKind\u0026)", "methodShortName": "TryInferGenericParameterCompatibility(...)", "fileIndex": 0, "line": 992,
     "metrics": [
       { "value": 36, "exceeded": true },
-      { "value": 34, "exceeded": true },
+      { "value": 36, "exceeded": true },
     ]},
   {
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ProviderDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_ProviderDiscoveryHelper.html", "methodName": "Pluralize(System.String)", "methodShortName": "Pluralize(...)", "fileIndex": 0, "line": 235,
@@ -915,6 +915,12 @@ var riskHotspots = [
     "metrics": [
       { "value": 34, "exceeded": true },
       { "value": 34, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "reportPath": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "methodName": "TryUnify(Microsoft.CodeAnalysis.ITypeSymbol,Microsoft.CodeAnalysis.ITypeSymbol,System.Collections.Generic.HashSet\u00601\u003CMicrosoft.CodeAnalysis.ITypeSymbol\u003E,System.Collections.Generic.Dictionary\u00602\u003CMicrosoft.CodeAnalysis.ITypeSymbol,Microsoft.CodeAnalysis.ITypeSymbol\u003E,Microsoft.CodeAnalysis.Compilation,System.Boolean)", "methodShortName": "TryUnify(...)", "fileIndex": 0, "line": 1240,
+    "metrics": [
+      { "value": 34, "exceeded": true },
+      { "value": 32, "exceeded": true },
     ]},
   {
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.DiagnosticsGenerator", "reportPath": "NexusLabs.Needlr.Generators_DiagnosticsGenerator.html", "methodName": "GenerateOptionsSummaryMarkdown(NexusLabs.Needlr.Generators.Models.DiscoveryResult,System.String,System.String,System.Collections.Generic.HashSet\u00601\u003CSystem.String\u003E)", "methodShortName": "GenerateOptionsSummaryMarkdown(...)", "fileIndex": 0, "line": 1038,
@@ -954,12 +960,6 @@ var riskHotspots = [
     ]},
   {
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ComposedRegistrationDiscoveryHelper", "reportPath": "NexusLabs.Needlr.Generators_ComposedRegistrationDiscoveryHelper.html", "methodName": "SatisfiesConstraint(Microsoft.CodeAnalysis.ITypeParameterSymbol,Microsoft.CodeAnalysis.ITypeSymbol)", "methodShortName": "SatisfiesConstraint(...)", "fileIndex": 0, "line": 297,
-    "metrics": [
-      { "value": 32, "exceeded": true },
-      { "value": 32, "exceeded": true },
-    ]},
-  {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "reportPath": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "methodName": "TryInferGenericParameterCompatibility(Microsoft.CodeAnalysis.IMethodSymbol,Microsoft.CodeAnalysis.ITypeSymbol,Microsoft.CodeAnalysis.ITypeSymbol,System.String,System.Collections.Generic.List\u00601\u003CMicrosoft.CodeAnalysis.IParameterSymbol\u003E,System.Collections.Immutable.ImmutableArray\u00601\u003CMicrosoft.CodeAnalysis.ITypeSymbol\u003E,Microsoft.CodeAnalysis.Compilation,System.String\u0026,NexusLabs.Needlr.Generators.Models.GuardResolutionFailureKind\u0026)", "methodShortName": "TryInferGenericParameterCompatibility(...)", "fileIndex": 0, "line": 919,
     "metrics": [
       { "value": 32, "exceeded": true },
       { "value": 32, "exceeded": true },
@@ -1253,13 +1253,13 @@ var riskHotspots = [
       { "value": 20, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "reportPath": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "methodName": "AnalyzeAliasGuardAtUsage(Microsoft.CodeAnalysis.Diagnostics.SyntaxNodeAnalysisContext,Microsoft.CodeAnalysis.INamedTypeSymbol,NexusLabs.Needlr.Generators.Models.ConstructorGuardOccurrence,Microsoft.CodeAnalysis.Location)", "methodShortName": "AnalyzeAliasGuardAtUsage(...)", "fileIndex": 0, "line": 574,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "reportPath": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "methodName": "AnalyzeAliasGuardAtUsage(Microsoft.CodeAnalysis.Diagnostics.SyntaxNodeAnalysisContext,Microsoft.CodeAnalysis.INamedTypeSymbol,NexusLabs.Needlr.Generators.Models.ConstructorGuardOccurrence,Microsoft.CodeAnalysis.Location)", "methodShortName": "AnalyzeAliasGuardAtUsage(...)", "fileIndex": 0, "line": 647,
     "metrics": [
-      { "value": 22, "exceeded": false },
+      { "value": 28, "exceeded": false },
       { "value": 20, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "reportPath": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "methodName": "AnalyzeCustomGuard(Microsoft.CodeAnalysis.Diagnostics.SyntaxNodeAnalysisContext,Microsoft.CodeAnalysis.INamedTypeSymbol,NexusLabs.Needlr.Generators.Models.ConstructorGuardOccurrence,Microsoft.CodeAnalysis.Location,Microsoft.CodeAnalysis.ITypeSymbol,System.String,System.Boolean,System.Collections.Immutable.ImmutableArray\u00601\u003CMicrosoft.CodeAnalysis.ITypeSymbol\u003E)", "methodShortName": "AnalyzeCustomGuard(...)", "fileIndex": 0, "line": 713,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "reportPath": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "methodName": "AnalyzeCustomGuard(Microsoft.CodeAnalysis.Diagnostics.SyntaxNodeAnalysisContext,Microsoft.CodeAnalysis.INamedTypeSymbol,NexusLabs.Needlr.Generators.Models.ConstructorGuardOccurrence,Microsoft.CodeAnalysis.Location,Microsoft.CodeAnalysis.ITypeSymbol,System.String,System.Boolean,System.Collections.Immutable.ImmutableArray\u00601\u003CMicrosoft.CodeAnalysis.ITypeSymbol\u003E)", "methodShortName": "AnalyzeCustomGuard(...)", "fileIndex": 0, "line": 786,
     "metrics": [
       { "value": 26, "exceeded": false },
       { "value": 20, "exceeded": true },
@@ -1442,6 +1442,12 @@ var riskHotspots = [
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "reportPath": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "methodName": "IsPositiveGuardOccurrenceValidForGeneration(Microsoft.CodeAnalysis.Compilation,Microsoft.CodeAnalysis.INamedTypeSymbol,NexusLabs.Needlr.Generators.Models.ConstructorGuardOccurrence)", "methodShortName": "IsPositiveGuardOccurrenceValidForGeneration(...)", "fileIndex": 0, "line": 217,
     "metrics": [
       { "value": 17, "exceeded": false },
+      { "value": 16, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper", "reportPath": "NexusLabs.Needlr.Generators_ConstructorGuardAnalysisHelper.html", "methodName": "IsBetterGuardMethod(Microsoft.CodeAnalysis.IMethodSymbol,Microsoft.CodeAnalysis.IMethodSymbol,Microsoft.CodeAnalysis.ITypeSymbol,System.Collections.Immutable.ImmutableArray\u00601\u003CMicrosoft.CodeAnalysis.ITypeSymbol\u003E,Microsoft.CodeAnalysis.Compilation)", "methodShortName": "IsBetterGuardMethod(...)", "fileIndex": 0, "line": 485,
+    "metrics": [
+      { "value": 16, "exceeded": false },
       { "value": 16, "exceeded": true },
     ]},
   {
