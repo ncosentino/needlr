@@ -160,6 +160,7 @@ internal static class GraphExporter
             {
                 IsDisposable = type.IsDisposable,
                 HasFactory = discoveryResult.Factories.Any(f => f.TypeName == type.TypeName),
+                HasOptions = discoveryResult.Options.Any(o => o.TypeName == type.TypeName),
                 IsHostedService = discoveryResult.HostedServices.Any(h => h.TypeName == type.TypeName),
                 IsPlugin = discoveryResult.PluginTypes.Any(p => p.TypeName == type.TypeName)
             }

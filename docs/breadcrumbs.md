@@ -262,7 +262,7 @@ Specify a custom output directory (relative paths are resolved from the project 
 
 ### Filtering Types
 
-Filter diagnostics to specific types (comma-separated fully qualified names):
+Filter diagnostics to specific types (comma- or semicolon-separated names):
 
 ```xml
 <PropertyGroup>
@@ -270,6 +270,24 @@ Filter diagnostics to specific types (comma-separated fully qualified names):
   <NeedlrDiagnosticsFilter>MyApp.OrderService,MyApp.PaymentService</NeedlrDiagnosticsFilter>
 </PropertyGroup>
 ```
+
+A filter term matches a type by its fully qualified name (`global::MyApp.OrderService`), its
+namespace-qualified name (`MyApp.OrderService`), or its short name (`OrderService`). The same
+term is also matched against every identity on the other side of a relationship, so a single
+filter term keeps every artifact consistent:
+
+| Artifact | Matched identities |
+|----------|--------------------|
+| Services | Implementation name, registered interface names |
+| Decorators | Decorator implementation name, decorated service name |
+| Factories | Source type name, produced service type name |
+| Intercepted services | Service name, service interfaces, interceptor type names |
+| Plugins | Plugin type name, plugin interface names |
+| Referenced plugin assembly types | Type name, short name, interface names |
+| Options | Options type name, configuration section name, named-options name |
+
+Sections whose members are entirely filtered out - including referenced plugin assemblies -
+are omitted from the generated Markdown.
 
 ### Example Output
 
