@@ -57,17 +57,17 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
         if (!IsOptionsAttribute(attributeSymbol))
             return;
 
-        // Get the class this attribute is applied to
-        var classDeclaration = attributeSyntax.Parent?.Parent as ClassDeclarationSyntax;
-        if (classDeclaration == null)
+        // Get the type this attribute is applied to
+        var typeDeclaration = attributeSyntax.Parent?.Parent as TypeDeclarationSyntax;
+        if (typeDeclaration == null)
             return;
 
-        var classSymbol = context.SemanticModel.GetDeclaredSymbol(classDeclaration);
-        if (classSymbol == null)
+        var optionsType = context.SemanticModel.GetDeclaredSymbol(typeDeclaration);
+        if (optionsType == null)
             return;
 
         // Extract attribute properties
-        var attributeData = classSymbol.GetAttributes()
+        var attributeData = optionsType.GetAttributes()
             .FirstOrDefault(a => IsOptionsAttribute(a.AttributeClass));
 
         if (attributeData == null)
@@ -114,35 +114,28 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
         // If ValidateOnStart is true, validate the configuration
         if (validateOnStart)
         {
-            var targetType = validatorType ?? classSymbol;
+            var targetType = validatorType ?? optionsType;
             var methodName = validateMethod ?? "Validate";
 
             // Check if validator is recognized by an extension (e.g., FluentValidation)
             // If so, skip our method signature checks - the extension handles it
             var isRecognizedByExtension = validatorType != null && IsRecognizedByValidatorProvider(validatorType, context.Compilation);
+            if (isRecognizedByExtension)
+                return;
 
-            // Find the validation method
-            var validationMethod = FindValidationMethod(targetType, methodName);
+            var validationMethods = FindValidationMethods(targetType, methodName).ToArray();
+            var validMethod = validationMethods.FirstOrDefault(method =>
+                ValidateMethodSignature(method, optionsType, validatorType != null) == null &&
+                (validatorType == null ||
+                 SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, optionsType)));
 
-            // NDLRGEN016: Method not found
-            // Skip if validator is recognized by an extension - they have their own method signatures
-            if (validationMethod == null && !isRecognizedByExtension)
+            if (validMethod != null)
+                return;
+
+            if (validationMethods.Length > 0)
             {
-                // Only report if ValidateMethod was explicitly specified or Validator was specified
-                // (convention-based discovery is optional - no method is OK if not specified)
-                if (validateMethod != null || validatorType != null)
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.ValidateMethodNotFound,
-                        attributeSyntax.GetLocation(),
-                        methodName,
-                        targetType.Name));
-                }
-            }
-            else if (validationMethod != null && !isRecognizedByExtension)
-            {
-                // NDLRGEN017: Check method signature
-                var signatureError = ValidateMethodSignature(validationMethod, classSymbol, validatorType != null);
+                var validationMethod = validationMethods[0];
+                var signatureError = ValidateMethodSignature(validationMethod, optionsType, validatorType != null);
                 if (signatureError != null)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
@@ -152,35 +145,56 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
                         targetType.Name,
                         signatureError));
                 }
-
-                // NDLRGEN015: Validator type mismatch (if external validator with parameter)
-                if (validatorType != null && !validationMethod.IsStatic && validationMethod.Parameters.Length == 1)
+                else if (validatorType != null)
                 {
-                    var paramType = validationMethod.Parameters[0].Type;
-                    if (!SymbolEqualityComparer.Default.Equals(paramType, classSymbol))
-                    {
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            DiagnosticDescriptors.ValidatorTypeMismatch,
-                            attributeSyntax.GetLocation(),
-                            validatorType.Name,
-                            paramType.Name,
-                            classSymbol.Name));
-                    }
-                }
-            }
-
-            // NDLRGEN014: Check if validator implements IOptionsValidator<T> or is recognized by an extension
-            if (validatorType != null && validationMethod == null && !isRecognizedByExtension)
-            {
-                var implementsInterface = ImplementsIOptionsValidator(validatorType, classSymbol);
-                if (!implementsInterface)
-                {
+                    var parameterType = validationMethod.Parameters[0].Type;
                     context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.ValidatorTypeMissingInterface,
+                        DiagnosticDescriptors.ValidatorTypeMismatch,
                         attributeSyntax.GetLocation(),
                         validatorType.Name,
-                        classSymbol.Name));
+                        parameterType.Name,
+                        optionsType.Name));
                 }
+
+                return;
+            }
+
+            if (validatorType != null && validateMethod == null)
+            {
+                var interfaceTypeArguments = GetIOptionsValidatorTypeArguments(validatorType).ToArray();
+                if (interfaceTypeArguments.Any(typeArgument =>
+                    SymbolEqualityComparer.Default.Equals(typeArgument, optionsType)))
+                {
+                    return;
+                }
+
+                if (interfaceTypeArguments.Length > 0)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        DiagnosticDescriptors.ValidatorTypeMismatch,
+                        attributeSyntax.GetLocation(),
+                        validatorType.Name,
+                        interfaceTypeArguments[0].Name,
+                        optionsType.Name));
+                    return;
+                }
+
+                context.ReportDiagnostic(Diagnostic.Create(
+                    DiagnosticDescriptors.ValidatorTypeMissingInterface,
+                    attributeSyntax.GetLocation(),
+                    validatorType.Name,
+                    optionsType.Name));
+                return;
+            }
+
+            // Convention-based self-validation is optional.
+            if (validateMethod != null)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    DiagnosticDescriptors.ValidateMethodNotFound,
+                    attributeSyntax.GetLocation(),
+                    methodName,
+                    targetType.Name));
             }
         }
     }
@@ -194,31 +208,34 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
                attributeClass.ContainingNamespace?.ToDisplayString() == GeneratorsNamespace;
     }
 
-    private static IMethodSymbol? FindValidationMethod(INamedTypeSymbol targetType, string methodName)
+    private static IEnumerable<IMethodSymbol> FindValidationMethods(
+        INamedTypeSymbol targetType,
+        string methodName)
     {
         foreach (var member in targetType.GetMembers())
         {
-            if (member is IMethodSymbol method && method.Name == methodName)
+            if (member is IMethodSymbol method &&
+                method.Name == methodName &&
+                method.DeclaredAccessibility == Accessibility.Public &&
+                method.MethodKind == MethodKind.Ordinary)
             {
-                // Accept methods with 0 or 1 parameters
-                if (method.Parameters.Length <= 1)
-                    return method;
+                yield return method;
             }
         }
-
-        return null;
     }
 
     private static string? ValidateMethodSignature(IMethodSymbol method, INamedTypeSymbol optionsType, bool isExternalValidator)
     {
-        // Check return type - should be IEnumerable<something>
-        if (method.ReturnType is not INamedTypeSymbol returnType)
+        if (method.ReturnType is not INamedTypeSymbol returnType ||
+            returnType.OriginalDefinition.ToDisplayString() != "System.Collections.Generic.IEnumerable<T>" ||
+            returnType.TypeArguments.Length != 1)
+        {
             return "IEnumerable<ValidationError> or IEnumerable<string>";
+        }
 
-        var isEnumerable = returnType.OriginalDefinition.ToDisplayString() == "System.Collections.Generic.IEnumerable<T>" ||
-                           returnType.AllInterfaces.Any(i => i.OriginalDefinition.ToDisplayString() == "System.Collections.Generic.IEnumerable<T>");
-
-        if (!isEnumerable && returnType.ToDisplayString() != "System.Collections.IEnumerable")
+        var resultType = returnType.TypeArguments[0];
+        if (resultType.SpecialType != SpecialType.System_String &&
+            resultType.ToDisplayString() != "NexusLabs.Needlr.Generators.ValidationError")
         {
             return "IEnumerable<ValidationError> or IEnumerable<string>";
         }
@@ -244,12 +261,19 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
             {
                 return $"static IEnumerable<ValidationError> {method.Name}({optionsType.Name} options)";
             }
+
+            if (method.IsStatic &&
+                !SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, optionsType))
+            {
+                return $"static IEnumerable<ValidationError> {method.Name}({optionsType.Name} options)";
+            }
         }
 
         return null; // Valid signature
     }
 
-    private static bool ImplementsIOptionsValidator(INamedTypeSymbol validatorType, INamedTypeSymbol optionsType)
+    private static IEnumerable<ITypeSymbol> GetIOptionsValidatorTypeArguments(
+        INamedTypeSymbol validatorType)
     {
         foreach (var iface in validatorType.AllInterfaces)
         {
@@ -258,13 +282,9 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
                 iface.IsGenericType &&
                 iface.TypeArguments.Length == 1)
             {
-                // Check if the type argument matches the options type
-                if (SymbolEqualityComparer.Default.Equals(iface.TypeArguments[0], optionsType))
-                    return true;
+                yield return iface.TypeArguments[0];
             }
         }
-
-        return false;
     }
 
     private static bool IsRecognizedByValidatorProvider(INamedTypeSymbol validatorType, Compilation compilation)
