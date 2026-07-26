@@ -13,6 +13,7 @@
 - Source-generated bootstraps now explicitly run referenced TypeRegistry module constructors instead of relying on `typeof(...).Assembly`, which does not guarantee module initialization. This makes transitive registry loading deterministic and removes test-order dependence from Carter, SignalR, and cross-generator bootstrap coverage.
 - HttpClient name inference now treats types named exactly `HttpClientOptions`, `HttpClientSettings`, or `HttpClient` as empty inferred names, making NDLRHTTP004 reachable as documented instead of silently registering a suffix-only client name. HttpClient collision diagnostics are emitted deterministically, and generated client names and configuration section literals are escaped consistently.
 - CI now disables NBGV's per-project cloud build-number and version-variable publication, preventing parallel solution builds from corrupting GitHub Actions file-command files. The obsolete temporary `$GITHUB_ENV` redirection workarounds were removed.
+- The IDE dependency graph (`needlr-graph.json`) now sets `metadata.hasOptions` for services discovered as `[Options]` types. Previously the flag was always `false`, so IDE consumers that recompute statistics from merged project graphs reported zero options types.
 
 ### Changed
 
