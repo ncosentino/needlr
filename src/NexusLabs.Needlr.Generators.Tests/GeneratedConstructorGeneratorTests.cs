@@ -535,6 +535,79 @@ public sealed class GeneratedConstructorGeneratorTests
     }
 
     [Fact]
+    public void BetterExactOverload_EmitsCompilingDirectMethodCall()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp
+            {
+                public static class ValueGuard
+                {
+                    public static void Validate(string value, string parameterName) { }
+                    public static void Validate<T>(T value, string parameterName) { }
+                }
+
+                [GenerateConstructor]
+                public partial class Container
+                {
+                    [ConstructorGuard(typeof(ValueGuard))]
+                    private readonly string _value;
+                }
+            }
+            """;
+
+        var runner = GeneratorTestRunner.ForConstructorGeneration()
+            .WithSource(source);
+        var generated = runner.RunGenerator(new GeneratedConstructorGenerator());
+        var errors = runner.RunGeneratorCompilationErrors(new GeneratedConstructorGenerator());
+        var generatedCode = string.Join("\n\n", generated.Select(file => file.Content));
+
+        Assert.Empty(errors);
+        Assert.Contains("global::TestApp.ValueGuard.Validate(value, nameof(value));", generatedCode);
+    }
+
+    [Fact]
+    public void RepeatedGenericParameterWithImplicitConversion_EmitsCompilingDirectMethodCall()
+    {
+        var source = """
+            using System;
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp
+            {
+                public static class MinimumGuard
+                {
+                    public static void Validate<T>(T value, T minimum, string parameterName) { }
+                }
+
+                [ConstructorGuardDefinition(typeof(MinimumGuard))]
+                [AttributeUsage(AttributeTargets.Field)]
+                public sealed class MinimumAttribute : Attribute
+                {
+                    public MinimumAttribute(int minimum) { }
+                }
+
+                [GenerateConstructor]
+                public partial class Container
+                {
+                    [Minimum(1)]
+                    private readonly long _value;
+                }
+            }
+            """;
+
+        var runner = GeneratorTestRunner.ForConstructorGeneration()
+            .WithSource(source);
+        var generated = runner.RunGenerator(new GeneratedConstructorGenerator());
+        var errors = runner.RunGeneratorCompilationErrors(new GeneratedConstructorGenerator());
+        var generatedCode = string.Join("\n\n", generated.Select(file => file.Content));
+
+        Assert.Empty(errors);
+        Assert.Contains("global::TestApp.MinimumGuard.Validate(value, 1, nameof(value));", generatedCode);
+    }
+
+    [Fact]
     public void NamedCustomGuardMethod_EmitsDirectCallToSelectedMethod()
     {
         var source = """
