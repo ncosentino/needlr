@@ -7,6 +7,7 @@
 
 ### Fixed
 
+- `NeedlrSourceGenBootstrap.ClearRegistrationsForTesting` now also clears registered extension registrars, so extension registrations can no longer leak between tests that share the process-wide source-generation bootstrap.
 - Record constructor-overload generation no longer emits unsafe-only source for pointer-typed participants. A pointer-typed (or pointer-array-typed) marked property is now rejected with NDLRGEN059, and a pointer-typed positional parameter with NDLRGEN058, instead of emitting a constructor that cannot compile outside an unsafe context. Signature-collision comparison also recurses through the type arguments of enclosing generic types, so distinct types such as `Outer<int>.Inner` and `Outer<string>.Inner` are no longer reported as colliding.
 - Release documentation now uses an action-managed Python environment on self-hosted runners, avoiding PEP 668 system-Python failures. Python setup, documentation generation/build, and Node.js setup complete before package publication, while all documentation workflows share `docs/requirements.txt`.
 - Release finalization now reads existing version tags directly from `origin` instead of running `git fetch --tags`, so a historical local tag that differs from its remote ref cannot block release validation or cause local tag mutation.
