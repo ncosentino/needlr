@@ -90,6 +90,19 @@ If a discovered type argument does not satisfy the composition type's generic co
 
 This diagnostic is only *reachable* when the composition's constraints are **stricter** than the source interface's. If both carry the same constraint (e.g. `where TData : class`), every discovered implementation can always close the composition, so the diagnostic acts as a safety net for future divergence rather than something you hit day one.
 
+Needlr validates the constraints it can decide on its own, and defers the rest to the C# compiler so a variance or substitution subtlety can never skip a valid registration:
+
+| Constraint | Behavior |
+|------------|----------|
+| `class` | Validated — a value type argument is skipped |
+| `struct` | Validated — a reference type or nullable value type argument is skipped |
+| `unmanaged` | Validated — a managed struct argument is skipped |
+| `notnull` | Validated — a nullable value type argument is skipped |
+| `new()` | Validated — an abstract class, an array, or a class without a public parameterless constructor is skipped |
+| Non-generic base class or interface | Validated by assignability — the exact type, a derived type, and an interface inherited through a base class all satisfy it |
+| Generic constraint types (`IProducer<Animal>`, `IComparable<T>`) | Deferred to the C# compiler — never skipped by Needlr |
+| Bare type parameter (`where TValue : TKey`) | Deferred to the C# compiler — never skipped by Needlr |
+
 ## What This Does and Does Not Catch
 
 The feature eliminates the **"I added a definition and forgot to wire it"** drift entirely: valid definitions auto-wire.
