@@ -1775,6 +1775,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#when-to-suppress" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4707,6 +4718,16 @@
 </span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="p">}</span>
 </span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">}</span>
 </span></code></pre></div>
+<h2 id="detection">Detection<a class="headerlink" href="#detection" title="Permanent link">&para;</a></h2>
+<p>The rule matches plugin interfaces by symbol, so it also fires when the interface is
+inherited indirectly -- through a custom interface that extends a Needlr plugin
+interface, or through a base class that implements one -- and never fires for an
+unrelated interface that merely shares the same simple name in another namespace.</p>
+<p>A base-list entry the compiler cannot resolve at all (for example a bare
+<code>IServiceCollectionPlugin</code> identifier while a <code>using</code> or package reference is still
+missing) is deliberately ignored, because its simple name alone cannot distinguish a
+Needlr plugin interface from any other. An unresolved but namespace-qualified entry such
+as <code>NexusLabs.Needlr.IServiceCollectionPlugin</code> is unambiguous and is still reported.</p>
 <h2 id="when-to-suppress">When to Suppress<a class="headerlink" href="#when-to-suppress" title="Permanent link">&para;</a></h2>
 <p>Suppress this warning if:</p>
 <ul>

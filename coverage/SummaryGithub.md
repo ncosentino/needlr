@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 7/26/2026 - 7:29:57 PM |
-| Coverage date: | 7/26/2026 - 7:19:07 PM - 7/26/2026 - 7:29:32 PM |
+| Generated on: | 7/26/2026 - 11:54:22 PM |
+| Coverage date: | 7/26/2026 - 11:42:41 PM - 7/26/2026 - 11:54:16 PM |
 | Parser: | MultiReport (25x Cobertura) |
 | Assemblies: | 20 |
 | Classes: | 249 |
 | Files: | 229 |
-| **Line coverage:** | 91.9% (12970 of 14102) |
-| Covered lines: | 12970 |
-| Uncovered lines: | 1132 |
-| Coverable lines: | 14102 |
-| Total lines: | 35409 |
-| **Branch coverage:** | 83.1% (5976 of 7191) |
-| Covered branches: | 5976 |
-| Total branches: | 7191 |
+| **Line coverage:** | 92.3% (13010 of 14093) |
+| Covered lines: | 13010 |
+| Uncovered lines: | 1083 |
+| Coverable lines: | 14093 |
+| Total lines: | 35406 |
+| **Branch coverage:** | 83.9% (6031 of 7183) |
+| Covered branches: | 6031 |
+| Total branches: | 7183 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -62,11 +62,11 @@
 |NexusLabs.Needlr.VerificationResult|75%|62.5%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Analyzers - 87.7%</summary>
+<details><summary>NexusLabs.Needlr.Analyzers - 88.6%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Analyzers**|**87.7%**|**72%**|
+|**NexusLabs.Needlr.Analyzers**|**88.6%**|**73.2%**|
 |NexusLabs.Needlr.Analyzers.CircularDependencyAnalyzer|93.4%|77.2%|
 |NexusLabs.Needlr.Analyzers.CollectionResolutionAnalyzer|94.3%|80.9%|
 |NexusLabs.Needlr.Analyzers.DeferToContainerInGeneratedCodeAnalyzer|92.9%|80%|
@@ -78,7 +78,7 @@
 |NexusLabs.Needlr.Analyzers.KeyedServiceResolutionAnalyzer|98.9%|90%|
 |NexusLabs.Needlr.Analyzers.LazyResolutionAnalyzer|94.8%|81.8%|
 |NexusLabs.Needlr.Analyzers.LifetimeMismatchAnalyzer|94.4%|88.4%|
-|NexusLabs.Needlr.Analyzers.PluginConstructorDependenciesAnalyzer|76.7%|58.3%|
+|NexusLabs.Needlr.Analyzers.PluginConstructorDependenciesAnalyzer|100%|92.8%|
 |NexusLabs.Needlr.Analyzers.ReflectionInAotProjectAnalyzer|92%|86.6%|
 |NexusLabs.Needlr.Analyzers.RegisterAsAttributeAnalyzer|84.6%|71.4%|
 |NexusLabs.Needlr.Roslyn.Shared.GeneratedConstructorEligibility|45.7%|44.7%|
@@ -304,15 +304,15 @@
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.7%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.9%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.7%**|**89.3%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.9%**|**89.8%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|95.9%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||
@@ -400,12 +400,12 @@
 |NexusLabs.Needlr.SignalR.SignalRWebApplicationBuilderPlugin|100%||
 
 </details>
-<details><summary>NexusLabs.Needlr.SignalR.Analyzers - 75.3%</summary>
+<details><summary>NexusLabs.Needlr.SignalR.Analyzers - 91.6%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.SignalR.Analyzers**|**75.3%**|**61%**|
-|NexusLabs.Needlr.Roslyn.Shared.GeneratedConstructorEligibility|61.6%|53.7%|
+|**NexusLabs.Needlr.SignalR.Analyzers**|**91.6%**|**85.5%**|
+|NexusLabs.Needlr.Roslyn.Shared.GeneratedConstructorEligibility|94.3%|90.2%|
 |NexusLabs.Needlr.SignalR.Analyzers.DiagnosticDescriptors|100%||
 |NexusLabs.Needlr.SignalR.Analyzers.HubPathAttributeAnalyzer|81.9%|74.1%|
 |NexusLabs.Needlr.SignalR.Analyzers.HubRegistrationPluginConstructorAnalyzer|95%|87.5%|
