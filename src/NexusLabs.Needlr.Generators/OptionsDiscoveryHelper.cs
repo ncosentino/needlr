@@ -18,7 +18,9 @@ internal static class OptionsDiscoveryHelper
     /// Detects whether a type is a positional record that needs a generated parameterless constructor.
     /// Returns null if not a positional record, or PositionalRecordInfo if it is.
     /// </summary>
-    internal static PositionalRecordInfo? DetectPositionalRecord(INamedTypeSymbol typeSymbol)
+    internal static PositionalRecordInfo? DetectPositionalRecord(
+        INamedTypeSymbol typeSymbol,
+        IReadOnlyList<OptionsPropertyInfo> bindableProperties)
     {
         // Must be a record
         if (!typeSymbol.IsRecord)
@@ -48,7 +50,11 @@ internal static class OptionsDiscoveryHelper
 
         // Extract constructor parameters
         var parameters = primaryCtor.Parameters
-            .Select(p => new PositionalRecordParameter(p.Name, p.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)))
+            .Select(p => new PositionalRecordParameter(
+                bindableProperties.First(property =>
+                    property.Name.Equals(p.Name, StringComparison.Ordinal) &&
+                    property.TypeName == p.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)),
+                p.Type.IsValueType))
             .ToList();
 
         // Get namespace
@@ -139,6 +145,7 @@ internal static class OptionsDiscoveryHelper
                 dataAnnotations));
         }
 
+        visitedTypes.Remove(typeFullName);
         return properties;
     }
 

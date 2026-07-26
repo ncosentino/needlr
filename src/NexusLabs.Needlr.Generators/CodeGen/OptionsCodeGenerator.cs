@@ -368,7 +368,7 @@ internal static class OptionsCodeGenerator
                 var defaultArgs = new List<string>();
                 foreach (var param in info.Parameters)
                 {
-                    var defaultValue = GetDefaultValueForType(param.TypeName);
+                    var defaultValue = GetDefaultValueForType(param);
                     defaultArgs.Add(defaultValue);
                 }
                 
@@ -385,34 +385,17 @@ internal static class OptionsCodeGenerator
     /// <summary>
     /// Gets the default value expression for a given type.
     /// </summary>
-    private static string GetDefaultValueForType(string fullyQualifiedTypeName)
+    private static string GetDefaultValueForType(PositionalRecordParameter parameter)
     {
-        // Handle common types with user-friendly defaults
-        return fullyQualifiedTypeName switch
+        var property = parameter.Property;
+        if (property.TypeName == "global::System.String" || property.TypeName == "string")
         {
-            "global::System.String" or "string" => "string.Empty",
-            "global::System.Boolean" or "bool" => "default",
-            "global::System.Int32" or "int" => "default",
-            "global::System.Int64" or "long" => "default",
-            "global::System.Int16" or "short" => "default",
-            "global::System.Byte" or "byte" => "default",
-            "global::System.SByte" or "sbyte" => "default",
-            "global::System.UInt32" or "uint" => "default",
-            "global::System.UInt64" or "ulong" => "default",
-            "global::System.UInt16" or "ushort" => "default",
-            "global::System.Single" or "float" => "default",
-            "global::System.Double" or "double" => "default",
-            "global::System.Decimal" or "decimal" => "default",
-            "global::System.Char" or "char" => "default",
-            "global::System.DateTime" => "default",
-            "global::System.DateTimeOffset" => "default",
-            "global::System.TimeSpan" => "default",
-            "global::System.Guid" => "default",
-            // For nullable types and reference types, use default (which gives null for reference types)
-            // For other value types, use default
-            _ when fullyQualifiedTypeName.EndsWith("?") => "default",
-            _ => "default!"  // Reference types need null-forgiving operator
-        };
+            return "string.Empty";
+        }
+
+        return property.IsNullable || parameter.IsValueType
+            ? "default"
+            : "default!";
     }
 
     // -----------------------------------------------------------------------
@@ -621,7 +604,7 @@ internal static class OptionsCodeGenerator
         var paramIndex = 0;
         foreach (var param in recordInfo.Parameters)
         {
-            GenerateParameterParseVariable(builder, param, paramIndex);
+            GeneratePropertyParseVariable(builder, param.Property, paramIndex);
             paramIndex++;
         }
 
@@ -662,7 +645,7 @@ internal static class OptionsCodeGenerator
         // Handle enums
         if (prop.IsEnum && prop.EnumTypeName != null)
         {
-            var defaultVal = prop.IsNullable ? "null" : "default";
+            var defaultVal = prop.IsNullable ? $"default({typeName})" : "default";
             builder.AppendLine($"            var {varName} = section[\"{prop.Name}\"] is {{ }} v{index} && global::System.Enum.TryParse<{prop.EnumTypeName}>(v{index}, true, out var e{index}) ? e{index} : {defaultVal};");
             return;
         }
@@ -675,17 +658,17 @@ internal static class OptionsCodeGenerator
         }
         else if (baseTypeName == "int" || baseTypeName == "global::System.Int32")
         {
-            var defaultVal = prop.IsNullable ? "null" : "0";
+            var defaultVal = prop.IsNullable ? $"default({typeName})" : "0";
             builder.AppendLine($"            var {varName} = section[\"{prop.Name}\"] is {{ }} v{index} && int.TryParse(v{index}, out var i{index}) ? i{index} : {defaultVal};");
         }
         else if (baseTypeName == "bool" || baseTypeName == "global::System.Boolean")
         {
-            var defaultVal = prop.IsNullable ? "null" : "false";
+            var defaultVal = prop.IsNullable ? $"default({typeName})" : "false";
             builder.AppendLine($"            var {varName} = section[\"{prop.Name}\"] is {{ }} v{index} && bool.TryParse(v{index}, out var b{index}) ? b{index} : {defaultVal};");
         }
         else if (baseTypeName == "double" || baseTypeName == "global::System.Double")
         {
-            var defaultVal = prop.IsNullable ? "null" : "0.0";
+            var defaultVal = prop.IsNullable ? $"default({typeName})" : "0.0";
             builder.AppendLine($"            var {varName} = section[\"{prop.Name}\"] is {{ }} v{index} && double.TryParse(v{index}, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var d{index}) ? d{index} : {defaultVal};");
         }
         else
@@ -716,27 +699,25 @@ internal static class OptionsCodeGenerator
                 }
                 break;
 
+            case ComplexTypeKind.Array:
+                var arrayElemType = prop.ElementTypeName ?? "string";
+                var itemsVar = $"{varName}Items";
+                builder.AppendLine($"            var {sectionVar} = section.GetSection(\"{prop.Name}\");");
+                builder.AppendLine($"            var {itemsVar} = new global::System.Collections.Generic.List<{arrayElemType}>();");
+                builder.AppendLine($"            foreach (var child in {sectionVar}.GetChildren())");
+                builder.AppendLine("            {");
+                GenerateComplexTypeCollectionItem(builder, prop, index, itemsVar, false);
+                builder.AppendLine("            }");
+                builder.AppendLine($"            var {varName} = {itemsVar}.ToArray();");
+                break;
+
             case ComplexTypeKind.List:
                 var listElemType = prop.ElementTypeName ?? "string";
                 builder.AppendLine($"            var {sectionVar} = section.GetSection(\"{prop.Name}\");");
                 builder.AppendLine($"            var {varName} = new global::System.Collections.Generic.List<{listElemType}>();");
                 builder.AppendLine($"            foreach (var child in {sectionVar}.GetChildren())");
                 builder.AppendLine("            {");
-                if (prop.NestedProperties != null && prop.NestedProperties.Count > 0)
-                {
-                    builder.AppendLine($"                var item = new {listElemType}();");
-                    var ni = index * 100;
-                    foreach (var np in prop.NestedProperties)
-                    {
-                        GenerateChildPropertyAssignment(builder, np, ni, "item", "child");
-                        ni++;
-                    }
-                    builder.AppendLine($"                {varName}.Add(item);");
-                }
-                else
-                {
-                    builder.AppendLine($"                if (child.Value is {{ }} val) {varName}.Add(val);");
-                }
+                GenerateComplexTypeCollectionItem(builder, prop, index, varName, false);
                 builder.AppendLine("            }");
                 break;
 
@@ -746,25 +727,7 @@ internal static class OptionsCodeGenerator
                 builder.AppendLine($"            var {varName} = new global::System.Collections.Generic.Dictionary<string, {dictValType}>();");
                 builder.AppendLine($"            foreach (var child in {sectionVar}.GetChildren())");
                 builder.AppendLine("            {");
-                if (prop.NestedProperties != null && prop.NestedProperties.Count > 0)
-                {
-                    builder.AppendLine($"                var item = new {dictValType}();");
-                    var ni = index * 100;
-                    foreach (var np in prop.NestedProperties)
-                    {
-                        GenerateChildPropertyAssignment(builder, np, ni, "item", "child");
-                        ni++;
-                    }
-                    builder.AppendLine($"                {varName}[child.Key] = item;");
-                }
-                else if (dictValType == "int" || dictValType == "global::System.Int32")
-                {
-                    builder.AppendLine($"                if (child.Value is {{ }} val && int.TryParse(val, out var iv)) {varName}[child.Key] = iv;");
-                }
-                else
-                {
-                    builder.AppendLine($"                if (child.Value is {{ }} val) {varName}[child.Key] = val;");
-                }
+                GenerateComplexTypeCollectionItem(builder, prop, index, varName, true);
                 builder.AppendLine("            }");
                 break;
 
@@ -774,74 +737,61 @@ internal static class OptionsCodeGenerator
         }
     }
 
+    private static void GenerateComplexTypeCollectionItem(
+        StringBuilder builder,
+        OptionsPropertyInfo prop,
+        int index,
+        string targetVar,
+        bool isDictionary)
+    {
+        var elementType = prop.ElementTypeName ?? "string";
+        if (prop.NestedProperties != null && prop.NestedProperties.Count > 0)
+        {
+            var itemVar = $"item{index}";
+            builder.AppendLine($"                var {itemVar} = new {elementType}();");
+            var nestedIndex = index * 100;
+            foreach (var nestedProperty in prop.NestedProperties)
+            {
+                GenerateChildPropertyAssignment(builder, nestedProperty, nestedIndex, itemVar, "child");
+                nestedIndex++;
+            }
+
+            var target = isDictionary ? $"{targetVar}[child.Key]" : $"{targetVar}.Add";
+            builder.AppendLine(isDictionary
+                ? $"                {target} = {itemVar};"
+                : $"                {target}({itemVar});");
+            return;
+        }
+
+        if (isDictionary)
+        {
+            GeneratePrimitiveDictionaryAdd(builder, elementType, index, targetVar);
+        }
+        else
+        {
+            GeneratePrimitiveCollectionAdd(builder, elementType, index, targetVar);
+        }
+    }
+
     private static void GenerateNestedPropertyAssignment(StringBuilder builder, OptionsPropertyInfo prop, int index, string targetVar, string sectionVar)
     {
-        var varName = $"nv{index}";
-        var baseTypeName = GetBaseTypeName(prop.TypeName);
+        if (prop.ComplexTypeKind != ComplexTypeKind.None)
+        {
+            GenerateNestedPropertyBinding(builder, prop, index, targetVar, sectionVar);
+            return;
+        }
 
-        if (baseTypeName == "string" || baseTypeName == "global::System.String")
-        {
-            builder.AppendLine($"            if ({sectionVar}[\"{prop.Name}\"] is {{ }} {varName}) {targetVar}.{prop.Name} = {varName};");
-        }
-        else if (baseTypeName == "int" || baseTypeName == "global::System.Int32")
-        {
-            builder.AppendLine($"            if ({sectionVar}[\"{prop.Name}\"] is {{ }} {varName} && int.TryParse({varName}, out var ni{index})) {targetVar}.{prop.Name} = ni{index};");
-        }
-        else if (baseTypeName == "bool" || baseTypeName == "global::System.Boolean")
-        {
-            builder.AppendLine($"            if ({sectionVar}[\"{prop.Name}\"] is {{ }} {varName} && bool.TryParse({varName}, out var nb{index})) {targetVar}.{prop.Name} = nb{index};");
-        }
+        GenerateScalarPropertyAssignment(builder, prop, index, targetVar, sectionVar, "            ", "np");
     }
 
     private static void GenerateChildPropertyAssignment(StringBuilder builder, OptionsPropertyInfo prop, int index, string targetVar, string sectionVar)
     {
-        var varName = $"cv{index}";
-        var baseTypeName = GetBaseTypeName(prop.TypeName);
-
-        if (baseTypeName == "string" || baseTypeName == "global::System.String")
-        {
-            builder.AppendLine($"                if ({sectionVar}[\"{prop.Name}\"] is {{ }} {varName}) {targetVar}.{prop.Name} = {varName};");
-        }
-        else if (baseTypeName == "int" || baseTypeName == "global::System.Int32")
-        {
-            builder.AppendLine($"                if ({sectionVar}[\"{prop.Name}\"] is {{ }} {varName} && int.TryParse({varName}, out var ci{index})) {targetVar}.{prop.Name} = ci{index};");
-        }
+        GenerateScalarPropertyAssignment(builder, prop, index, targetVar, sectionVar, "                ", "cp");
     }
 
     private static void GeneratePropertyInitializer(StringBuilder builder, OptionsPropertyInfo prop, int index, string comma)
     {
         builder.AppendLine($"                {prop.Name} = p{index}{comma}");
-    }
-
-    private static void GenerateParameterParseVariable(StringBuilder builder, PositionalRecordParameter param, int index)
-    {
-        var varName = $"p{index}";
-        var typeName = param.TypeName;
-        var baseTypeName = GetBaseTypeName(typeName);
-
-        // Check if it's an enum
-        // For simplicity, check if it's a known primitive, otherwise assume it could be an enum
-        if (baseTypeName == "string" || baseTypeName == "global::System.String")
-        {
-            builder.AppendLine($"            var {varName} = section[\"{param.Name}\"] ?? \"\";");
-        }
-        else if (baseTypeName == "int" || baseTypeName == "global::System.Int32")
-        {
-            builder.AppendLine($"            var {varName} = section[\"{param.Name}\"] is {{ }} v{index} && int.TryParse(v{index}, out var i{index}) ? i{index} : 0;");
-        }
-        else if (baseTypeName == "bool" || baseTypeName == "global::System.Boolean")
-        {
-            builder.AppendLine($"            var {varName} = section[\"{param.Name}\"] is {{ }} v{index} && bool.TryParse(v{index}, out var b{index}) && b{index};");
-        }
-        else if (baseTypeName == "double" || baseTypeName == "global::System.Double")
-        {
-            builder.AppendLine($"            var {varName} = section[\"{param.Name}\"] is {{ }} v{index} && double.TryParse(v{index}, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var d{index}) ? d{index} : 0.0;");
-        }
-        else
-        {
-            // Try enum parsing for other types
-            builder.AppendLine($"            var {varName} = section[\"{param.Name}\"] is {{ }} v{index} && global::System.Enum.TryParse<{typeName}>(v{index}, true, out var e{index}) ? e{index} : default({typeName});");
-        }
     }
 
     private static void RegisterValidator(StringBuilder builder, DiscoveredOptions opt, string safeAssemblyName, HashSet<string> externalValidatorsToRegister)
@@ -908,85 +858,7 @@ internal static class OptionsCodeGenerator
             return;
         }
 
-        var varName = $"v{index}";
-
-        // Determine how to parse the value based on type
-        var typeName = prop.TypeName;
-        var baseTypeName = GetBaseTypeName(typeName);
-
-        builder.Append($"                if (section[\"{prop.Name}\"] is {{ }} {varName}");
-
-        // Check if it's an enum first
-        if (prop.IsEnum && prop.EnumTypeName != null)
-        {
-            builder.AppendLine($" && global::System.Enum.TryParse<{prop.EnumTypeName}>({varName}, true, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else if (baseTypeName == "string" || baseTypeName == "global::System.String")
-        {
-            // String: direct assignment
-            builder.AppendLine($") {targetPath}.{prop.Name} = {varName};");
-        }
-        else if (baseTypeName == "int" || baseTypeName == "global::System.Int32")
-        {
-            builder.AppendLine($" && int.TryParse({varName}, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else if (baseTypeName == "bool" || baseTypeName == "global::System.Boolean")
-        {
-            builder.AppendLine($" && bool.TryParse({varName}, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else if (baseTypeName == "double" || baseTypeName == "global::System.Double")
-        {
-            builder.AppendLine($" && double.TryParse({varName}, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else if (baseTypeName == "float" || baseTypeName == "global::System.Single")
-        {
-            builder.AppendLine($" && float.TryParse({varName}, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else if (baseTypeName == "decimal" || baseTypeName == "global::System.Decimal")
-        {
-            builder.AppendLine($" && decimal.TryParse({varName}, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else if (baseTypeName == "long" || baseTypeName == "global::System.Int64")
-        {
-            builder.AppendLine($" && long.TryParse({varName}, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else if (baseTypeName == "short" || baseTypeName == "global::System.Int16")
-        {
-            builder.AppendLine($" && short.TryParse({varName}, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else if (baseTypeName == "byte" || baseTypeName == "global::System.Byte")
-        {
-            builder.AppendLine($" && byte.TryParse({varName}, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else if (baseTypeName == "char" || baseTypeName == "global::System.Char")
-        {
-            builder.AppendLine($" && {varName}.Length == 1) {targetPath}.{prop.Name} = {varName}[0];");
-        }
-        else if (baseTypeName == "global::System.TimeSpan")
-        {
-            builder.AppendLine($" && global::System.TimeSpan.TryParse({varName}, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else if (baseTypeName == "global::System.DateTime")
-        {
-            builder.AppendLine($" && global::System.DateTime.TryParse({varName}, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else if (baseTypeName == "global::System.DateTimeOffset")
-        {
-            builder.AppendLine($" && global::System.DateTimeOffset.TryParse({varName}, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else if (baseTypeName == "global::System.Guid")
-        {
-            builder.AppendLine($" && global::System.Guid.TryParse({varName}, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else if (baseTypeName == "global::System.Uri")
-        {
-            builder.AppendLine($" && global::System.Uri.TryCreate({varName}, global::System.UriKind.RelativeOrAbsolute, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else
-        {
-            // Unsupported type - skip silently (matching ConfigurationBinder behavior)
-            builder.AppendLine($") {{ }} // Skipped: {typeName} (not a supported primitive)");
-        }
+        GenerateScalarPropertyAssignment(builder, prop, index, targetPath, "section", "                ", "p");
     }
 
     private static void GenerateComplexTypeBinding(StringBuilder builder, OptionsPropertyInfo prop, int index, string targetPath)
@@ -1075,33 +947,14 @@ internal static class OptionsCodeGenerator
             return;
         }
 
-        // Generate primitive binding using the nested section
-        var varName = $"v{index}";
-        var baseTypeName = GetBaseTypeName(prop.TypeName);
-
-        builder.Append($"                if ({sectionVarName}[\"{prop.Name}\"] is {{ }} {varName}");
-
-        if (prop.IsEnum && prop.EnumTypeName != null)
-        {
-            builder.AppendLine($" && global::System.Enum.TryParse<{prop.EnumTypeName}>({varName}, true, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else if (baseTypeName == "string" || baseTypeName == "global::System.String")
-        {
-            builder.AppendLine($") {targetPath}.{prop.Name} = {varName};");
-        }
-        else if (baseTypeName == "int" || baseTypeName == "global::System.Int32")
-        {
-            builder.AppendLine($" && int.TryParse({varName}, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else if (baseTypeName == "bool" || baseTypeName == "global::System.Boolean")
-        {
-            builder.AppendLine($" && bool.TryParse({varName}, out var p{index})) {targetPath}.{prop.Name} = p{index};");
-        }
-        else
-        {
-            // For other types, generate appropriate TryParse
-            builder.AppendLine($") {{ }} // Skipped: {prop.TypeName}");
-        }
+        GenerateScalarPropertyAssignment(
+            builder,
+            prop,
+            index,
+            targetPath,
+            sectionVarName,
+            "                ",
+            "np");
     }
 
     private static void GenerateCollectionBindingInNested(StringBuilder builder, OptionsPropertyInfo prop, int index, string targetPath, string sectionVarName)
@@ -1241,26 +1094,87 @@ internal static class OptionsCodeGenerator
 
     private static void GenerateChildPropertyBinding(StringBuilder builder, OptionsPropertyInfo prop, int index, string targetVar, string sectionVar)
     {
-        var varName = $"cv{index}";
+        GenerateScalarPropertyAssignment(builder, prop, index, targetVar, sectionVar, "                    ", "cp");
+    }
+
+    private static void GenerateScalarPropertyAssignment(
+        StringBuilder builder,
+        OptionsPropertyInfo prop,
+        int index,
+        string targetPath,
+        string sectionVar,
+        string indent,
+        string variablePrefix)
+    {
+        var valueVar = $"{variablePrefix}v{index}";
+        var parsedVar = $"{variablePrefix}p{index}";
         var baseTypeName = GetBaseTypeName(prop.TypeName);
 
-        builder.Append($"                    if ({sectionVar}[\"{prop.Name}\"] is {{ }} {varName}");
+        builder.Append($"{indent}if ({sectionVar}[\"{prop.Name}\"] is {{ }} {valueVar}");
 
         if (prop.IsEnum && prop.EnumTypeName != null)
         {
-            builder.AppendLine($" && global::System.Enum.TryParse<{prop.EnumTypeName}>({varName}, true, out var cp{index})) {targetVar}.{prop.Name} = cp{index};");
+            builder.AppendLine($" && global::System.Enum.TryParse<{prop.EnumTypeName}>({valueVar}, true, out var {parsedVar})) {targetPath}.{prop.Name} = {parsedVar};");
         }
         else if (baseTypeName == "string" || baseTypeName == "global::System.String")
         {
-            builder.AppendLine($") {targetVar}.{prop.Name} = {varName};");
+            builder.AppendLine($") {targetPath}.{prop.Name} = {valueVar};");
         }
         else if (baseTypeName == "int" || baseTypeName == "global::System.Int32")
         {
-            builder.AppendLine($" && int.TryParse({varName}, out var cp{index})) {targetVar}.{prop.Name} = cp{index};");
+            builder.AppendLine($" && int.TryParse({valueVar}, out var {parsedVar})) {targetPath}.{prop.Name} = {parsedVar};");
         }
         else if (baseTypeName == "bool" || baseTypeName == "global::System.Boolean")
         {
-            builder.AppendLine($" && bool.TryParse({varName}, out var cp{index})) {targetVar}.{prop.Name} = cp{index};");
+            builder.AppendLine($" && bool.TryParse({valueVar}, out var {parsedVar})) {targetPath}.{prop.Name} = {parsedVar};");
+        }
+        else if (baseTypeName == "double" || baseTypeName == "global::System.Double")
+        {
+            builder.AppendLine($" && double.TryParse({valueVar}, global::System.Globalization.NumberStyles.Any, global::System.Globalization.CultureInfo.InvariantCulture, out var {parsedVar})) {targetPath}.{prop.Name} = {parsedVar};");
+        }
+        else if (baseTypeName == "float" || baseTypeName == "global::System.Single")
+        {
+            builder.AppendLine($" && float.TryParse({valueVar}, global::System.Globalization.NumberStyles.Any, global::System.Globalization.CultureInfo.InvariantCulture, out var {parsedVar})) {targetPath}.{prop.Name} = {parsedVar};");
+        }
+        else if (baseTypeName == "decimal" || baseTypeName == "global::System.Decimal")
+        {
+            builder.AppendLine($" && decimal.TryParse({valueVar}, global::System.Globalization.NumberStyles.Any, global::System.Globalization.CultureInfo.InvariantCulture, out var {parsedVar})) {targetPath}.{prop.Name} = {parsedVar};");
+        }
+        else if (baseTypeName == "long" || baseTypeName == "global::System.Int64")
+        {
+            builder.AppendLine($" && long.TryParse({valueVar}, out var {parsedVar})) {targetPath}.{prop.Name} = {parsedVar};");
+        }
+        else if (baseTypeName == "short" || baseTypeName == "global::System.Int16")
+        {
+            builder.AppendLine($" && short.TryParse({valueVar}, out var {parsedVar})) {targetPath}.{prop.Name} = {parsedVar};");
+        }
+        else if (baseTypeName == "byte" || baseTypeName == "global::System.Byte")
+        {
+            builder.AppendLine($" && byte.TryParse({valueVar}, out var {parsedVar})) {targetPath}.{prop.Name} = {parsedVar};");
+        }
+        else if (baseTypeName == "char" || baseTypeName == "global::System.Char")
+        {
+            builder.AppendLine($" && {valueVar}.Length == 1) {targetPath}.{prop.Name} = {valueVar}[0];");
+        }
+        else if (baseTypeName == "global::System.TimeSpan")
+        {
+            builder.AppendLine($" && global::System.TimeSpan.TryParse({valueVar}, out var {parsedVar})) {targetPath}.{prop.Name} = {parsedVar};");
+        }
+        else if (baseTypeName == "global::System.DateTime")
+        {
+            builder.AppendLine($" && global::System.DateTime.TryParse({valueVar}, out var {parsedVar})) {targetPath}.{prop.Name} = {parsedVar};");
+        }
+        else if (baseTypeName == "global::System.DateTimeOffset")
+        {
+            builder.AppendLine($" && global::System.DateTimeOffset.TryParse({valueVar}, out var {parsedVar})) {targetPath}.{prop.Name} = {parsedVar};");
+        }
+        else if (baseTypeName == "global::System.Guid")
+        {
+            builder.AppendLine($" && global::System.Guid.TryParse({valueVar}, out var {parsedVar})) {targetPath}.{prop.Name} = {parsedVar};");
+        }
+        else if (baseTypeName == "global::System.Uri")
+        {
+            builder.AppendLine($" && global::System.Uri.TryCreate({valueVar}, global::System.UriKind.RelativeOrAbsolute, out var {parsedVar})) {targetPath}.{prop.Name} = {parsedVar};");
         }
         else
         {
@@ -1274,11 +1188,11 @@ internal static class OptionsCodeGenerator
 
         if (baseType == "string" || baseType == "global::System.String")
         {
-            builder.AppendLine($"                    if (child.Value is {{ }} val{index}) {listVar}.Add(val{index});");
+            builder.AppendLine($"                    if (child.Value is {{ }} collectionValue{index}) {listVar}.Add(collectionValue{index});");
         }
         else if (baseType == "int" || baseType == "global::System.Int32")
         {
-            builder.AppendLine($"                    if (child.Value is {{ }} val{index} && int.TryParse(val{index}, out var p{index})) {listVar}.Add(p{index});");
+            builder.AppendLine($"                    if (child.Value is {{ }} collectionValue{index} && int.TryParse(collectionValue{index}, out var collectionParsed{index})) {listVar}.Add(collectionParsed{index});");
         }
         else
         {
@@ -1292,11 +1206,11 @@ internal static class OptionsCodeGenerator
 
         if (baseType == "string" || baseType == "global::System.String")
         {
-            builder.AppendLine($"                    if (child.Value is {{ }} val{index}) {targetPath}.Add(val{index});");
+            builder.AppendLine($"                    if (child.Value is {{ }} listValue{index}) {targetPath}.Add(listValue{index});");
         }
         else if (baseType == "int" || baseType == "global::System.Int32")
         {
-            builder.AppendLine($"                    if (child.Value is {{ }} val{index} && int.TryParse(val{index}, out var p{index})) {targetPath}.Add(p{index});");
+            builder.AppendLine($"                    if (child.Value is {{ }} listValue{index} && int.TryParse(listValue{index}, out var listParsed{index})) {targetPath}.Add(listParsed{index});");
         }
         else
         {
@@ -1310,11 +1224,11 @@ internal static class OptionsCodeGenerator
 
         if (baseType == "string" || baseType == "global::System.String")
         {
-            builder.AppendLine($"                    if (child.Value is {{ }} val{index}) {targetPath}[child.Key] = val{index};");
+            builder.AppendLine($"                    if (child.Value is {{ }} dictionaryValue{index}) {targetPath}[child.Key] = dictionaryValue{index};");
         }
         else if (baseType == "int" || baseType == "global::System.Int32")
         {
-            builder.AppendLine($"                    if (child.Value is {{ }} val{index} && int.TryParse(val{index}, out var p{index})) {targetPath}[child.Key] = p{index};");
+            builder.AppendLine($"                    if (child.Value is {{ }} dictionaryValue{index} && int.TryParse(dictionaryValue{index}, out var dictionaryParsed{index})) {targetPath}[child.Key] = dictionaryParsed{index};");
         }
         else
         {
@@ -1343,4 +1257,3 @@ internal static class OptionsCodeGenerator
         return typeName;
     }
 }
-
