@@ -402,11 +402,11 @@ var assemblies = [
       { "name": "NexusLabs.Needlr.Generators.DiagnosticOptions", "rp": "NexusLabs.Needlr.Generators_DiagnosticOptions.html", "cl": 25, "ucl": 0, "cal": 25, "tl": 74, "cb": 14, "tb": 16, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.DiagnosticsGenerator", "rp": "NexusLabs.Needlr.Generators_DiagnosticsGenerator.html", "cl": 669, "ucl": 45, "cal": 714, "tl": 1205, "cb": 278, "tb": 336, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.DocumentationCommentHelper", "rp": "NexusLabs.Needlr.Generators_DocumentationCommentHelper.html", "cl": 37, "ucl": 2, "cal": 39, "tl": 97, "cb": 20, "tb": 22, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Generators.Export.CollectedDiagnostic", "rp": "NexusLabs.Needlr.Generators_CollectedDiagnostic.html", "cl": 0, "ucl": 6, "cal": 6, "tl": 619, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Generators.Export.CollectedDiagnostic", "rp": "NexusLabs.Needlr.Generators_CollectedDiagnostic.html", "cl": 6, "ucl": 0, "cal": 6, "tl": 620, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.Export.GraphDecorator", "rp": "NexusLabs.Needlr.Generators_GraphDecorator.html", "cl": 2, "ucl": 0, "cal": 2, "tl": 123, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.Export.GraphDependency", "rp": "NexusLabs.Needlr.Generators_GraphDependency.html", "cl": 7, "ucl": 0, "cal": 7, "tl": 123, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Generators.Export.GraphDiagnostic", "rp": "NexusLabs.Needlr.Generators_GraphDiagnostic.html", "cl": 0, "ucl": 5, "cal": 5, "tl": 123, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Generators.Export.GraphExporter", "rp": "NexusLabs.Needlr.Generators_GraphExporter.html", "cl": 274, "ucl": 55, "cal": 329, "tl": 619, "cb": 81, "tb": 118, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Generators.Export.GraphDiagnostic", "rp": "NexusLabs.Needlr.Generators_GraphDiagnostic.html", "cl": 5, "ucl": 0, "cal": 5, "tl": 123, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Generators.Export.GraphExporter", "rp": "NexusLabs.Needlr.Generators_GraphExporter.html", "cl": 328, "ucl": 2, "cal": 330, "tl": 620, "cb": 115, "tb": 118, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.Export.GraphInterface", "rp": "NexusLabs.Needlr.Generators_GraphInterface.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 123, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.Export.GraphLocation", "rp": "NexusLabs.Needlr.Generators_GraphLocation.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 123, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.Export.GraphService", "rp": "NexusLabs.Needlr.Generators_GraphService.html", "cl": 13, "ucl": 0, "cal": 13, "tl": 123, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -436,10 +436,10 @@ var assemblies = [
       { "name": "NexusLabs.Needlr.Generators.Models.DiscoveredHttpClient", "rp": "NexusLabs.Needlr.Generators_DiscoveredHttpClient.html", "cl": 11, "ucl": 2, "cal": 13, "tl": 39, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.Models.DiscoveredInterceptedService", "rp": "NexusLabs.Needlr.Generators_DiscoveredInterceptedService.html", "cl": 15, "ucl": 0, "cal": 15, "tl": 33, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.Models.DiscoveredOpenDecorator", "rp": "NexusLabs.Needlr.Generators_DiscoveredOpenDecorator.html", "cl": 11, "ucl": 0, "cal": 11, "tl": 29, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Generators.Models.DiscoveredOptions", "rp": "NexusLabs.Needlr.Generators_DiscoveredOptions.html", "cl": 31, "ucl": 1, "cal": 32, "tl": 94, "cb": 5, "tb": 8, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Generators.Models.DiscoveredOptions", "rp": "NexusLabs.Needlr.Generators_DiscoveredOptions.html", "cl": 31, "ucl": 1, "cal": 32, "tl": 94, "cb": 6, "tb": 8, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.Models.DiscoveredPlugin", "rp": "NexusLabs.Needlr.Generators_DiscoveredPlugin.html", "cl": 13, "ucl": 0, "cal": 13, "tl": 24, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.Models.DiscoveredProvider", "rp": "NexusLabs.Needlr.Generators_DiscoveredProvider.html", "cl": 22, "ucl": 4, "cal": 26, "tl": 86, "cb": 10, "tb": 18, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Generators.Models.DiscoveredType", "rp": "NexusLabs.Needlr.Generators_DiscoveredType.html", "cl": 23, "ucl": 1, "cal": 24, "tl": 62, "cb": 1, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Generators.Models.DiscoveredType", "rp": "NexusLabs.Needlr.Generators_DiscoveredType.html", "cl": 23, "ucl": 1, "cal": 24, "tl": 62, "cb": 2, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.Models.DiscoveryResult", "rp": "NexusLabs.Needlr.Generators_DiscoveryResult.html", "cl": 27, "ucl": 0, "cal": 27, "tl": 53, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.Models.EligibleConstructorField", "rp": "NexusLabs.Needlr.Generators_EligibleConstructorField.html", "cl": 31, "ucl": 0, "cal": 31, "tl": 103, "cb": 15, "tb": 16, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.Models.GeneratedConstructorEmitContext", "rp": "NexusLabs.Needlr.Generators_GeneratedConstructorEmitContext.html", "cl": 11, "ucl": 0, "cal": 11, "tl": 57, "cb": 3, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -486,7 +486,7 @@ var assemblies = [
       { "name": "NexusLabs.Needlr.Generators.GenerateTypeRegistryAttribute", "rp": "NexusLabs.Needlr.Generators.Attributes_GenerateTypeRegistryAttribute.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 79, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.HttpClientOptionsAttribute", "rp": "NexusLabs.Needlr.Generators.Attributes_HttpClientOptionsAttribute.html", "cl": 6, "ucl": 1, "cal": 7, "tl": 92, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.InjectableTypeInfo", "rp": "NexusLabs.Needlr.Generators.Attributes_InjectableTypeInfo.html", "cl": 15, "ucl": 2, "cal": 17, "tl": 274, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap", "rp": "NexusLabs.Needlr.Generators.Attributes_NeedlrSourceGenBootstrap.html", "cl": 93, "ucl": 39, "cal": 132, "tl": 406, "cb": 19, "tb": 42, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap", "rp": "NexusLabs.Needlr.Generators.Attributes_NeedlrSourceGenBootstrap.html", "cl": 93, "ucl": 39, "cal": 132, "tl": 406, "cb": 20, "tb": 42, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.OpenDecoratorForAttribute", "rp": "NexusLabs.Needlr.Generators.Attributes_OpenDecoratorForAttribute.html", "cl": 4, "ucl": 1, "cal": 5, "tl": 101, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.OptionsAttribute", "rp": "NexusLabs.Needlr.Generators.Attributes_OptionsAttribute.html", "cl": 9, "ucl": 1, "cal": 10, "tl": 173, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Generators.PluginTypeInfo", "rp": "NexusLabs.Needlr.Generators.Attributes_PluginTypeInfo.html", "cl": 19, "ucl": 5, "cal": 24, "tl": 274, "cb": 4, "tb": 8, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -719,12 +719,6 @@ var riskHotspots = [
       { "value": 8, "exceeded": false },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.Export.GraphExporter", "reportPath": "NexusLabs.Needlr.Generators_GraphExporter.html", "methodName": "BuildGraph(NexusLabs.Needlr.Generators.Models.DiscoveryResult,System.String,System.String,System.Collections.Generic.IReadOnlyList\u00601\u003CNexusLabs.Needlr.Generators.Export.CollectedDiagnostic\u003E,System.Collections.Generic.IReadOnlyDictionary\u00602\u003CSystem.String,System.Collections.Generic.IReadOnlyList\u00601\u003CNexusLabs.Needlr.Generators.Models.DiscoveredType\u003E\u003E)", "methodShortName": "BuildGraph(...)", "fileIndex": 0, "line": 35,
-    "metrics": [
-      { "value": 70, "exceeded": true },
-      { "value": 18, "exceeded": true },
-    ]},
-  {
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.CodeGen.OptionsCodeGenerator", "reportPath": "NexusLabs.Needlr.Generators_OptionsCodeGenerator.html", "methodName": "GenerateDataAnnotationValidation(System.Text.StringBuilder,NexusLabs.Needlr.Generators.Models.OptionsPropertyInfo,NexusLabs.Needlr.Generators.Models.DataAnnotationInfo)", "methodShortName": "GenerateDataAnnotationValidation(...)", "fileIndex": 0, "line": 204,
     "metrics": [
       { "value": 68, "exceeded": true },
@@ -879,12 +873,6 @@ var riskHotspots = [
     "metrics": [
       { "value": 40, "exceeded": true },
       { "value": 40, "exceeded": true },
-    ]},
-  {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.Export.GraphExporter", "reportPath": "NexusLabs.Needlr.Generators_GraphExporter.html", "methodName": "BuildTypeLookup(NexusLabs.Needlr.Generators.Models.DiscoveryResult,System.Collections.Generic.IReadOnlyDictionary\u00602\u003CSystem.String,System.Collections.Generic.IReadOnlyList\u00601\u003CNexusLabs.Needlr.Generators.Models.DiscoveredType\u003E\u003E)", "methodShortName": "BuildTypeLookup(...)", "fileIndex": 0, "line": 99,
-    "metrics": [
-      { "value": 39, "exceeded": true },
-      { "value": 18, "exceeded": true },
     ]},
   {
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.CodeGen.InterceptorCodeGenerator", "reportPath": "NexusLabs.Needlr.Generators_InterceptorCodeGenerator.html", "methodName": "GenerateInterceptedMethod(System.Text.StringBuilder,NexusLabs.Needlr.Generators.InterceptorDiscoveryHelper/InterceptedMethodInfo,System.Int32,System.String,NexusLabs.Needlr.Generators.BreadcrumbWriter)", "methodShortName": "GenerateInterceptedMethod(...)", "fileIndex": 0, "line": 109,
@@ -1165,7 +1153,7 @@ var riskHotspots = [
   {
     "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.Export.GraphExporter", "reportPath": "NexusLabs.Needlr.Generators_GraphExporter.html", "methodName": "MapToGraphService(NexusLabs.Needlr.Generators.Models.DiscoveredType,System.String,System.Collections.Generic.Dictionary\u00602\u003CSystem.String,NexusLabs.Needlr.Generators.Models.DiscoveredType\u003E,NexusLabs.Needlr.Generators.Models.DiscoveryResult)", "methodShortName": "MapToGraphService(...)", "fileIndex": 0, "line": 145,
     "metrics": [
-      { "value": 23, "exceeded": false },
+      { "value": 22, "exceeded": false },
       { "value": 22, "exceeded": true },
     ]},
   {
@@ -1331,7 +1319,19 @@ var riskHotspots = [
       { "value": 18, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.Export.GraphExporter", "reportPath": "NexusLabs.Needlr.Generators_GraphExporter.html", "methodName": "SerializeService(System.Text.StringBuilder,NexusLabs.Needlr.Generators.Export.GraphService,System.Boolean)", "methodShortName": "SerializeService(...)", "fileIndex": 0, "line": 414,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.Export.GraphExporter", "reportPath": "NexusLabs.Needlr.Generators_GraphExporter.html", "methodName": "BuildGraph(NexusLabs.Needlr.Generators.Models.DiscoveryResult,System.String,System.String,System.Collections.Generic.IReadOnlyList\u00601\u003CNexusLabs.Needlr.Generators.Export.CollectedDiagnostic\u003E,System.Collections.Generic.IReadOnlyDictionary\u00602\u003CSystem.String,System.Collections.Generic.IReadOnlyList\u00601\u003CNexusLabs.Needlr.Generators.Models.DiscoveredType\u003E\u003E)", "methodShortName": "BuildGraph(...)", "fileIndex": 0, "line": 35,
+    "metrics": [
+      { "value": 18, "exceeded": false },
+      { "value": 18, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.Export.GraphExporter", "reportPath": "NexusLabs.Needlr.Generators_GraphExporter.html", "methodName": "BuildTypeLookup(NexusLabs.Needlr.Generators.Models.DiscoveryResult,System.Collections.Generic.IReadOnlyDictionary\u00602\u003CSystem.String,System.Collections.Generic.IReadOnlyList\u00601\u003CNexusLabs.Needlr.Generators.Models.DiscoveredType\u003E\u003E)", "methodShortName": "BuildTypeLookup(...)", "fileIndex": 0, "line": 99,
+    "metrics": [
+      { "value": 18, "exceeded": false },
+      { "value": 18, "exceeded": true },
+    ]},
+  {
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.Export.GraphExporter", "reportPath": "NexusLabs.Needlr.Generators_GraphExporter.html", "methodName": "SerializeService(System.Text.StringBuilder,NexusLabs.Needlr.Generators.Export.GraphService,System.Boolean)", "methodShortName": "SerializeService(...)", "fileIndex": 0, "line": 415,
     "metrics": [
       { "value": 18, "exceeded": false },
       { "value": 18, "exceeded": true },
@@ -1457,7 +1457,7 @@ var riskHotspots = [
       { "value": 16, "exceeded": true },
     ]},
   {
-    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.Export.GraphExporter", "reportPath": "NexusLabs.Needlr.Generators_GraphExporter.html", "methodName": "SimplifyGenericParameters(System.String)", "methodShortName": "SimplifyGenericParameters(...)", "fileIndex": 0, "line": 320,
+    "assembly": "NexusLabs.Needlr.Generators", "class": "NexusLabs.Needlr.Generators.Export.GraphExporter", "reportPath": "NexusLabs.Needlr.Generators_GraphExporter.html", "methodName": "SimplifyGenericParameters(System.String)", "methodShortName": "SimplifyGenericParameters(...)", "fileIndex": 0, "line": 321,
     "metrics": [
       { "value": 16, "exceeded": false },
       { "value": 16, "exceeded": true },
