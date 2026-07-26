@@ -5,12 +5,12 @@ namespace NexusLabs.Needlr.Generators.Models;
 /// </summary>
 internal readonly struct PositionalRecordParameter
 {
-    public PositionalRecordParameter(string name, string typeName)
+    public PositionalRecordParameter(OptionsPropertyInfo property, bool isValueType)
     {
-        Name = name;
-        TypeName = typeName;
+        Property = property;
+        IsValueType = isValueType;
     }
 
-    public string Name { get; }
-    public string TypeName { get; }
+    public OptionsPropertyInfo Property { get; }
+    public bool IsValueType { get; }
 }

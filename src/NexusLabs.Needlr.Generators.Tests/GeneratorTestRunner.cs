@@ -304,7 +304,7 @@ public sealed class GeneratorTestRunner
             references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CreateGeneratorDriver(generator, parseOptions);
         driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
             compilation,
             out var outputCompilation,
@@ -324,6 +324,16 @@ public sealed class GeneratorTestRunner
     /// </summary>
     public IReadOnlyList<Diagnostic> RunGeneratorCompilationErrors(IIncrementalGenerator generator)
     {
+        return RunGeneratorCompilation(generator).GetDiagnostics()
+            .Where(d => d.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+    }
+
+    /// <summary>
+    /// Runs any generator and returns the updated output compilation.
+    /// </summary>
+    public Compilation RunGeneratorCompilation(IIncrementalGenerator generator)
+    {
         var parseOptions = _parseOptions ?? new CSharpParseOptions();
         var syntaxTrees = _sources
             .Select((source, index) => CSharpSyntaxTree.ParseText(
@@ -342,15 +352,13 @@ public sealed class GeneratorTestRunner
             references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CreateGeneratorDriver(generator, parseOptions);
         driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
             compilation,
             out var outputCompilation,
             out _);
 
-        return outputCompilation.GetDiagnostics()
-            .Where(d => d.Severity == DiagnosticSeverity.Error)
-            .ToArray();
+        return outputCompilation;
     }
 
     /// <summary>
@@ -384,22 +392,7 @@ public sealed class GeneratorTestRunner
             references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        ISourceGenerator sourceGenerator = generator.AsSourceGenerator();
-
-        CSharpGeneratorDriver driver;
-        if (_analyzerConfigOptions.Count > 0)
-        {
-            var optionsProvider = new FlexibleAnalyzerConfigOptionsProvider(_analyzerConfigOptions);
-            driver = CSharpGeneratorDriver.Create(
-                generators: new[] { sourceGenerator },
-                additionalTexts: Array.Empty<AdditionalText>(),
-                parseOptions: parseOptions,
-                optionsProvider: optionsProvider);
-        }
-        else
-        {
-            driver = CSharpGeneratorDriver.Create(generator);
-        }
+        var driver = CreateGeneratorDriver(generator, parseOptions);
 
         driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
             compilation,
@@ -413,6 +406,23 @@ public sealed class GeneratorTestRunner
             .OrderBy(t => t.FilePath)
             .Select(t => new GeneratedFile(t.FilePath, t.GetText().ToString()))
             .ToArray();
+    }
+
+    private CSharpGeneratorDriver CreateGeneratorDriver(
+        IIncrementalGenerator generator,
+        CSharpParseOptions parseOptions)
+    {
+        if (_analyzerConfigOptions.Count == 0)
+        {
+            return CSharpGeneratorDriver.Create(generator);
+        }
+
+        var optionsProvider = new FlexibleAnalyzerConfigOptionsProvider(_analyzerConfigOptions);
+        return CSharpGeneratorDriver.Create(
+            generators: new[] { generator.AsSourceGenerator() },
+            additionalTexts: Array.Empty<AdditionalText>(),
+            parseOptions: parseOptions,
+            optionsProvider: optionsProvider);
     }
 
     /// <summary>

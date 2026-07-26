@@ -524,11 +524,11 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 var optionsAttrs = OptionsAttributeHelper.GetOptionsAttributes(typeSymbol);
                 var sourceFilePath = typeSymbol.Locations.FirstOrDefault()?.SourceTree?.FilePath;
 
-                // Detect positional record (record with primary constructor parameters)
-                var positionalRecordInfo = OptionsDiscoveryHelper.DetectPositionalRecord(typeSymbol);
-
                 // Extract bindable properties for AOT code generation
                 var properties = OptionsDiscoveryHelper.ExtractBindableProperties(typeSymbol);
+
+                // Detect positional record (record with primary constructor parameters)
+                var positionalRecordInfo = OptionsDiscoveryHelper.DetectPositionalRecord(typeSymbol, properties);
 
                 foreach (var optionsAttr in optionsAttrs)
                 {
