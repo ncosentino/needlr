@@ -12,12 +12,9 @@ public static class ITypeFiltererExtensionMethods
     {
         ArgumentNullException.ThrowIfNull(typeFilterer);
 
-        return new TypeFilterDecorator(
+        return Except(
             typeFilterer,
-            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
-            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
-            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
-            exclusionPredicate: t => t.IsAssignableTo(typeof(T)));
+            static t => t.IsAssignableTo(typeof(T)));
     }
 
     public static ITypeFilterer Except(
@@ -27,11 +24,13 @@ public static class ITypeFiltererExtensionMethods
         ArgumentNullException.ThrowIfNull(typeFilterer);
         ArgumentNullException.ThrowIfNull(predicate);
 
+        bool Filter(Predicate<Type> filter, Type t) => filter(t) && !predicate(t);
+
         return new TypeFilterDecorator(
             typeFilterer,
-            (filter, t) => filter(t) && !predicate(t),
-            (filter, t) => filter(t) && !predicate(t),
-            (filter, t) => filter(t) && !predicate(t),
+            Filter,
+            Filter,
+            Filter,
             exclusionPredicate: predicate);
     }
 
@@ -40,11 +39,10 @@ public static class ITypeFiltererExtensionMethods
     {
         ArgumentNullException.ThrowIfNull(typeFilterer);
 
-        return new TypeFilterDecorator(
+        return UsingOnlyAs(
             typeFilterer,
-            (filter, t) => filter(t) || t.IsAssignableTo(typeof(T)),
-            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
-            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)));
+            static t => t.IsAssignableTo(typeof(T)),
+            TypeFiltererLifetime.Scoped);
     }
 
     public static ITypeFilterer UsingOnlyAsScoped<T>(
@@ -54,11 +52,10 @@ public static class ITypeFiltererExtensionMethods
         ArgumentNullException.ThrowIfNull(typeFilterer);
         ArgumentNullException.ThrowIfNull(additionalPredicate);
 
-        return new TypeFilterDecorator(
+        return UsingOnlyAs(
             typeFilterer,
-            (filter, t) => filter(t) || (t.IsAssignableTo(typeof(T)) && additionalPredicate(t)),
-            (filter, t) => filter(t) && !(t.IsAssignableTo(typeof(T)) && additionalPredicate(t)),
-            (filter, t) => filter(t) && !(t.IsAssignableTo(typeof(T)) && additionalPredicate(t)));
+            t => t.IsAssignableTo(typeof(T)) && additionalPredicate(t),
+            TypeFiltererLifetime.Scoped);
     }
 
     public static ITypeFilterer UsingOnlyAsScoped(
@@ -68,11 +65,10 @@ public static class ITypeFiltererExtensionMethods
         ArgumentNullException.ThrowIfNull(typeFilterer);
         ArgumentNullException.ThrowIfNull(predicate);
 
-        return new TypeFilterDecorator(
+        return UsingOnlyAs(
             typeFilterer,
-            (filter, t) => filter(t) || predicate(t),
-            (filter, t) => filter(t) && !predicate(t),
-            (filter, t) => filter(t) && !predicate(t));
+            predicate,
+            TypeFiltererLifetime.Scoped);
     }
 
     public static ITypeFilterer UsingOnlyAsTransient<T>(
@@ -80,11 +76,10 @@ public static class ITypeFiltererExtensionMethods
     {
         ArgumentNullException.ThrowIfNull(typeFilterer);
 
-        return new TypeFilterDecorator(
+        return UsingOnlyAs(
             typeFilterer,
-            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
-            (filter, t) => filter(t) || t.IsAssignableTo(typeof(T)),
-            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)));
+            static t => t.IsAssignableTo(typeof(T)),
+            TypeFiltererLifetime.Transient);
     }
 
     public static ITypeFilterer UsingOnlyAsTransient<T>(
@@ -94,11 +89,10 @@ public static class ITypeFiltererExtensionMethods
         ArgumentNullException.ThrowIfNull(typeFilterer);
         ArgumentNullException.ThrowIfNull(additionalPredicate);
 
-        return new TypeFilterDecorator(
+        return UsingOnlyAs(
             typeFilterer,
-            (filter, t) => filter(t) && !(t.IsAssignableTo(typeof(T)) && additionalPredicate(t)),
-            (filter, t) => filter(t) || (t.IsAssignableTo(typeof(T)) && additionalPredicate(t)),
-            (filter, t) => filter(t) && !(t.IsAssignableTo(typeof(T)) && additionalPredicate(t)));
+            t => t.IsAssignableTo(typeof(T)) && additionalPredicate(t),
+            TypeFiltererLifetime.Transient);
     }
 
     public static ITypeFilterer UsingOnlyAsTransient(
@@ -108,11 +102,10 @@ public static class ITypeFiltererExtensionMethods
         ArgumentNullException.ThrowIfNull(typeFilterer);
         ArgumentNullException.ThrowIfNull(predicate);
 
-        return new TypeFilterDecorator(
+        return UsingOnlyAs(
             typeFilterer,
-            (filter, t) => filter(t) && !predicate(t),
-            (filter, t) => filter(t) || predicate(t),
-            (filter, t) => filter(t) && !predicate(t));
+            predicate,
+            TypeFiltererLifetime.Transient);
     }
 
     public static ITypeFilterer UsingOnlyAsSingleton<T>(
@@ -120,11 +113,10 @@ public static class ITypeFiltererExtensionMethods
     {
         ArgumentNullException.ThrowIfNull(typeFilterer);
 
-        return new TypeFilterDecorator(
+        return UsingOnlyAs(
             typeFilterer,
-            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
-            (filter, t) => filter(t) && !t.IsAssignableTo(typeof(T)),
-            (filter, t) => filter(t) || t.IsAssignableTo(typeof(T)));
+            static t => t.IsAssignableTo(typeof(T)),
+            TypeFiltererLifetime.Singleton);
     }
 
     public static ITypeFilterer UsingOnlyAsSingleton<T>(
@@ -134,11 +126,10 @@ public static class ITypeFiltererExtensionMethods
         ArgumentNullException.ThrowIfNull(typeFilterer);
         ArgumentNullException.ThrowIfNull(additionalPredicate);
 
-        return new TypeFilterDecorator(
+        return UsingOnlyAs(
             typeFilterer,
-            (filter, t) => filter(t) && !(t.IsAssignableTo(typeof(T)) && additionalPredicate(t)),
-            (filter, t) => filter(t) && !(t.IsAssignableTo(typeof(T)) && additionalPredicate(t)),
-            (filter, t) => filter(t) || (t.IsAssignableTo(typeof(T)) && additionalPredicate(t)));
+            t => t.IsAssignableTo(typeof(T)) && additionalPredicate(t),
+            TypeFiltererLifetime.Singleton);
     }
 
     public static ITypeFilterer UsingOnlyAsSingleton(
@@ -148,10 +139,45 @@ public static class ITypeFiltererExtensionMethods
         ArgumentNullException.ThrowIfNull(typeFilterer);
         ArgumentNullException.ThrowIfNull(predicate);
 
-        return new TypeFilterDecorator(
+        return UsingOnlyAs(
             typeFilterer,
-            (filter, t) => filter(t) && !predicate(t),
-            (filter, t) => filter(t) && !predicate(t),
-            (filter, t) => filter(t) || predicate(t));
+            predicate,
+            TypeFiltererLifetime.Singleton);
+    }
+
+    private static ITypeFilterer UsingOnlyAs(
+        ITypeFilterer typeFilterer,
+        Predicate<Type> lifetimeMatch,
+        TypeFiltererLifetime lifetime)
+    {
+        // an excluded type must never be pulled back in by a lifetime override,
+        // regardless of the order the exclusion and the override were chained in
+        bool IsOverridden(Type t) => lifetimeMatch(t) && !typeFilterer.IsTypeExcluded(t);
+
+        bool Include(Predicate<Type> filter, Type t) => filter(t) || IsOverridden(t);
+        bool Exclude(Predicate<Type> filter, Type t) => filter(t) && !IsOverridden(t);
+
+        return lifetime switch
+        {
+            TypeFiltererLifetime.Scoped => new TypeFilterDecorator(
+                typeFilterer,
+                Include,
+                Exclude,
+                Exclude),
+            TypeFiltererLifetime.Transient => new TypeFilterDecorator(
+                typeFilterer,
+                Exclude,
+                Include,
+                Exclude),
+            TypeFiltererLifetime.Singleton => new TypeFilterDecorator(
+                typeFilterer,
+                Exclude,
+                Exclude,
+                Include),
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(lifetime),
+                lifetime,
+                $"Unsupported lifetime '{lifetime}'."),
+        };
     }
 }
