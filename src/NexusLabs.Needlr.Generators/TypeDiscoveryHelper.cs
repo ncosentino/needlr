@@ -762,25 +762,6 @@ internal static class TypeDiscoveryHelper
     }
 
     /// <summary>
-    /// Gets the name of the first Needlr plugin interface implemented by the type.
-    /// </summary>
-    /// <param name="typeSymbol">The type symbol to check.</param>
-    /// <returns>The interface name, or null if none found.</returns>
-    public static string? GetNeedlrPluginInterfaceName(INamedTypeSymbol typeSymbol)
-    {
-        foreach (var iface in typeSymbol.AllInterfaces)
-        {
-            var ifaceName = iface.ToDisplayString();
-            foreach (var pluginInterface in NeedlrPluginInterfaceNames)
-            {
-                if (ifaceName == pluginInterface)
-                    return ifaceName;
-            }
-        }
-        return null;
-    }
-
-    /// <summary>
     /// Checks if an assembly has the [GenerateTypeRegistry] attribute.
     /// </summary>
     /// <param name="assembly">The assembly symbol to check.</param>
@@ -800,30 +781,6 @@ internal static class TypeDiscoveryHelper
         }
         
         return false;
-    }
-
-    /// <summary>
-    /// Checks if a type is publicly accessible (can be referenced from generated code).
-    /// A type is publicly accessible if it and all its containing types are public.
-    /// </summary>
-    /// <param name="typeSymbol">The type symbol to check.</param>
-    /// <returns>True if the type is publicly accessible.</returns>
-    private static bool IsPubliclyAccessible(INamedTypeSymbol typeSymbol)
-    {
-        // Check the type itself
-        if (typeSymbol.DeclaredAccessibility != Accessibility.Public)
-            return false;
-
-        // Check all containing types (for nested types)
-        var containingType = typeSymbol.ContainingType;
-        while (containingType != null)
-        {
-            if (containingType.DeclaredAccessibility != Accessibility.Public)
-                return false;
-            containingType = containingType.ContainingType;
-        }
-
-        return true;
     }
 
     /// <summary>
@@ -1102,22 +1059,6 @@ internal static class TypeDiscoveryHelper
         }
 
         return result;
-    }
-
-    /// <summary>
-    /// Checks if a type implements a specific interface by name.
-    /// </summary>
-    /// <param name="typeSymbol">The type symbol to check.</param>
-    /// <param name="interfaceFullName">The full name of the interface.</param>
-    /// <returns>True if the type implements the interface.</returns>
-    public static bool ImplementsInterface(INamedTypeSymbol typeSymbol, string interfaceFullName)
-    {
-        foreach (var iface in typeSymbol.AllInterfaces)
-        {
-            if (iface.ToDisplayString() == interfaceFullName)
-                return true;
-        }
-        return false;
     }
 
     /// <summary>
