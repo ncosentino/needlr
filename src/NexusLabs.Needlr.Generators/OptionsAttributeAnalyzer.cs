@@ -26,7 +26,6 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
 {
     private const string OptionsAttributeName = "OptionsAttribute";
     private const string GeneratorsNamespace = "NexusLabs.Needlr.Generators";
-    private const string IOptionsValidatorName = "IOptionsValidator";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(
@@ -123,9 +122,14 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
             if (isRecognizedByExtension)
                 return;
 
-            var validationMethods = FindValidationMethods(targetType, methodName).ToArray();
+            var validationMethods = OptionsAttributeHelper
+                .GetValidationMethods(targetType, methodName)
+                .ToArray();
             var validMethod = validationMethods.FirstOrDefault(method =>
-                ValidateMethodSignature(method, optionsType, validatorType != null) == null &&
+                OptionsAttributeHelper.GetValidationMethodSignatureError(
+                    method,
+                    optionsType,
+                    validatorType != null) == null &&
                 (validatorType == null ||
                  (method.Parameters.Length == 1 &&
                   SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, optionsType))));
@@ -136,7 +140,11 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
             if (validationMethods.Length > 0)
             {
                 var validationMethod = validationMethods[0];
-                var signatureError = ValidateMethodSignature(validationMethod, optionsType, validatorType != null);
+                var signatureError =
+                    OptionsAttributeHelper.GetValidationMethodSignatureError(
+                        validationMethod,
+                        optionsType,
+                        validatorType != null);
                 if (signatureError != null)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
@@ -162,7 +170,9 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
 
             if (validatorType != null && validateMethod == null)
             {
-                var interfaceTypeArguments = GetIOptionsValidatorTypeArguments(validatorType).ToArray();
+                var interfaceTypeArguments = OptionsAttributeHelper
+                    .GetIOptionsValidatorTypeArguments(validatorType)
+                    .ToArray();
                 if (interfaceTypeArguments.Any(typeArgument =>
                     SymbolEqualityComparer.Default.Equals(typeArgument, optionsType)))
                 {
@@ -207,85 +217,6 @@ public sealed class OptionsAttributeAnalyzer : DiagnosticAnalyzer
 
         return attributeClass.Name == OptionsAttributeName &&
                attributeClass.ContainingNamespace?.ToDisplayString() == GeneratorsNamespace;
-    }
-
-    private static IEnumerable<IMethodSymbol> FindValidationMethods(
-        INamedTypeSymbol targetType,
-        string methodName)
-    {
-        foreach (var member in targetType.GetMembers())
-        {
-            if (member is IMethodSymbol method &&
-                method.Name == methodName &&
-                method.DeclaredAccessibility == Accessibility.Public &&
-                method.MethodKind == MethodKind.Ordinary)
-            {
-                yield return method;
-            }
-        }
-    }
-
-    private static string? ValidateMethodSignature(IMethodSymbol method, INamedTypeSymbol optionsType, bool isExternalValidator)
-    {
-        if (method.ReturnType is not INamedTypeSymbol returnType ||
-            returnType.OriginalDefinition.ToDisplayString() != "System.Collections.Generic.IEnumerable<T>" ||
-            returnType.TypeArguments.Length != 1)
-        {
-            return "IEnumerable<ValidationError> or IEnumerable<string>";
-        }
-
-        var resultType = returnType.TypeArguments[0];
-        if (resultType.SpecialType != SpecialType.System_String &&
-            resultType.ToDisplayString() != "NexusLabs.Needlr.Generators.ValidationError")
-        {
-            return "IEnumerable<ValidationError> or IEnumerable<string>";
-        }
-
-        // Check parameters
-        if (isExternalValidator)
-        {
-            // External validator should have one parameter of the options type
-            if (method.Parameters.Length != 1)
-            {
-                return $"IEnumerable<ValidationError> {method.Name}({optionsType.Name} options)";
-            }
-        }
-        else
-        {
-            // Self-validation should have no parameters (unless static with one param)
-            if (!method.IsStatic && method.Parameters.Length != 0)
-            {
-                return $"IEnumerable<ValidationError> {method.Name}()";
-            }
-
-            if (method.IsStatic && method.Parameters.Length != 1)
-            {
-                return $"static IEnumerable<ValidationError> {method.Name}({optionsType.Name} options)";
-            }
-
-            if (method.IsStatic &&
-                !SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, optionsType))
-            {
-                return $"static IEnumerable<ValidationError> {method.Name}({optionsType.Name} options)";
-            }
-        }
-
-        return null; // Valid signature
-    }
-
-    private static IEnumerable<ITypeSymbol> GetIOptionsValidatorTypeArguments(
-        INamedTypeSymbol validatorType)
-    {
-        foreach (var iface in validatorType.AllInterfaces)
-        {
-            if (iface.Name == IOptionsValidatorName &&
-                iface.ContainingNamespace?.ToDisplayString() == GeneratorsNamespace &&
-                iface.IsGenericType &&
-                iface.TypeArguments.Length == 1)
-            {
-                yield return iface.TypeArguments[0];
-            }
-        }
     }
 
     private static bool IsRecognizedByValidatorProvider(INamedTypeSymbol validatorType, Compilation compilation)
