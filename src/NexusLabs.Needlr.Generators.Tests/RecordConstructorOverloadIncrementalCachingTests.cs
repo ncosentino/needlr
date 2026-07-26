@@ -52,8 +52,12 @@ public sealed class RecordConstructorOverloadIncrementalCachingTests
 
         var secondRun = RunIncremental(before, after);
 
-        AssertAllOutputsCachedOrUnchanged(secondRun, RecordConstructorOverloadTrackingNames.Models);
-        AssertAllOutputsCachedOrUnchanged(secondRun, RecordConstructorOverloadTrackingNames.Output);
+        IncrementalCachingAssertions.AssertAllOutputsCachedOrUnchanged(
+            secondRun,
+            RecordConstructorOverloadTrackingNames.Models);
+        IncrementalCachingAssertions.AssertAllOutputsCachedOrUnchanged(
+            secondRun,
+            RecordConstructorOverloadTrackingNames.Output);
     }
 
     [Fact]
@@ -111,15 +115,12 @@ public sealed class RecordConstructorOverloadIncrementalCachingTests
 
         var secondRun = RunIncremental(before, after);
 
-        var modelReasons = GetReasons(secondRun, RecordConstructorOverloadTrackingNames.Models);
-        var outputReasons = GetReasons(secondRun, RecordConstructorOverloadTrackingNames.Output);
-
-        Assert.Equal(2, modelReasons.Length);
-        Assert.Equal(1, modelReasons.Count(reason => reason is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged));
-        Assert.Equal(1, modelReasons.Count(reason => reason is IncrementalStepRunReason.Modified or IncrementalStepRunReason.New));
-        Assert.Equal(2, outputReasons.Length);
-        Assert.Equal(1, outputReasons.Count(reason => reason is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged));
-        Assert.Equal(1, outputReasons.Count(reason => reason is IncrementalStepRunReason.Modified or IncrementalStepRunReason.New));
+        IncrementalCachingAssertions.AssertExactlyOneChangedAndOneCached(
+            secondRun,
+            RecordConstructorOverloadTrackingNames.Models);
+        IncrementalCachingAssertions.AssertExactlyOneChangedAndOneCached(
+            secondRun,
+            RecordConstructorOverloadTrackingNames.Output);
     }
 
     private static CSharpCompilation CreateCompilation(params SyntaxTree[] syntaxTrees)
@@ -145,26 +146,4 @@ public sealed class RecordConstructorOverloadIncrementalCachingTests
         return driver.GetRunResult().Results.Single();
     }
 
-    private static void AssertAllOutputsCachedOrUnchanged(GeneratorRunResult result, string trackingName)
-    {
-        var reasons = GetReasons(result, trackingName);
-        Assert.NotEmpty(reasons);
-        Assert.All(
-            reasons,
-            reason => Assert.True(
-                reason is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged,
-                $"Expected '{trackingName}' to be cached or unchanged, but found '{reason}'"));
-    }
-
-    private static IncrementalStepRunReason[] GetReasons(GeneratorRunResult result, string trackingName)
-    {
-        Assert.True(
-            result.TrackedSteps.TryGetValue(trackingName, out var steps),
-            $"Expected tracked step '{trackingName}'");
-
-        return steps
-            .SelectMany(step => step.Outputs)
-            .Select(output => output.Reason)
-            .ToArray();
-    }
 }
