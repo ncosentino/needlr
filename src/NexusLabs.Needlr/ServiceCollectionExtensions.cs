@@ -28,7 +28,10 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The service collection to modify.</param>
     /// <returns>The service collection for method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when services is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when no service registration is found for TService.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no service registration is found for TService, or when an existing
+    /// registration uses an unsupported lifetime.
+    /// </exception>
     /// <example>
     /// <code>
     /// // Register the original service
@@ -43,59 +46,7 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Find ALL existing service registrations for this type
-        var existingDescriptors = services
-            .Where(d => d.ServiceType == typeof(TService))
-            .ToList();
-
-        if (existingDescriptors.Count == 0)
-        {
-            throw new InvalidOperationException(
-                $"No service registration found for type {typeof(TService).Name}. " +
-                $"Please register the service before decorating it.");
-        }
-
-        // Remove all existing registrations
-        foreach (var descriptor in existingDescriptors)
-        {
-            services.Remove(descriptor);
-        }
-
-        // Create decorated registrations for each, preserving order and lifetime
-        foreach (var existingDescriptor in existingDescriptors)
-        {
-            var decoratedDescriptor = CreateDecoratedDescriptor<TService, TDecorator>(existingDescriptor);
-            services.Add(decoratedDescriptor);
-        }
-
-        return services;
-    }
-
-    private static ServiceDescriptor CreateDecoratedDescriptor<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TDecorator>(
-        ServiceDescriptor existingDescriptor)
-        where TDecorator : class, TService
-    {
-        return existingDescriptor.Lifetime switch
-        {
-            ServiceLifetime.Singleton => new ServiceDescriptor(typeof(TService), provider =>
-            {
-                var originalService = CreateOriginalService<TService>(provider, existingDescriptor);
-                return ActivatorUtilities.CreateInstance<TDecorator>(provider, originalService!);
-            }, ServiceLifetime.Singleton),
-            ServiceLifetime.Scoped => new ServiceDescriptor(typeof(TService), provider =>
-            {
-                var originalService = CreateOriginalService<TService>(provider, existingDescriptor);
-                return ActivatorUtilities.CreateInstance<TDecorator>(provider, originalService!);
-            }, ServiceLifetime.Scoped),
-            ServiceLifetime.Transient => new ServiceDescriptor(typeof(TService), provider =>
-            {
-                var originalService = CreateOriginalService<TService>(provider, existingDescriptor);
-                return ActivatorUtilities.CreateInstance<TDecorator>(provider, originalService!);
-            }, ServiceLifetime.Transient),
-            _ => throw new InvalidOperationException(
-                $"Unsupported service lifetime '{existingDescriptor.Lifetime}' " +
-                $"for '{typeof(TService)}'.")
-        };
+        return services.AddDecorator(typeof(TService), typeof(TDecorator));
     }
 
     /// <summary>
@@ -108,7 +59,10 @@ public static class ServiceCollectionExtensions
     /// <param name="decoratorType">The decorator type that implements the service type.</param>
     /// <returns>The service collection for method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when services, serviceType, or decoratorType is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when no service registration is found for the service type.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no service registration is found for the service type, or when an existing
+    /// registration uses an unsupported lifetime.
+    /// </exception>
     /// <example>
     /// <code>
     /// // Register the original service
@@ -137,6 +91,20 @@ public static class ServiceCollectionExtensions
             throw new InvalidOperationException(
                 $"No service registration found for type {serviceType.Name}. " +
                 $"Please register the service before decorating it.");
+        }
+
+        // Validate before mutating so an unsupported lifetime leaves the collection untouched
+        foreach (var descriptor in existingDescriptors)
+        {
+            if (descriptor.Lifetime is not (
+                ServiceLifetime.Singleton or
+                ServiceLifetime.Scoped or
+                ServiceLifetime.Transient))
+            {
+                throw new InvalidOperationException(
+                    $"Unsupported service lifetime '{descriptor.Lifetime}' " +
+                    $"for '{serviceType}'.");
+            }
         }
 
         // Remove all existing registrations
@@ -242,26 +210,6 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         return services.Any(d => d.ServiceType == serviceType);
-    }
-
-    private static TService CreateOriginalService<TService>(IServiceProvider provider, ServiceDescriptor originalDescriptor)
-    {
-        if (originalDescriptor.ImplementationFactory is not null)
-        {
-            return (TService)originalDescriptor.ImplementationFactory(provider);
-        }
-        
-        if (originalDescriptor.ImplementationInstance is not null)
-        {
-            return (TService)originalDescriptor.ImplementationInstance;
-        }
-        
-        if (originalDescriptor.ImplementationType is not null)
-        {
-            return (TService)ActivatorUtilities.CreateInstance(provider, originalDescriptor.ImplementationType);
-        }
-        
-        throw new InvalidOperationException($"Unable to create instance of service {typeof(TService).Name} from the original descriptor.");
     }
 
     private static object CreateOriginalService(IServiceProvider provider, ServiceDescriptor originalDescriptor, Type serviceType)
