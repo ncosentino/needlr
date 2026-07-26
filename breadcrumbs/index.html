@@ -5189,12 +5189,56 @@
 </span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="nt">&lt;/PropertyGroup&gt;</span>
 </span></code></pre></div>
 <h3 id="filtering-types">Filtering Types<a class="headerlink" href="#filtering-types" title="Permanent link">&para;</a></h3>
-<p>Filter diagnostics to specific types (comma-separated fully qualified names):</p>
+<p>Filter diagnostics to specific types (comma- or semicolon-separated names):</p>
 <div class="language-xml highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">&lt;PropertyGroup&gt;</span>
 </span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">&lt;NeedlrDiagnostics&gt;</span>true<span class="nt">&lt;/NeedlrDiagnostics&gt;</span>
 </span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span><span class="nt">&lt;NeedlrDiagnosticsFilter&gt;</span>MyApp.OrderService,MyApp.PaymentService<span class="nt">&lt;/NeedlrDiagnosticsFilter&gt;</span>
 </span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="nt">&lt;/PropertyGroup&gt;</span>
 </span></code></pre></div>
+<p>A filter term matches a type by its fully qualified name (<code>global::MyApp.OrderService</code>), its
+namespace-qualified name (<code>MyApp.OrderService</code>), or its short name (<code>OrderService</code>). The same
+term is also matched against every identity on the other side of a relationship, so a single
+filter term keeps every artifact consistent:</p>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>Matched identities</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Services</td>
+<td>Implementation name, registered interface names</td>
+</tr>
+<tr>
+<td>Decorators</td>
+<td>Decorator implementation name, decorated service name</td>
+</tr>
+<tr>
+<td>Factories</td>
+<td>Source type name, produced service type name</td>
+</tr>
+<tr>
+<td>Intercepted services</td>
+<td>Service name, service interfaces, interceptor type names</td>
+</tr>
+<tr>
+<td>Plugins</td>
+<td>Plugin type name, plugin interface names</td>
+</tr>
+<tr>
+<td>Referenced plugin assembly types</td>
+<td>Type name, short name, interface names</td>
+</tr>
+<tr>
+<td>Options</td>
+<td>Options type name, configuration section name, named-options name</td>
+</tr>
+</tbody>
+</table>
+<p>Sections whose members are entirely filtered out - including referenced plugin assemblies -
+are omitted from the generated Markdown.</p>
 <h3 id="example-output">Example Output<a class="headerlink" href="#example-output" title="Permanent link">&para;</a></h3>
 <h4 id="dependencygraphmd">DependencyGraph.md<a class="headerlink" href="#dependencygraphmd" title="Permanent link">&para;</a></h4>
 <p>The dependency graph now includes rich visualization sections:</p>
