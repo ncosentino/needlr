@@ -730,6 +730,50 @@ public sealed class OptionsAttributeAnalyzerTests
             source);
     }
 
+    [Fact]
+    public void Analyzer_SelfValidationOverloads_WithOneValidMethod_NoDiagnostics()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+            using System.Collections.Generic;
+
+            namespace TestApp;
+
+            [Options(ValidateOnStart = true)]
+            public class TestOptions
+            {
+                public int Validate(int value) => value;
+
+                public IEnumerable<ValidationError> Validate() => [];
+            }
+            """;
+
+        Assert.Empty(RunAnalyzer(source));
+    }
+
+    [Fact]
+    public void Analyzer_ExternalValidatorOverloads_WithOneMatchingMethod_NoDiagnostics()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+            using System.Collections.Generic;
+
+            namespace TestApp;
+
+            [Options(ValidateOnStart = true, Validator = typeof(TestValidator))]
+            public class TestOptions;
+
+            public class TestValidator
+            {
+                public IEnumerable<ValidationError> Validate(string options) => [];
+
+                public IEnumerable<ValidationError> Validate(TestOptions options) => [];
+            }
+            """;
+
+        Assert.Empty(RunAnalyzer(source));
+    }
+
     private static Diagnostic AssertSingleDiagnostic(
         string source,
         string? referencedAssemblySource = null)
