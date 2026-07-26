@@ -212,27 +212,6 @@ internal static class GeneratorHelpers
     }
 
     /// <summary>
-    /// Gets the fully qualified validator class name for an options type.
-    /// E.g., "global::TestApp.StripeOptions" -> "global::TestApp.Generated.StripeOptionsValidator"
-    /// </summary>
-    public static string GetValidatorClassName(string optionsTypeName)
-    {
-        var shortName = GetShortTypeName(optionsTypeName);
-        
-        var name = optionsTypeName;
-        if (name.StartsWith("global::", StringComparison.Ordinal))
-            name = name.Substring(8);
-        
-        var lastDot = name.LastIndexOf('.');
-        var ns = lastDot >= 0 ? name.Substring(0, lastDot) : "";
-        
-        var validatorName = shortName + "Validator";
-        return string.IsNullOrEmpty(ns)
-            ? $"global::{validatorName}"
-            : $"global::{ns}.Generated.{validatorName}";
-    }
-
-    /// <summary>
     /// Extracts the generic type argument from a generic type name.
     /// E.g., "Task&lt;string&gt;" -> "string"
     /// </summary>

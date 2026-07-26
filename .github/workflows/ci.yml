@@ -125,6 +125,9 @@ jobs:
       if: needs.changes.outputs.source_required == 'true'
       run: |
         failed=0
+        # This exact type is emitted into NexusLabs.Needlr.Maui by the Microsoft MAUI SDK binding
+        # source generator; excluding it removes SDK-owned noise without excluding Needlr-authored code.
+        coverage_exclude='DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Exclude=[NexusLabs.Needlr.Maui]Microsoft.Maui.Controls.Generated.GeneratedBindingInterceptors'
         while IFS= read -r proj; do
           echo "::group::Testing $(basename "$proj")"
           dotnet test "$proj" \
@@ -136,7 +139,8 @@ jobs:
             --blame-hang-timeout 5m \
             --filter "Category!=Integration" \
             --collect:"XPlat Code Coverage" \
-            --results-directory coverage || failed=1
+            --results-directory coverage \
+            -- "$coverage_exclude" || failed=1
           echo "::endgroup::"
         done < <(find src -name '*.csproj' -path '*Tests*' | sort)
         exit $failed

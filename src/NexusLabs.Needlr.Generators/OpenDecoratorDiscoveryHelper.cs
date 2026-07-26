@@ -111,39 +111,4 @@ internal static class OpenDecoratorDiscoveryHelper
         return false;
     }
 
-    /// <summary>
-    /// Finds all closed implementations of an open generic interface in the given types.
-    /// </summary>
-    /// <param name="openGenericInterface">The open generic interface (e.g., IHandler{}).</param>
-    /// <param name="allTypes">All types to search through.</param>
-    /// <returns>A dictionary mapping closed interface types to their implementing types.</returns>
-    public static Dictionary<INamedTypeSymbol, List<INamedTypeSymbol>> FindClosedImplementations(
-        INamedTypeSymbol openGenericInterface,
-        IEnumerable<INamedTypeSymbol> allTypes)
-    {
-        var result = new Dictionary<INamedTypeSymbol, List<INamedTypeSymbol>>(SymbolEqualityComparer.Default);
-
-        foreach (var type in allTypes)
-        {
-            if (type.IsAbstract || type.TypeKind != TypeKind.Class)
-                continue;
-
-            // Check all interfaces implemented by this type
-            foreach (var iface in type.AllInterfaces)
-            {
-                // Check if this interface is a closed version of the open generic
-                if (iface.OriginalDefinition.Equals(openGenericInterface, SymbolEqualityComparer.Default))
-                {
-                    if (!result.TryGetValue(iface, out var implementors))
-                    {
-                        implementors = new List<INamedTypeSymbol>();
-                        result[iface] = implementors;
-                    }
-                    implementors.Add(type);
-                }
-            }
-        }
-
-        return result;
-    }
 }
