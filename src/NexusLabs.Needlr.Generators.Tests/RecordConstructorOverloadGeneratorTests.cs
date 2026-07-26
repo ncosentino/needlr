@@ -428,6 +428,217 @@ public sealed class RecordConstructorOverloadGeneratorTests
     }
 
     [Fact]
+    public void SignatureEquivalentDynamicNestedInGenericArguments_EmitsNoOverload()
+    {
+        var source = """
+            using System.Collections.Generic;
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp;
+
+            public partial record Request(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                public Dictionary<string, List<dynamic>> Scope { get; init; }
+
+                public Request(string Name, Dictionary<string, List<object>> Scope)
+                    : this(Name)
+                {
+                    this.Scope = Scope;
+                }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        Assert.Equal(string.Empty, generatedCode);
+    }
+
+    [Fact]
+    public void DistinctArrayRanks_StillEmitOverloadThatCompiles()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp;
+
+            public partial record Request(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                public string[,] Scopes { get; init; }
+
+                public Request(string Name, string[] Scopes) : this(Name)
+                {
+                    this.Scopes = new string[0, 0];
+                }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+        var errors = GeneratorTestRunner.ForConstructorGeneration()
+            .WithSource(source)
+            .RunGeneratorCompilationErrors(new RecordConstructorOverloadGenerator());
+
+        Assert.Contains("public Request(string Name, string[,] Scopes)", generatedCode);
+        Assert.Empty(errors);
+    }
+
+    [Fact]
+    public void DistinctNestedGenericContainingTypes_StillEmitOverloadThatCompiles()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp;
+
+            public class Outer<T>
+            {
+                public sealed class Inner;
+            }
+
+            public partial record Request(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                public Outer<int>.Inner Scope { get; init; }
+
+                public Request(string Name, Outer<string>.Inner Scope) : this(Name)
+                {
+                }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+        var errors = GeneratorTestRunner.ForConstructorGeneration()
+            .WithSource(source)
+            .RunGeneratorCompilationErrors(new RecordConstructorOverloadGenerator());
+
+        Assert.Contains(
+            "public Request(string Name, global::TestApp.Outer<int>.Inner Scope)",
+            generatedCode);
+        Assert.Empty(errors);
+    }
+
+    [Fact]
+    public void PointerTypedProperty_EmitsNoOverload()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp;
+
+            public unsafe partial record Request(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                public int* Pointer { get; init; }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        Assert.Equal(string.Empty, generatedCode);
+    }
+
+    [Fact]
+    public void PointerTypedPrimaryParameter_EmitsNoOverload()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp;
+
+            public unsafe partial record Request(int* Pointer)
+            {
+                [RecordConstructorOverloadParameter]
+                public int Count { get; init; }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        Assert.Equal(string.Empty, generatedCode);
+    }
+
+    [Fact]
+    public void PointerArrayTypedProperty_EmitsNoOverload()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp;
+
+            public unsafe partial record Request(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                public int*[] Pointers { get; init; }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        Assert.Equal(string.Empty, generatedCode);
+    }
+
+    [Fact]
+    public void LessAccessibleGenericArgumentInPublicRecord_EmitsNoOverload()
+    {
+        var source = """
+            #nullable enable
+            using System.Collections.Generic;
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp;
+
+            internal sealed class Scope;
+
+            public partial record Request(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                internal List<Scope>? PreparedScopes { get; init; }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+
+        Assert.Equal(string.Empty, generatedCode);
+    }
+
+    [Fact]
+    public void AccessibleArrayAndGenericPropertyTypes_EmitOverloadThatCompiles()
+    {
+        var source = """
+            #nullable enable
+            using System.Collections.Generic;
+            using NexusLabs.Needlr.Generators;
+
+            namespace TestApp;
+
+            public sealed class Scope;
+
+            public partial record Request<T>(string Name)
+            {
+                [RecordConstructorOverloadParameter]
+                public Scope[]? Scopes { get; init; }
+
+                [RecordConstructorOverloadParameter]
+                public IReadOnlyList<Scope>? Listed { get; init; }
+
+                [RecordConstructorOverloadParameter]
+                public T? Value { get; init; }
+            }
+            """;
+
+        var generatedCode = RunGenerator(source);
+        var errors = GeneratorTestRunner.ForConstructorGeneration()
+            .WithSource(source)
+            .RunGeneratorCompilationErrors(new RecordConstructorOverloadGenerator());
+
+        Assert.Contains(
+            "public Request(string Name, global::TestApp.Scope[]? Scopes, global::System.Collections.Generic.IReadOnlyList<global::TestApp.Scope>? Listed, T? Value)",
+            generatedCode);
+        Assert.Empty(errors);
+    }
+
+    [Fact]
     public void GuardOnUnmarkedProperty_DoesNotTriggerOverload()
     {
         var source = """

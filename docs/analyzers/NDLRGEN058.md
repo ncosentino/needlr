@@ -8,7 +8,9 @@ positional record class.
 ## Rule Description
 
 Ordinary classes, record structs, body-only records, file-local records, nested records,
-and inherited records cannot use this feature.
+and inherited records cannot use this feature. A positional record whose primary
+constructor declares a pointer-typed parameter is also unsupported, because the generated
+file is not compiled in an unsafe context.
 
 ## How to Fix
 
