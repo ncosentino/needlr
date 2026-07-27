@@ -231,13 +231,13 @@ jobs:
       run: python scripts/build-sitemap-index.py ./site
 
     - name: Add Coverage Report to Site
-      if: needs.changes.outputs.source_required == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: needs.changes.outputs.source_required == 'true' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
       run: |
         mkdir -p site/coverage
         cp -r coverage/report/* site/coverage/
 
     - name: Restrict deploy to ci.yml-owned paths
-      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
       run: |
         # ci.yml owns: /api/dev/*, /coverage/*, home, feature pages, assets.
         # release.yml owns: /api/stable/*, /api/v<version>/*.
@@ -254,7 +254,7 @@ jobs:
         echo "Restricted ./site/ to ci.yml-owned paths."
 
     - name: Deploy Documentation and Coverage
-      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -266,7 +266,7 @@ jobs:
     # by keep_files above) -- check it out fresh and mirror that whole tree
     # to Cloudflare Pages, rather than deploying our own partial ./site/.
     - name: Checkout gh-pages for Cloudflare mirror
-      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
       uses: actions/checkout@v4
       with:
         ref: gh-pages
@@ -277,17 +277,17 @@ jobs:
     # older archives stay in gh-pages history but are not published here.
     # Also removes the checkout's .git so it is not uploaded.
     - name: Trim mirror before Cloudflare deploy
-      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
       run: python scripts/trim-cloudflare-mirror.py gh-pages-mirror --keep 20
 
     - name: Setup Node.js
-      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
       uses: actions/setup-node@v4
       with:
         node-version: '24'
 
     - name: Deploy Documentation to Cloudflare Pages
-      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
       uses: cloudflare/wrangler-action@v4
       with:
         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

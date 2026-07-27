@@ -36,13 +36,13 @@ jobs:
                 repo: context.repo.repo,
                 workflow_id: 'ci.yml',
                 branch: 'main',
-                event: 'push',
                 per_page: 100
               });
               const run = data.workflow_runs
                 .filter(candidate =>
                   candidate.head_sha === context.sha &&
-                  candidate.head_branch === 'main')
+                  candidate.head_branch === 'main' &&
+                  ['push', 'workflow_dispatch'].includes(candidate.event))
                 .sort((left, right) =>
                   new Date(right.created_at) - new Date(left.created_at))[0];
 

@@ -1,0 +1,89 @@
+name: Trusted pull request auto-merge
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: trusted-pull-request-auto-merge
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    if: vars.TRUSTED_AUTO_MERGE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # This workflow runs only from the protected default branch. It must never
+      # check out or execute pull request code.
+      - name: Merge eligible trusted pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OWNER: ${{ github.repository_owner }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          pull_requests="$(
+            gh api --paginate --slurp \
+              "repos/$GITHUB_REPOSITORY/pulls?state=open&base=main&per_page=100"
+          )"
+
+          while IFS= read -r pull_request; do
+            number="$(jq -r '.number' <<< "$pull_request")"
+            draft="$(jq -r '.draft' <<< "$pull_request")"
+            head_repo="$(jq -r '.head.repo.full_name // ""' <<< "$pull_request")"
+            head_sha="$(jq -r '.head.sha' <<< "$pull_request")"
+            author_login="$(jq -r '.user.login' <<< "$pull_request")"
+            author_id="$(jq -r '.user.id' <<< "$pull_request")"
+            author_type="$(jq -r '.user.type' <<< "$pull_request")"
+
+            if [[ "$draft" == "true" || "$head_repo" != "$GITHUB_REPOSITORY" ]]; then
+              continue
+            fi
+
+            if [[ "$author_login" == "$OWNER" ]]; then
+              # Owner-authored PRs are trusted by policy. Cloud agents must open
+              # their own PRs so the current-head approval requirement applies.
+              :
+            elif [[ "$author_id" == "198982749" && "$author_type" == "Bot" ]]; then
+              reviews="$(
+                gh api --paginate --slurp \
+                  "repos/$GITHUB_REPOSITORY/pulls/$number/reviews"
+              )"
+              latest_owner_review="$(
+                jq -r \
+                  --arg owner "$OWNER" \
+                  --arg head "$head_sha" \
+                  '[.[][] | select(
+                    .user.login == $owner and
+                    .commit_id == $head and
+                    (.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED")
+                  )] | last | .state // ""' \
+                  <<< "$reviews"
+              )"
+
+              if [[ "$latest_owner_review" != "APPROVED" ]]; then
+                continue
+              fi
+            else
+              continue
+            fi
+
+            if gh pr merge "$number" \
+              --repo "$GITHUB_REPOSITORY" \
+              --squash \
+              --match-head-commit "$head_sha"; then
+              gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref main
+              break
+            fi
+          done < <(jq -c '.[][]' <<< "$pull_requests")
