@@ -24,6 +24,110 @@ The coverage report opens in a new tab and provides:
 - Risk hotspots and complexity metrics
 - Historical coverage trends
 
+## Enforced thresholds
+
+CI fails when the generated `coverage/report/Summary.json` drops below these minimums:
+
+| Metric          | Minimum |
+|-----------------|---------|
+| Line coverage   | 91%     |
+| Branch coverage | 83%     |
+
+The gate is `scripts/check-coverage.ps1`, run by the `Enforce Coverage Thresholds`
+step in `.github/workflows/ci.yml` after the job summary and artifact upload, so a
+regression still publishes the numbers that explain the failure. The gate's own
+behavior is validated by `scripts/test-coverage-threshold.ps1` in the package
+validation job.
+
+Thresholds sit slightly below the last observed hosted result so ordinary
+run-to-run noise does not break the build while real regressions do. When you
+change the defaults in `scripts/check-coverage.ps1`, update this page and the
+expectation in `scripts/test-coverage-threshold.ps1` in the same change.
+
+## Measured result
+
+Measured with the same Release build, test filters, and ReportGenerator
+invocation that CI uses:
+
+| Metric          | Initiative baseline | Current       |
+|-----------------|---------------------|---------------|
+| Covered branches| 5,723               | 5,992         |
+| Total branches  | 7,343               | 7,087         |
+| Branch coverage | 77.9%               | 84.5%         |
+| Line coverage   | 89.1%               | 92.7%         |
+
+The numerator rose because behavioral tests were added across the options,
+generated-constructor, incremental-generator, record-overload, closed-generic,
+graph-export, diagnostic-artifact, analyzer-parity, runtime-DI, and runtime
+bootstrap tracks. The denominator fell because verified dead generator helpers
+and generated-code noise were deleted, not because branches were excluded.
+
+## Exclusion policy
+
+Coverage exclusions must name code Needlr does not author, and each one must
+carry a rationale where it is declared. Broad assembly-, namespace-, or
+file-level exclusions that would hide ordinary low-coverage Needlr code are
+rejected.
+
+The repository has exactly one exclusion:
+
+| Exclusion | Rationale |
+|-----------|-----------|
+| `[NexusLabs.Needlr.Maui]Microsoft.Maui.Controls.Generated.GeneratedBindingInterceptors` | Emitted into the MAUI package by the Microsoft MAUI SDK binding source generator. Needlr neither authors nor can test it. |
+
+No `[ExcludeFromCodeCoverage]` attribute is applied to any hand-written Needlr
+type.
+
+## Shared source and the published report
+
+Roslyn components must embed their dependencies as source, so
+`NexusLabs.Needlr.Roslyn.Shared` files are `Compile`-linked into
+`NexusLabs.Needlr.Generators`, `NexusLabs.Needlr.Analyzers`, and
+`NexusLabs.Needlr.SignalR.Analyzers`. Each copy is measured independently, so
+identical helper source is counted two or three times in the denominator.
+
+The **raw report is the published source of truth**. A deduplicated
+"canonical owned-code view" is deliberately *not* published: counting each
+linked helper once would report 5,752 / 6,699 branches (85.9%) instead of
+5,992 / 7,087 (84.5%), which improves the headline number without improving any
+tested behavior. The duplication is documented here instead of being engineered
+away in reporting.
+
+Consumer-specific analyzer behavior is never excluded merely because the
+implementation source is shared: the same helper reached from the analyzer and
+from the generator can behave differently for the same input, so both call sites
+remain in scope for tests.
+
+## Remaining gaps
+
+The 1,095 uncovered branches are concentrated in the Roslyn stack
+(`NexusLabs.Needlr.Generators` 686, `NexusLabs.Needlr.Analyzers` 238). They fall
+into four classes:
+
+- **Valuable behavior** — attribute analyzers with partially covered diagnostic
+  matrices (`ProviderAttributeAnalyzer`,
+  `RegisterClosedOverImplementationsOfAttributeAnalyzer`,
+  `OpenDecoratorForAttributeAnalyzer`, `GenerateFactoryAttributeAnalyzer`,
+  `HubPathAttributeAnalyzer`) and emission paths in `OptionsCodeGenerator`,
+  `InterceptorCodeGenerator`, and `ServiceCatalogCodeGenerator`. These are the
+  targets for the next milestone.
+- **Shared-source duplication** — the `Roslyn.Shared` copies described above,
+  roughly 177 uncovered branches for two files.
+- **Defensive symbol handling** — null, error, and malformed-symbol guards in
+  `TypeDiscoveryHelper` and `ConstructorGuardAnalysisHelper` that a valid
+  compilation cannot reach. These stay as guards rather than being deleted or
+  faked with impossible mocks.
+- **Accepted low-risk debt** — thin host adapters such as
+  `NexusLabs.Needlr.Maui` and `NexusLabs.Needlr.Avalonia` design-time paths that
+  require a platform host to exercise.
+
+## Next threshold
+
+The 83% planning target is met. The next milestone is **87% branch coverage**,
+earned from the "valuable behavior" class above; the CI minimum is raised only
+after a stable hosted result clears it. Denominator manipulation is not an
+acceptable route to the milestone.
+
 ---
 
 *Coverage report is updated automatically on each push to main.*

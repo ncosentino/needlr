@@ -175,6 +175,13 @@ jobs:
         name: coverage-report
         path: coverage/report/
 
+    - name: Enforce Coverage Thresholds
+      if: needs.changes.outputs.source_required == 'true'
+      shell: pwsh
+      # Runs after the summary and artifact steps so a regression still
+      # publishes the numbers that explain the failure.
+      run: scripts/check-coverage.ps1
+
     - name: Setup Python for MkDocs
       if: needs.changes.outputs.source_required == 'true'
       uses: actions/setup-python@v5
@@ -340,6 +347,11 @@ jobs:
       if: needs.changes.outputs.source_required == 'true'
       shell: pwsh
       run: scripts/test-release.ps1
+
+    - name: Validate coverage threshold gate
+      if: needs.changes.outputs.source_required == 'true'
+      shell: pwsh
+      run: scripts/test-coverage-threshold.ps1
 
     - name: Restore
       if: needs.changes.outputs.source_required == 'true'
