@@ -5,6 +5,7 @@ using Xunit;
 
 namespace NexusLabs.Needlr.Injection.Tests;
 
+[Collection(SourceGenBootstrapCollection.Name)]
 public sealed class NeedlrSourceGenBootstrapRegisterPluginsTests : IDisposable
 {
     public NeedlrSourceGenBootstrapRegisterPluginsTests()

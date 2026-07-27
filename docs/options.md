@@ -279,6 +279,31 @@ You do **not** need to call `services.AddOptions<T>().BindConfiguration(...)` fr
 a plugin or `Program.cs` in either path — the `[Options]` attribute is the only
 registration you need.
 
+### Registrar composition order
+
+`ConfiguredSyringe.BuildServiceProvider(IConfiguration)` appends the generated registrars
+*after* your own callbacks, in this fixed order:
+
+1. your post-plugin registration callbacks, in the order you added them;
+2. the source-generated options registrar (`SourceGenRegistry.TryGetOptionsRegistrar`);
+3. every extension registrar (`SourceGenRegistry.TryGetExtensionRegistrar`), in
+   registration order — this is how packages such as
+   `NexusLabs.Needlr.FluentValidation` add their registrations;
+4. container verification.
+
+Because options and extensions run last, they observe everything your callbacks
+registered, and a later registration can still override an earlier one.
+
+### Two registries, one contract
+
+| Registry | Assembly | Used by |
+|----------|----------|---------|
+| `NexusLabs.Needlr.SourceGenRegistry` | `NexusLabs.Needlr` | Needlr's runtime composition (`ConfiguredSyringe`, `WebApplicationSyringe`, `MauiSyringe`). Extension packages should register here. |
+| `NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap` | `NexusLabs.Needlr.Generators.Attributes` | Generated type/plugin/decorator providers, plus a still-supported mirror of the options and extension registrars for hosts that compose generated registrations directly. |
+
+The generated module initializer registers the options registrar with **both**, so
+`NexusLabs.Needlr.Injection` never needs a dependency on the attributes package.
+
 ## Using `[Options]` on the ASP.NET Core Web Application Path
 
 When building via `BuildWebApplication()`, the generator-emitted

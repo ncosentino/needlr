@@ -7,6 +7,7 @@
 
 ### Fixed
 
+- `NeedlrSourceGenBootstrap.ClearRegistrationsForTesting` now also clears registered extension registrars, so extension registrations can no longer leak between tests that share the process-wide source-generation bootstrap.
 - Type-filterer exclusions now win over lifetime overrides regardless of chaining order. Previously `filterer.Except<T>().UsingOnlyAsSingleton<IService>()` re-included the excluded type for reflection-based registration while source-generated registration still excluded it; `UsingOnlyAsScoped`/`UsingOnlyAsTransient`/`UsingOnlyAsSingleton` now honour the inner filterer's `IsTypeExcluded` result for every overload.
 - The generic `AddDecorator<TService, TDecorator>` overload now shares one implementation with `AddDecorator(Type, Type)`, so both overloads have identical descriptor, lifetime, and failure guarantees. An unsupported descriptor lifetime is rejected by both overloads before any registration is removed, leaving the service collection unchanged.
 - Record constructor-overload generation no longer emits unsafe-only source for pointer-typed participants. A pointer-typed (or pointer-array-typed) marked property is now rejected with NDLRGEN059, and a pointer-typed positional parameter with NDLRGEN058, instead of emitting a constructor that cannot compile outside an unsafe context. Signature-collision comparison also recurses through the type arguments of enclosing generic types, so distinct types such as `Outer<int>.Inner` and `Outer<string>.Inner` are no longer reported as colliding.
