@@ -297,7 +297,48 @@ internal static class GeneratorHelpers
     /// </summary>
     public static string GetMermaidNodeId(string typeName)
     {
-        return GetShortTypeName(typeName).Replace(".", "_").Replace("<", "_").Replace(">", "_").Replace(",", "_");
+        return SanitizeMermaidId(GetShortTypeName(typeName));
+    }
+
+    /// <summary>
+    /// Converts arbitrary text into a valid Mermaid identifier by replacing every character
+    /// that is not an ASCII letter, digit, or underscore.
+    /// </summary>
+    public static string SanitizeMermaidId(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return "_";
+
+        var sb = new StringBuilder(value.Length);
+        foreach (var c in value)
+        {
+            var isSafe = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
+            sb.Append(isSafe ? c : '_');
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Escapes text used inside a quoted Mermaid node or subgraph label.
+    /// </summary>
+    public static string EscapeMermaidLabel(string label)
+    {
+        return label
+            .Replace("\"", "#quot;")
+            .Replace("\r", " ")
+            .Replace("\n", " ");
+    }
+
+    /// <summary>
+    /// Escapes text used inside a Markdown pipe table cell so the table structure is preserved.
+    /// </summary>
+    public static string EscapeMarkdownTableCell(string value)
+    {
+        return value
+            .Replace("|", "\\|")
+            .Replace("\r", " ")
+            .Replace("\n", " ");
     }
 
     /// <summary>

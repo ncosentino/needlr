@@ -76,6 +76,7 @@ internal static class DiagnosticsGenerator
     {
         var sb = new StringBuilder();
         var types = FilterTypes(discovery.InjectableTypes, typeFilter);
+        referencedAssemblyTypes = FilterReferencedAssemblyTypes(referencedAssemblyTypes, typeFilter);
 
         sb.AppendLine("# Needlr Dependency Graph");
         sb.AppendLine();
@@ -241,7 +242,9 @@ internal static class DiagnosticsGenerator
             .SelectMany(kv => kv.Value.Where(t => t.IsDecorator).Select(t => (Assembly: kv.Key, Type: t)))
             .ToList();
         
-        if (discovery.Decorators.Any() || pluginDecorators.Any())
+        var decorators = FilterDecorators(discovery.Decorators, typeFilter);
+
+        if (decorators.Any() || pluginDecorators.Any())
         {
             sb.AppendLine("## Decorator Chains");
             sb.AppendLine();
@@ -249,7 +252,7 @@ internal static class DiagnosticsGenerator
             sb.AppendLine("graph LR");
 
             // Host decorators - group by service type
-            var decoratorsByService = discovery.Decorators
+            var decoratorsByService = decorators
                 .GroupBy(d => d.ServiceTypeName)
                 .OrderBy(g => g.Key);
 
@@ -261,7 +264,7 @@ internal static class DiagnosticsGenerator
                 // Find the underlying implementation for this service
                 var implementation = types.FirstOrDefault(t =>
                     t.InterfaceNames.Any(i => GeneratorHelpers.GetShortTypeName(i) == serviceShortName) &&
-                    !discovery.Decorators.Any(d => GeneratorHelpers.GetShortTypeName(d.DecoratorTypeName) == GeneratorHelpers.GetShortTypeName(t.TypeName)));
+                    !decorators.Any(d => GeneratorHelpers.GetShortTypeName(d.DecoratorTypeName) == GeneratorHelpers.GetShortTypeName(t.TypeName)));
 
                 // Build the chain: highest order decorator -> ... -> lowest order decorator -> implementation
                 for (int i = 0; i < orderedDecorators.Count; i++)
@@ -302,7 +305,7 @@ internal static class DiagnosticsGenerator
         }
 
         // Intercepted services section (aggregates host and plugin interceptors)
-        var interceptedServices = discovery.InterceptedServices.ToList();
+        var interceptedServices = FilterInterceptedServices(discovery.InterceptedServices, typeFilter);
         var pluginInterceptors = referencedAssemblyTypes
             .SelectMany(kv => kv.Value.Where(t => t.HasInterceptorProxy).Select(t => (Assembly: kv.Key, Type: t)))
             .ToList();
@@ -373,8 +376,8 @@ internal static class DiagnosticsGenerator
 
             foreach (var keyGroup in typesByKey)
             {
-                var safeKey = GeneratorHelpers.SanitizeIdentifier(keyGroup.Key);
-                sb.AppendLine($"    subgraph key_{safeKey}[\"{keyGroup.Key}\"]");
+                var safeKey = GeneratorHelpers.SanitizeMermaidId(keyGroup.Key);
+                sb.AppendLine($"    subgraph key_{safeKey}[\"{GeneratorHelpers.EscapeMermaidLabel(keyGroup.Key)}\"]");
                 foreach (var item in keyGroup.OrderBy(x => x.Type.TypeName))
                 {
                     var nodeId = GeneratorHelpers.GetMermaidNodeId(item.Type.TypeName);
@@ -404,9 +407,9 @@ internal static class DiagnosticsGenerator
 
             foreach (var asmGroup in pluginsByAssembly)
             {
-                var safeAsm = GeneratorHelpers.SanitizeIdentifier(asmGroup.Key);
+                var safeAsm = GeneratorHelpers.SanitizeMermaidId(asmGroup.Key);
                 var shortAsm = GeneratorHelpers.GetShortTypeName(asmGroup.Key);
-                sb.AppendLine($"    subgraph asm_{safeAsm}[\"{shortAsm}\"]");
+                sb.AppendLine($"    subgraph asm_{safeAsm}[\"{GeneratorHelpers.EscapeMermaidLabel(shortAsm)}\"]");
                 foreach (var plugin in asmGroup.OrderBy(p => p.TypeName))
                 {
                     var nodeId = GeneratorHelpers.GetMermaidNodeId(plugin.TypeName);
@@ -544,6 +547,7 @@ internal static class DiagnosticsGenerator
     {
         var sb = new StringBuilder();
         var types = FilterTypes(discovery.InjectableTypes, typeFilter);
+        referencedAssemblyTypes = FilterReferencedAssemblyTypes(referencedAssemblyTypes, typeFilter);
 
         var singletons = types.Where(t => t.Lifetime == GeneratorLifetime.Singleton).ToList();
         var scopeds = types.Where(t => t.Lifetime == GeneratorLifetime.Scoped).ToList();
@@ -575,13 +579,10 @@ internal static class DiagnosticsGenerator
                 sb.AppendLine();
                 sb.AppendLine("| Lifetime | Count | % |");
                 sb.AppendLine("|----------|-------|---|");
-                if (refTotal > 0)
-                {
-                    sb.AppendLine($"| Singleton | {refSingletons} | {GeneratorHelpers.Percentage(refSingletons, refTotal)}% |");
-                    sb.AppendLine($"| Scoped | {refScopeds} | {GeneratorHelpers.Percentage(refScopeds, refTotal)}% |");
-                    sb.AppendLine($"| Transient | {refTransients} | {GeneratorHelpers.Percentage(refTransients, refTotal)}% |");
-                    sb.AppendLine($"| **Total** | **{refTotal}** | 100% |");
-                }
+                sb.AppendLine($"| Singleton | {refSingletons} | {GeneratorHelpers.Percentage(refSingletons, refTotal)}% |");
+                sb.AppendLine($"| Scoped | {refScopeds} | {GeneratorHelpers.Percentage(refScopeds, refTotal)}% |");
+                sb.AppendLine($"| Transient | {refTransients} | {GeneratorHelpers.Percentage(refTransients, refTotal)}% |");
+                sb.AppendLine($"| **Total** | **{refTotal}** | 100% |");
                 sb.AppendLine();
             }
         }
@@ -642,6 +643,7 @@ internal static class DiagnosticsGenerator
         var types = FilterTypes(discovery.InjectableTypes, typeFilter);
         var plugins = FilterPluginTypes(discovery.PluginTypes, typeFilter);
         var decorators = FilterDecorators(discovery.Decorators, typeFilter);
+        referencedAssemblyTypes = FilterReferencedAssemblyTypes(referencedAssemblyTypes, typeFilter);
 
         sb.AppendLine("# Needlr Registration Index");
         sb.AppendLine();
@@ -738,7 +740,7 @@ internal static class DiagnosticsGenerator
         }
 
         // Interceptors section (aggregates host and plugin interceptors)
-        var interceptedServices = discovery.InterceptedServices.ToList();
+        var interceptedServices = FilterInterceptedServices(discovery.InterceptedServices, typeFilter);
         var pluginIntercepted = referencedAssemblyTypes
             .SelectMany(kv => kv.Value.Where(t => t.HasInterceptorProxy).Select(t => (Assembly: kv.Key, Type: t)))
             .ToList();
@@ -770,7 +772,7 @@ internal static class DiagnosticsGenerator
         }
 
         // Factories section (aggregates host and plugin factories)
-        var factories = discovery.Factories.ToList();
+        var factories = FilterFactories(discovery.Factories, typeFilter);
         var pluginFactories = referencedAssemblyTypes
             .SelectMany(kv => kv.Value.Where(t => t.HasFactory).Select(t => (Assembly: kv.Key, Type: t)))
             .ToList();
@@ -834,7 +836,7 @@ internal static class DiagnosticsGenerator
                 foreach (var key in type.ServiceKeys)
                 {
                     var iface = type.InterfaceNames.FirstOrDefault() ?? "-";
-                    sb.AppendLine($"| `\"{key}\"` | {GeneratorHelpers.GetShortTypeName(iface)} | {GeneratorHelpers.GetShortTypeName(type.TypeName)} | {type.Lifetime} |");
+                    sb.AppendLine($"| `\"{GeneratorHelpers.EscapeMarkdownTableCell(key)}\"` | {GeneratorHelpers.GetShortTypeName(iface)} | {GeneratorHelpers.GetShortTypeName(type.TypeName)} | {type.Lifetime} |");
                 }
             }
             sb.AppendLine();
@@ -889,53 +891,83 @@ internal static class DiagnosticsGenerator
 
     internal static IReadOnlyList<DiscoveredType> FilterTypes(IReadOnlyList<DiscoveredType> types, HashSet<string> filter)
     {
-        if (filter == null || filter.Count == 0)
+        if (IsUnfiltered(filter))
             return types;
 
-        return types.Where(t => 
-            filter.Contains(t.TypeName) ||                                      // global::TestApp.OrderService
-            filter.Contains(GeneratorHelpers.GetShortTypeName(t.TypeName)) ||                    // OrderService
-            filter.Contains(GeneratorHelpers.StripGlobalPrefix(t.TypeName)))                     // TestApp.OrderService
+        return types.Where(t =>
+            MatchesTypeName(filter, t.TypeName) ||
+            MatchesAnyTypeName(filter, t.InterfaceNames))
                     .ToList();
     }
 
     internal static IReadOnlyList<DiscoveredPlugin> FilterPluginTypes(IReadOnlyList<DiscoveredPlugin> plugins, HashSet<string> filter)
     {
-        if (filter == null || filter.Count == 0)
+        if (IsUnfiltered(filter))
             return plugins;
 
-        return plugins.Where(p => 
-            filter.Contains(p.TypeName) ||
-            filter.Contains(GeneratorHelpers.GetShortTypeName(p.TypeName)) ||
-            filter.Contains(GeneratorHelpers.StripGlobalPrefix(p.TypeName)))
+        return plugins.Where(p =>
+            MatchesTypeName(filter, p.TypeName) ||
+            MatchesAnyTypeName(filter, p.InterfaceNames))
                       .ToList();
     }
 
     internal static IReadOnlyList<DiscoveredDecorator> FilterDecorators(IReadOnlyList<DiscoveredDecorator> decorators, HashSet<string> filter)
     {
-        if (filter == null || filter.Count == 0)
+        if (IsUnfiltered(filter))
             return decorators;
 
-        return decorators.Where(d => 
-            filter.Contains(d.DecoratorTypeName) ||
-            filter.Contains(GeneratorHelpers.GetShortTypeName(d.DecoratorTypeName)) ||
-            filter.Contains(GeneratorHelpers.StripGlobalPrefix(d.DecoratorTypeName)) ||
-            filter.Contains(d.ServiceTypeName) ||
-            filter.Contains(GeneratorHelpers.GetShortTypeName(d.ServiceTypeName)) ||
-            filter.Contains(GeneratorHelpers.StripGlobalPrefix(d.ServiceTypeName)))
+        return decorators.Where(d =>
+            MatchesTypeName(filter, d.DecoratorTypeName) ||
+            MatchesTypeName(filter, d.ServiceTypeName))
                          .ToList();
     }
 
     internal static IReadOnlyList<DiscoveredFactory> FilterFactories(IReadOnlyList<DiscoveredFactory> factories, HashSet<string> filter)
     {
-        if (filter == null || filter.Count == 0)
+        if (IsUnfiltered(filter))
             return factories;
 
-        return factories.Where(f => 
-            filter.Contains(f.TypeName) ||
-            filter.Contains(GeneratorHelpers.GetShortTypeName(f.TypeName)) ||
-            filter.Contains(GeneratorHelpers.StripGlobalPrefix(f.TypeName)))
+        return factories.Where(f =>
+            MatchesTypeName(filter, f.TypeName) ||
+            MatchesTypeName(filter, f.ReturnTypeName) ||
+            MatchesAnyTypeName(filter, f.InterfaceNames))
                         .ToList();
+    }
+
+    internal static IReadOnlyList<DiscoveredInterceptedService> FilterInterceptedServices(IReadOnlyList<DiscoveredInterceptedService> interceptedServices, HashSet<string> filter)
+    {
+        if (IsUnfiltered(filter))
+            return interceptedServices.ToList();
+
+        return interceptedServices.Where(s =>
+            MatchesTypeName(filter, s.TypeName) ||
+            MatchesAnyTypeName(filter, s.InterfaceNames) ||
+            MatchesAnyTypeName(filter, s.AllInterceptorTypeNames))
+                                  .ToList();
+    }
+
+    /// <summary>
+    /// Applies the diagnostic type filter to types contributed by referenced plugin assemblies.
+    /// Assemblies without any matching type are dropped so empty sections are not rendered.
+    /// </summary>
+    internal static Dictionary<string, List<DiagnosticTypeInfo>> FilterReferencedAssemblyTypes(Dictionary<string, List<DiagnosticTypeInfo>> referencedAssemblyTypes, HashSet<string> filter)
+    {
+        var filtered = new Dictionary<string, List<DiagnosticTypeInfo>>(StringComparer.Ordinal);
+        foreach (var kvp in referencedAssemblyTypes)
+        {
+            var matching = IsUnfiltered(filter)
+                ? kvp.Value
+                : kvp.Value.Where(t =>
+                    MatchesTypeName(filter, t.FullName) ||
+                    filter.Contains(t.ShortName) ||
+                    MatchesAnyTypeName(filter, t.Interfaces))
+                    .ToList();
+
+            if (matching.Count > 0)
+                filtered[kvp.Key] = matching;
+        }
+
+        return filtered;
     }
 
     internal static int CalculateMaxDependencyDepth(IReadOnlyList<DiscoveredType> types)
@@ -1192,14 +1224,35 @@ internal static class DiagnosticsGenerator
 
     internal static IReadOnlyList<DiscoveredOptions> FilterOptions(IReadOnlyList<DiscoveredOptions> options, HashSet<string> filter)
     {
-        if (filter == null || filter.Count == 0)
+        if (IsUnfiltered(filter))
             return options;
 
-        return options.Where(o => 
-            filter.Contains(o.TypeName) ||
-            filter.Contains(GeneratorHelpers.GetShortTypeName(o.TypeName)) ||
-            filter.Contains(GeneratorHelpers.StripGlobalPrefix(o.TypeName)))
+        return options.Where(o =>
+            MatchesTypeName(filter, o.TypeName) ||
+            filter.Contains(o.SectionName) ||
+            (o.IsNamed && filter.Contains(o.Name!)))
                       .ToList();
+    }
+
+    private static bool IsUnfiltered(HashSet<string> filter)
+    {
+        return filter == null || filter.Count == 0;
+    }
+
+    /// <summary>
+    /// Determines whether a fully qualified type name matches the filter by any of its
+    /// supported identities: the fully qualified name, the namespace-qualified name, or the short name.
+    /// </summary>
+    private static bool MatchesTypeName(HashSet<string> filter, string typeName)
+    {
+        return filter.Contains(typeName) ||
+               filter.Contains(GeneratorHelpers.GetShortTypeName(typeName)) ||
+               filter.Contains(GeneratorHelpers.StripGlobalPrefix(typeName));
+    }
+
+    private static bool MatchesAnyTypeName(HashSet<string> filter, IEnumerable<string> typeNames)
+    {
+        return typeNames.Any(typeName => MatchesTypeName(filter, typeName));
     }
 }
 
