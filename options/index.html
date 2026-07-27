@@ -970,6 +970,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Generated Code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registrar-composition-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registrar composition order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#two-registries-one-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two registries, one contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -5103,6 +5131,43 @@ on both execution paths:</p>
 <p>You do <strong>not</strong> need to call <code>services.AddOptions&lt;T&gt;().BindConfiguration(...)</code> from
 a plugin or <code>Program.cs</code> in either path — the <code>[Options]</code> attribute is the only
 registration you need.</p>
+<h3 id="registrar-composition-order">Registrar composition order<a class="headerlink" href="#registrar-composition-order" title="Permanent link">&para;</a></h3>
+<p><code>ConfiguredSyringe.BuildServiceProvider(IConfiguration)</code> appends the generated registrars
+<em>after</em> your own callbacks, in this fixed order:</p>
+<ol>
+<li>your post-plugin registration callbacks, in the order you added them;</li>
+<li>the source-generated options registrar (<code>SourceGenRegistry.TryGetOptionsRegistrar</code>);</li>
+<li>every extension registrar (<code>SourceGenRegistry.TryGetExtensionRegistrar</code>), in
+   registration order — this is how packages such as
+   <code>NexusLabs.Needlr.FluentValidation</code> add their registrations;</li>
+<li>container verification.</li>
+</ol>
+<p>Because options and extensions run last, they observe everything your callbacks
+registered, and a later registration can still override an earlier one.</p>
+<h3 id="two-registries-one-contract">Two registries, one contract<a class="headerlink" href="#two-registries-one-contract" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Registry</th>
+<th>Assembly</th>
+<th>Used by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NexusLabs.Needlr.SourceGenRegistry</code></td>
+<td><code>NexusLabs.Needlr</code></td>
+<td>Needlr's runtime composition (<code>ConfiguredSyringe</code>, <code>WebApplicationSyringe</code>, <code>MauiSyringe</code>). Extension packages should register here.</td>
+</tr>
+<tr>
+<td><code>NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap</code></td>
+<td><code>NexusLabs.Needlr.Generators.Attributes</code></td>
+<td>Generated type/plugin/decorator providers, plus a still-supported mirror of the options and extension registrars for hosts that compose generated registrations directly.</td>
+</tr>
+</tbody>
+</table>
+<p>The generated module initializer registers the options registrar with <strong>both</strong>, so
+<code>NexusLabs.Needlr.Injection</code> never needs a dependency on the attributes package.</p>
 <h2 id="using-options-on-the-aspnet-core-web-application-path">Using <code>[Options]</code> on the ASP.NET Core Web Application Path<a class="headerlink" href="#using-options-on-the-aspnet-core-web-application-path" title="Permanent link">&para;</a></h2>
 <p>When building via <code>BuildWebApplication()</code>, the generator-emitted
 <code>RegisterOptions</code> call runs automatically during the same post-plugin
