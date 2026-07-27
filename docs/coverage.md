@@ -22,7 +22,6 @@ The coverage report opens in a new tab and provides:
 - Summary of all assemblies
 - Detailed line-by-line coverage
 - Risk hotspots and complexity metrics
-- Historical coverage trends
 
 ---
 
