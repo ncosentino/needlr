@@ -258,12 +258,18 @@ git push -u origin release/prepare-v0.0.3-alpha.3
 gh pr create
 ```
 
-Wait for all required checks:
+Make the pull request ready and wait for the stable required checks:
 
-- `build-and-test`;
-- `package-validation`;
-- `aot-console-app`;
-- `aot-web-app`.
+- `CI`, which summarizes `build-and-test`, `package-validation`,
+  `aot-console-app`, and `aot-web-app`;
+- `PR title`;
+- `Review policy`.
+
+A draft release-preparation pull request publishes `Draft CI`, which is not a
+substitute for the ready pull request's full `CI` validation. During the delivery
+migration transition, before GitHub branch protection is activated from
+`.github/genesis-delivery.json`, the four summarized source-job contexts may also
+remain temporarily required and must still pass.
 
 Resolve review conversations and squash-merge the pull request. The
 path-filtered `build-maui-example` workflow is not a required branch check;

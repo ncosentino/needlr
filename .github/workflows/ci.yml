@@ -2,10 +2,18 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
@@ -13,8 +21,41 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
 jobs:
+  validation-plan:
+    name: Validation plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      scope: ${{ steps.scope.outputs.scope }}
+
+    steps:
+    - name: Resolve validation scope
+      id: scope
+      shell: bash
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        IS_DRAFT: ${{ github.event.pull_request.draft || false }}
+        DRAFT_MODE: ${{ vars.CI_DRAFT_MODE || 'subset' }}
+      run: |
+        scope=full
+        if [ "$EVENT_NAME" = "pull_request" ] && [ "$IS_DRAFT" = "true" ]; then
+          scope="$DRAFT_MODE"
+        fi
+
+        case "$scope" in
+          full|subset|ready-only) ;;
+          *)
+            echo "::error::Unsupported validation scope '$scope'."
+            exit 1
+            ;;
+        esac
+
+        echo "scope=$scope" >> "$GITHUB_OUTPUT"
+        echo "Validation scope: $scope"
+
   changes:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
     outputs:
@@ -45,9 +86,10 @@ jobs:
         scripts/get-ci-scope.ps1 @arguments
 
   marketplace-validation:
-    needs: changes
-    if: needs.changes.outputs.marketplace_required == 'true'
+    needs: [validation-plan, changes]
+    if: needs.validation-plan.outputs.scope != 'ready-only' && needs.changes.outputs.marketplace_required == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
 
@@ -59,24 +101,113 @@ jobs:
       shell: pwsh
       run: scripts/validate-agent-marketplace.ps1
 
-  build-and-test:
-    needs: [changes, marketplace-validation]
-    if: always()
+  preflight:
+    name: Delivery preflight
+    needs: [validation-plan, changes, marketplace-validation]
+    if: always() && needs.validation-plan.outputs.scope != 'ready-only'
     # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
     # Untrusted fork pull requests always use GitHub-hosted infrastructure.
     # Marketplace-only changes use a lightweight hosted no-op rather than occupying PitCrew.
-    runs-on: ${{ needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
-    permissions:
-      contents: write
-      pages: write
-      id-token: write
+    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    timeout-minutes: 30
+
+    steps:
+    - name: Enforce preflight routing
+      shell: bash
+      run: |
+        if [[ "${{ needs.validation-plan.result }}" != "success" ]]; then
+          echo "::error::Validation planning did not succeed."
+          exit 1
+        fi
+        if [[ "${{ needs.changes.result }}" != "success" ]]; then
+          echo "::error::CI scope detection did not succeed."
+          exit 1
+        fi
+
+        marketplace_required="${{ needs.changes.outputs.marketplace_required }}"
+        marketplace_result="${{ needs.marketplace-validation.result }}"
+        if [[ "$marketplace_required" == "true" && "$marketplace_result" != "success" ]]; then
+          echo "::error::Required agent marketplace validation did not succeed."
+          exit 1
+        fi
+        if [[ "$marketplace_required" != "true" && "$marketplace_result" != "skipped" ]]; then
+          echo "::error::Agent marketplace validation ran unexpectedly."
+          exit 1
+        fi
+
+    - name: Source preflight not required
+      if: needs.changes.outputs.source_required != 'true'
+      run: echo "Marketplace-only change; source preflight is not applicable."
+
+    - name: Checkout
+      if: needs.changes.outputs.source_required == 'true'
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Configure writable .NET install directory
+      if: needs.changes.outputs.source_required == 'true'
+      shell: bash
+      run: |
+        echo "DOTNET_INSTALL_DIR=$RUNNER_TEMP/dotnet" >> "$GITHUB_ENV"
+        echo "$RUNNER_TEMP/dotnet" >> "$GITHUB_PATH"
+
+    - name: Setup .NET
+      if: needs.changes.outputs.source_required == 'true'
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Validate delivery contract
+      if: needs.changes.outputs.source_required == 'true'
+      shell: pwsh
+      run: |
+        $contract = Get-Content .github/genesis-delivery.json -Raw
+        if (-not ($contract | Test-Json -SchemaFile .github/genesis-delivery.schema.json)) {
+          throw 'The Genesis delivery contract does not satisfy its schema.'
+        }
+
+    - name: Validate CI scope classifier
+      if: needs.changes.outputs.source_required == 'true'
+      shell: pwsh
+      run: scripts/test-ci-scope.ps1
+
+    - name: Validate release finalization
+      if: needs.changes.outputs.source_required == 'true'
+      shell: pwsh
+      run: scripts/test-release.ps1
+
+    - name: Restore
+      if: needs.changes.outputs.source_required == 'true'
+      run: dotnet restore src/NexusLabs.Needlr.slnx
+
+    - name: Build (Release)
+      if: needs.changes.outputs.source_required == 'true'
+      run: dotnet build src/NexusLabs.Needlr.slnx --configuration Release --no-restore
+
+  build-and-test:
+    needs: [validation-plan, changes, marketplace-validation, preflight]
+    if: always() && needs.validation-plan.outputs.scope == 'full' && needs.preflight.result == 'success'
+    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
+    # Untrusted fork pull requests always use GitHub-hosted infrastructure.
+    # Marketplace-only changes use a lightweight hosted no-op rather than occupying PitCrew.
+    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    timeout-minutes: 90
 
     steps:
     - name: Enforce validation routing
       shell: bash
       run: |
+        if [[ "${{ needs.validation-plan.result }}" != "success" ]]; then
+          echo "::error::Validation planning did not succeed."
+          exit 1
+        fi
         if [[ "${{ needs.changes.result }}" != "success" ]]; then
           echo "::error::CI scope detection did not succeed."
+          exit 1
+        fi
+        if [[ "${{ needs.preflight.result }}" != "success" ]]; then
+          echo "::error::Delivery preflight did not succeed."
           exit 1
         fi
         marketplace_required="${{ needs.changes.outputs.marketplace_required }}"
@@ -86,9 +217,8 @@ jobs:
           exit 1
         fi
         if [[ "$marketplace_required" != "true" &&
-              "$marketplace_result" != "success" &&
               "$marketplace_result" != "skipped" ]]; then
-          echo "::error::Agent marketplace validation ended unexpectedly."
+          echo "::error::Agent marketplace validation ran unexpectedly."
           exit 1
         fi
 
@@ -253,59 +383,39 @@ jobs:
         rm -rf ./site/api/stable ./site/api/v*
         echo "Restricted ./site/ to ci.yml-owned paths."
 
-    - name: Deploy Documentation and Coverage
+    # Deployment credentials stay out of pull-request validation. The trusted
+    # push-only deploy job below consumes this exact validated site artifact.
+    - name: Upload documentation site artifact
       if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
-      uses: peaceiris/actions-gh-pages@v4
+      uses: actions/upload-artifact@v4
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./site
-        keep_files: true
-
-    # gh-pages now holds the complete merged site (this run's own paths plus
-    # whatever release.yml last wrote to /api/stable and /api/v*, preserved
-    # by keep_files above) -- check it out fresh and mirror that whole tree
-    # to Cloudflare Pages, rather than deploying our own partial ./site/.
-    - name: Checkout gh-pages for Cloudflare mirror
-      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
-      uses: actions/checkout@v4
-      with:
-        ref: gh-pages
-        path: gh-pages-mirror
-
-    # Cloudflare Pages allows at most 20,000 files per deployment. Keep only
-    # the newest API version archives (and rewrite versions.json to match);
-    # older archives stay in gh-pages history but are not published here.
-    # Also removes the checkout's .git so it is not uploaded.
-    - name: Trim mirror before Cloudflare deploy
-      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: python scripts/trim-cloudflare-mirror.py gh-pages-mirror --keep 20
-
-    - name: Setup Node.js
-      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
-      uses: actions/setup-node@v4
-      with:
-        node-version: '24'
-
-    - name: Deploy Documentation to Cloudflare Pages
-      if: needs.changes.outputs.source_required == 'true' && success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
-      uses: cloudflare/wrangler-action@v4
-      with:
-        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        command: pages deploy gh-pages-mirror --project-name=needlr --branch=main --commit-dirty=true
+        name: documentation-site
+        path: site/
+        retention-days: 1
 
   package-validation:
-    needs: changes
-    if: always()
-    runs-on: ${{ needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    needs: [validation-plan, changes, preflight]
+    if: always() && needs.validation-plan.outputs.scope == 'full' && needs.preflight.result == 'success'
+    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    timeout-minutes: 60
     # Runs in parallel with the other source jobs after scope detection.
 
     steps:
     - name: Enforce validation routing
-      if: needs.changes.result != 'success'
+      shell: bash
       run: |
-        echo "::error::CI scope detection did not succeed."
-        exit 1
+        if [[ "${{ needs.validation-plan.result }}" != "success" ]]; then
+          echo "::error::Validation planning did not succeed."
+          exit 1
+        fi
+        if [[ "${{ needs.changes.result }}" != "success" ]]; then
+          echo "::error::CI scope detection did not succeed."
+          exit 1
+        fi
+        if [[ "${{ needs.preflight.result }}" != "success" ]]; then
+          echo "::error::Delivery preflight did not succeed."
+          exit 1
+        fi
 
     - name: Source package validation not required
       if: needs.changes.result == 'success' && needs.changes.outputs.source_required != 'true'
@@ -351,17 +461,28 @@ jobs:
       run: scripts/test-packages.ps1
 
   aot-console-app:
-    needs: changes
-    if: always()
-    runs-on: ${{ needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    needs: [validation-plan, changes, preflight]
+    if: always() && needs.validation-plan.outputs.scope == 'full' && needs.preflight.result == 'success'
+    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    timeout-minutes: 30
     # Runs in parallel with the other source jobs after scope detection.
 
     steps:
     - name: Enforce validation routing
-      if: needs.changes.result != 'success'
+      shell: bash
       run: |
-        echo "::error::CI scope detection did not succeed."
-        exit 1
+        if [[ "${{ needs.validation-plan.result }}" != "success" ]]; then
+          echo "::error::Validation planning did not succeed."
+          exit 1
+        fi
+        if [[ "${{ needs.changes.result }}" != "success" ]]; then
+          echo "::error::CI scope detection did not succeed."
+          exit 1
+        fi
+        if [[ "${{ needs.preflight.result }}" != "success" ]]; then
+          echo "::error::Delivery preflight did not succeed."
+          exit 1
+        fi
 
     - name: Source AOT console validation not required
       if: needs.changes.result == 'success' && needs.changes.outputs.source_required != 'true'
@@ -410,17 +531,28 @@ jobs:
       run: artifacts/console/AotSourceGenConsoleApp || echo "App executed (exit expected for demo)"
 
   aot-web-app:
-    needs: changes
-    if: always()
-    runs-on: ${{ needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    needs: [validation-plan, changes, preflight]
+    if: always() && needs.validation-plan.outputs.scope == 'full' && needs.preflight.result == 'success'
+    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    timeout-minutes: 30
     # Runs in parallel with the other source jobs after scope detection.
 
     steps:
     - name: Enforce validation routing
-      if: needs.changes.result != 'success'
+      shell: bash
       run: |
-        echo "::error::CI scope detection did not succeed."
-        exit 1
+        if [[ "${{ needs.validation-plan.result }}" != "success" ]]; then
+          echo "::error::Validation planning did not succeed."
+          exit 1
+        fi
+        if [[ "${{ needs.changes.result }}" != "success" ]]; then
+          echo "::error::CI scope detection did not succeed."
+          exit 1
+        fi
+        if [[ "${{ needs.preflight.result }}" != "success" ]]; then
+          echo "::error::Delivery preflight did not succeed."
+          exit 1
+        fi
 
     - name: Source AOT web validation not required
       if: needs.changes.result == 'success' && needs.changes.outputs.source_required != 'true'
@@ -463,3 +595,170 @@ jobs:
       run: |
         test -f artifacts/webapp/AotSourceGenApp
         file artifacts/webapp/AotSourceGenApp
+
+  ci:
+    name: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft && 'Draft CI' || 'CI' }}
+    needs:
+      - validation-plan
+      - changes
+      - marketplace-validation
+      - preflight
+      - build-and-test
+      - package-validation
+      - aot-console-app
+      - aot-web-app
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Check validation results
+      shell: bash
+      env:
+        SCOPE: ${{ needs.validation-plan.outputs.scope }}
+        PLAN_RESULT: ${{ needs.validation-plan.result }}
+        CHANGES_RESULT: ${{ needs.changes.result }}
+        MARKETPLACE_REQUIRED: ${{ needs.changes.outputs.marketplace_required }}
+        MARKETPLACE_RESULT: ${{ needs.marketplace-validation.result }}
+        PREFLIGHT_RESULT: ${{ needs.preflight.result }}
+        BUILD_RESULT: ${{ needs.build-and-test.result }}
+        PACKAGE_RESULT: ${{ needs.package-validation.result }}
+        AOT_CONSOLE_RESULT: ${{ needs.aot-console-app.result }}
+        AOT_WEB_RESULT: ${{ needs.aot-web-app.result }}
+      run: |
+        fail() {
+          echo "::error::$1"
+          exit 1
+        }
+
+        expect_result() {
+          local job_name="$1"
+          local actual="$2"
+          local expected="$3"
+          if [ "$actual" != "$expected" ]; then
+            fail "$job_name was '$actual'; expected '$expected'."
+          fi
+        }
+
+        validate_marketplace() {
+          if [ "$MARKETPLACE_REQUIRED" = "true" ]; then
+            expect_result "marketplace-validation" "$MARKETPLACE_RESULT" "success"
+          else
+            expect_result "marketplace-validation" "$MARKETPLACE_RESULT" "skipped"
+          fi
+        }
+
+        expect_result "validation-plan" "$PLAN_RESULT" "success"
+        expect_result "changes" "$CHANGES_RESULT" "success"
+
+        case "$SCOPE" in
+          ready-only)
+            expect_result "marketplace-validation" "$MARKETPLACE_RESULT" "skipped"
+            expect_result "preflight" "$PREFLIGHT_RESULT" "skipped"
+            expect_result "build-and-test" "$BUILD_RESULT" "skipped"
+            expect_result "package-validation" "$PACKAGE_RESULT" "skipped"
+            expect_result "aot-console-app" "$AOT_CONSOLE_RESULT" "skipped"
+            expect_result "aot-web-app" "$AOT_WEB_RESULT" "skipped"
+            ;;
+          subset)
+            validate_marketplace
+            expect_result "preflight" "$PREFLIGHT_RESULT" "success"
+            expect_result "build-and-test" "$BUILD_RESULT" "skipped"
+            expect_result "package-validation" "$PACKAGE_RESULT" "skipped"
+            expect_result "aot-console-app" "$AOT_CONSOLE_RESULT" "skipped"
+            expect_result "aot-web-app" "$AOT_WEB_RESULT" "skipped"
+            ;;
+          full)
+            validate_marketplace
+            expect_result "preflight" "$PREFLIGHT_RESULT" "success"
+            expect_result "build-and-test" "$BUILD_RESULT" "success"
+            expect_result "package-validation" "$PACKAGE_RESULT" "success"
+            expect_result "aot-console-app" "$AOT_CONSOLE_RESULT" "success"
+            expect_result "aot-web-app" "$AOT_WEB_RESULT" "success"
+            ;;
+          *)
+            fail "Validation scope '$SCOPE' is unsupported."
+            ;;
+        esac
+
+  deploy-documentation:
+    name: Deploy documentation
+    needs:
+      - validation-plan
+      - changes
+      - build-and-test
+      - package-validation
+      - aot-console-app
+      - aot-web-app
+      - ci
+    if: >-
+      always() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.validation-plan.outputs.scope == 'full' &&
+      needs.changes.outputs.source_required == 'true' &&
+      needs.build-and-test.result == 'success' &&
+      needs.package-validation.result == 'success' &&
+      needs.aot-console-app.result == 'success' &&
+      needs.aot-web-app.result == 'success' &&
+      needs.ci.result == 'success'
+    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: write
+      pages: write
+      id-token: write
+
+    steps:
+    - name: Checkout repository deployment scripts
+      uses: actions/checkout@v4
+      with:
+        path: source
+
+    - name: Download validated documentation site
+      uses: actions/download-artifact@v4
+      with:
+        name: documentation-site
+        path: source/site
+
+    - name: Deploy Documentation and Coverage
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./source/site
+        keep_files: true
+
+    # gh-pages now holds the complete merged site (this run's own paths plus
+    # whatever release.yml last wrote to /api/stable and /api/v*, preserved
+    # by keep_files above) -- check it out fresh and mirror that whole tree
+    # to Cloudflare Pages, rather than deploying our partial site artifact.
+    - name: Checkout gh-pages for Cloudflare mirror
+      uses: actions/checkout@v4
+      with:
+        ref: gh-pages
+        path: gh-pages-mirror
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    # Cloudflare Pages allows at most 20,000 files per deployment. Keep only
+    # the newest API version archives (and rewrite versions.json to match);
+    # older archives stay in gh-pages history but are not published here.
+    # Also removes the checkout's .git so it is not uploaded.
+    - name: Trim mirror before Cloudflare deploy
+      run: python source/scripts/trim-cloudflare-mirror.py gh-pages-mirror --keep 20
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+
+    - name: Deploy Documentation to Cloudflare Pages
+      uses: cloudflare/wrangler-action@v4
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        command: pages deploy gh-pages-mirror --project-name=needlr --branch=main --commit-dirty=true

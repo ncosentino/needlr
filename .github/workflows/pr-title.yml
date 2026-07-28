@@ -1,0 +1,39 @@
+name: PR title
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  title:
+    name: PR title
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      TITLE_MAX_LENGTH: '72'
+      TITLE_PATTERN: '^(feat|fix|docs|refactor|test|style|build|ci|chore|perf|revert)(\([a-z0-9][a-z0-9._/-]*\))?!?: .+$'
+    steps:
+      - name: Validate conventional title
+        shell: bash
+        run: |
+          if [[ "$PR_TITLE" == *$'\n'* || "$PR_TITLE" == *$'\r'* ]]; then
+            echo "::error::Pull request title must be a single line."
+            exit 1
+          fi
+
+          if (( ${#PR_TITLE} > TITLE_MAX_LENGTH )); then
+            echo "::error::Pull request title is ${#PR_TITLE} characters; maximum is $TITLE_MAX_LENGTH."
+            exit 1
+          fi
+
+          if [[ ! "$PR_TITLE" =~ $TITLE_PATTERN ]]; then
+            echo "::error::Use a conventional title such as 'feat(scope): description'."
+            exit 1
+          fi
+
+          echo "Conventional pull request title is valid."

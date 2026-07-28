@@ -1,0 +1,93 @@
+{
+  "$schema": "./genesis-delivery.schema.json",
+  "schemaVersion": 1,
+  "template": "needlr",
+  "defaultBranch": "main",
+  "ciWorkflow": "CI",
+  "requiredChecks": [
+    "CI",
+    "PR title",
+    "Review policy"
+  ],
+  "draftValidation": {
+    "hostedDefault": "subset",
+    "pitcrewDefault": "subset",
+    "subsetJobs": [
+      "marketplace-validation",
+      "preflight"
+    ]
+  },
+  "runnerProfiles": [
+    {
+      "id": "linux-x64-general-purpose",
+      "source": "needlr-pitcrew",
+      "labels": [
+        "self-hosted",
+        "linux",
+        "x64",
+        "general-purpose"
+      ],
+      "jobs": [
+        "preflight",
+        "build-and-test",
+        "package-validation",
+        "aot-console-app",
+        "aot-web-app",
+        "deploy-documentation",
+        "release/publish",
+        "benchmarks/check-changes",
+        "benchmarks/run-benchmarks",
+        "ide-extensions/build-vscode",
+        "ide-extensions/release"
+      ]
+    }
+  ],
+  "componentWorkflows": [
+    {
+      "source": "needlr",
+      "path": ".github/workflows/maui-example.yml",
+      "roles": [
+        "draft-optional"
+      ],
+      "draftBehavior": "full",
+      "requiredChecks": []
+    },
+    {
+      "source": "needlr",
+      "path": ".github/workflows/benchmarks.yml",
+      "roles": [
+        "post-merge",
+        "release-deploy"
+      ],
+      "draftBehavior": "not-applicable",
+      "requiredChecks": []
+    },
+    {
+      "source": "needlr",
+      "path": ".github/workflows/ide-extensions.yml",
+      "roles": [
+        "release-deploy"
+      ],
+      "draftBehavior": "not-applicable",
+      "requiredChecks": []
+    },
+    {
+      "source": "needlr",
+      "path": ".github/workflows/release.yml",
+      "roles": [
+        "release-deploy"
+      ],
+      "draftBehavior": "not-applicable",
+      "requiredChecks": []
+    }
+  ],
+  "pullRequestTitle": {
+    "pattern": "^(feat|fix|docs|refactor|test|style|build|ci|chore|perf|revert)(\\([a-z0-9][a-z0-9._/-]*\\))?!?: .+$",
+    "maxLength": 72
+  },
+  "squashMerge": {
+    "method": "squash",
+    "title": "PR_TITLE",
+    "message": "PR_BODY"
+  }
+}
