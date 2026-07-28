@@ -4550,9 +4550,16 @@
 </span></code></pre></div>
 <p>The workflows use the <code>CI_RUNNER</code> repository variable as PitCrew's manual
 cloud fallback. Leave it unset for local ephemeral runners, or set it to
-<code>ubuntu-latest</code> to route Linux jobs to GitHub-hosted runners.</p>
-<p>Pull requests from forks always use <code>ubuntu-latest</code>; untrusted code must never
-run on self-hosted infrastructure.</p>
+<code>ubuntu-latest</code> to route trusted Linux jobs to GitHub-hosted runners.</p>
+<p>Pull requests from external forks always force <code>ubuntu-24.04</code> before
+<code>CI_RUNNER</code> is considered; untrusted code must never run on self-hosted
+infrastructure. Approving a fork workflow run authorizes the complete proposed
+workflow, including runner selection, so inspect workflow changes before
+approval.</p>
+<p>Draft pull requests use <code>CI_DRAFT_MODE</code> (<code>subset</code> by default) and publish
+<code>Draft CI</code> after marketplace validation and the delivery preflight. Making the
+pull request ready starts fresh full validation and publishes the stable <code>CI</code>
+check.</p>
 <p>PitCrew workers are socketless Linux containers. Workloads requiring Docker,
 service containers, Testcontainers, Windows, or macOS remain on an appropriate
 hosted or isolated runner profile. Needlr's Windows and MAUI jobs therefore

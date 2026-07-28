@@ -4696,6 +4696,34 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#outcome-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Outcome Notes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Outcome Notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2026-07-28-repository-wide-pr-delivery-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2026-07-28 — repository-wide PR delivery alignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#references" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4874,6 +4902,18 @@ build, package, or AOT steps. A source-only pull request must not execute the fu
 agent-evaluation path.</p>
 <p>Behavioral quality, routing accuracy, latency, and token efficiency cannot be confirmed by
 the MVP repository checks. Those require the deferred calibrated evaluation suite.</p>
+<h2 id="outcome-notes">Outcome Notes<a class="headerlink" href="#outcome-notes" title="Permanent link">&para;</a></h2>
+<h3 id="2026-07-28-repository-wide-pr-delivery-alignment">2026-07-28 — repository-wide PR delivery alignment<a class="headerlink" href="#2026-07-28-repository-wide-pr-delivery-alignment" title="Permanent link">&para;</a></h3>
+<p>Needlr's later repository-wide Genesis PR delivery contract replaces the four individual
+source job contexts as branch-protection requirements with one stable <code>CI</code> summary plus
+the <code>PR title</code> and <code>Review policy</code> governance checks. The marketplace decision remains
+unchanged: path classification still fails closed, marketplace validation still runs for
+agent-related changes, and irrelevant source, package, documentation, and AOT work still
+does not run for marketplace-only changes.</p>
+<p>Ready pull requests retain the existing source job identities during the migration and
+activation transition, including their hosted no-op behavior for marketplace-only changes.
+Draft pull requests instead publish <code>Draft CI</code> after the configured subset, so draft
+validation no longer has to manufacture every former branch-protection context.</p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
 <li>ADR-0004 records that Foundry, not Needlr, owns AI and agentic runtime, workflow,

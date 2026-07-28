@@ -5196,13 +5196,18 @@ finalization with command shims, and proves:</p>
 <div class="language-powershell highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">git</span> <span class="n">push</span> <span class="n">-u</span> <span class="n">origin</span> <span class="n">release</span><span class="p">/</span><span class="n">prepare-v0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3-alpha</span><span class="p">.</span><span class="n">3</span>
 </span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">gh</span> <span class="n">pr</span> <span class="n">create</span>
 </span></code></pre></div>
-<p>Wait for all required checks:</p>
+<p>Make the pull request ready and wait for the stable required checks:</p>
 <ul>
-<li><code>build-and-test</code>;</li>
-<li><code>package-validation</code>;</li>
-<li><code>aot-console-app</code>;</li>
-<li><code>aot-web-app</code>.</li>
+<li><code>CI</code>, which summarizes <code>build-and-test</code>, <code>package-validation</code>,
+  <code>aot-console-app</code>, and <code>aot-web-app</code>;</li>
+<li><code>PR title</code>;</li>
+<li><code>Review policy</code>.</li>
 </ul>
+<p>A draft release-preparation pull request publishes <code>Draft CI</code>, which is not a
+substitute for the ready pull request's full <code>CI</code> validation. During the delivery
+migration transition, before GitHub branch protection is activated from
+<code>.github/genesis-delivery.json</code>, the four summarized source-job contexts may also
+remain temporarily required and must still pass.</p>
 <p>Resolve review conversations and squash-merge the pull request. The
 path-filtered <code>build-maui-example</code> workflow is not a required branch check;
 when it runs for relevant changes, it must still pass.</p>
