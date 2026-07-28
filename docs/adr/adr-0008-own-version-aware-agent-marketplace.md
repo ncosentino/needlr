@@ -161,6 +161,22 @@ agent-evaluation path.
 Behavioral quality, routing accuracy, latency, and token efficiency cannot be confirmed by
 the MVP repository checks. Those require the deferred calibrated evaluation suite.
 
+## Outcome Notes
+
+### 2026-07-28 — repository-wide PR delivery alignment
+
+Needlr's later repository-wide Genesis PR delivery contract replaces the four individual
+source job contexts as branch-protection requirements with one stable `CI` summary plus
+the `PR title` and `Review policy` governance checks. The marketplace decision remains
+unchanged: path classification still fails closed, marketplace validation still runs for
+agent-related changes, and irrelevant source, package, documentation, and AOT work still
+does not run for marketplace-only changes.
+
+Ready pull requests retain the existing source job identities during the migration and
+activation transition, including their hosted no-op behavior for marketplace-only changes.
+Draft pull requests instead publish `Draft CI` after the configured subset, so draft
+validation no longer has to manufacture every former branch-protection context.
+
 ## References
 
 - ADR-0004 records that Foundry, not Needlr, owns AI and agentic runtime, workflow,

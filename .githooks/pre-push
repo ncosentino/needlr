@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# Allows initial default-branch creation only against an empty remote.
+# Every later default-branch update or deletion remains blocked.
+
+default_branch="$(git config --get genesis.defaultBranch)"
+if [ -z "$default_branch" ]; then
+    default_branch="main"
+fi
+protected_ref="refs/heads/$default_branch"
+zero_oid="0000000000000000000000000000000000000000"
+remote_url="$2"
+remote_heads_checked=false
+remote_heads=""
+
+while read local_ref local_oid remote_ref remote_oid; do
+    if [ "$remote_ref" != "$protected_ref" ]; then
+        continue
+    fi
+
+    if [ "$local_oid" != "$zero_oid" ] && [ "$remote_oid" = "$zero_oid" ]; then
+        if [ "$remote_heads_checked" = "false" ]; then
+            if ! remote_heads="$(git ls-remote --heads "$remote_url" 2>/dev/null)"; then
+                echo "Unable to inspect the remote before creating '$default_branch'." >&2
+                exit 1
+            fi
+            remote_heads_checked=true
+        fi
+        if [ -z "$remote_heads" ]; then
+            continue
+        fi
+    fi
+
+    echo ""
+    echo "Direct pushes to '$default_branch' are forbidden."
+    echo "Push a feature branch and deliver the change through a pull request."
+    echo ""
+    exit 1
+done
+
+exit 0

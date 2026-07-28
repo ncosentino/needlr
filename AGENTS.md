@@ -75,3 +75,23 @@ When adding a new source-generated feature, follow ALL layers of this pattern â€
 ## Glob-Targeted Instructions
 
 Pattern-specific rules live in `.github/instructions/*.instructions.md`. These activate automatically when you edit files matching their glob. See that directory for rules covering source generators, analyzers, CodeGen emission, attributes, integration tests, discovery helpers, models, docs, examples, and project files.
+
+## Pull Request Delivery
+
+- Deliver every change through a feature branch and pull request. Direct updates or
+  deletions of `main` are forbidden; local checkpoint commits on feature branches are
+  unrestricted.
+- "Open a draft PR" means keep the pull request in draft while the configured
+  `CI_DRAFT_MODE` validation runs. "Open" or "publish" a PR means make it ready for
+  review so a fresh full validation run publishes the stable `CI` check.
+- Use a conventional pull request title no longer than 72 characters. GitHub uses the
+  PR title as the squash commit subject and the PR body as the squash commit message.
+- `GENESIS_REVIEW_POLICY=copilot-one-approval` requires a ready pull request authored
+  by the Copilot bot to receive one trusted human approval on its current head SHA.
+  Pushing another commit invalidates that approval for delivery purposes.
+- An approval to run workflows from an external fork authorizes the entire proposed
+  workflow, including runner selection. Inspect workflow changes and confirm fork jobs
+  remain on GitHub-hosted runners before approving them.
+- Before marking a PR ready, report omitted behavior, implementation gaps, test
+  results, technical debt, missing coverage, weak assertions, and assumptions. Fix
+  every high-severity gap and discuss every medium-severity gap before delivery.

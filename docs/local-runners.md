@@ -17,10 +17,18 @@ Provision repository-scoped capacity from a PitCrew checkout:
 
 The workflows use the `CI_RUNNER` repository variable as PitCrew's manual
 cloud fallback. Leave it unset for local ephemeral runners, or set it to
-`ubuntu-latest` to route Linux jobs to GitHub-hosted runners.
+`ubuntu-latest` to route trusted Linux jobs to GitHub-hosted runners.
 
-Pull requests from forks always use `ubuntu-latest`; untrusted code must never
-run on self-hosted infrastructure.
+Pull requests from external forks always force `ubuntu-24.04` before
+`CI_RUNNER` is considered; untrusted code must never run on self-hosted
+infrastructure. Approving a fork workflow run authorizes the complete proposed
+workflow, including runner selection, so inspect workflow changes before
+approval.
+
+Draft pull requests use `CI_DRAFT_MODE` (`subset` by default) and publish
+`Draft CI` after marketplace validation and the delivery preflight. Making the
+pull request ready starts fresh full validation and publishes the stable `CI`
+check.
 
 PitCrew workers are socketless Linux containers. Workloads requiring Docker,
 service containers, Testcontainers, Windows, or macOS remain on an appropriate

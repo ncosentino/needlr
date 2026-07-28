@@ -1,0 +1,246 @@
+name: Private PR auto-merge
+
+on:
+  workflow_run:
+    workflows:
+      # __GENESIS_WORKFLOW_NAMES__
+    types: [completed]
+
+permissions:
+  checks: read
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: private-auto-merge-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    name: Merge tested pull request
+    if: >-
+      vars.GENESIS_DELIVERY_MODEL == 'workflow-run' &&
+      (
+        github.event.workflow_run.event == 'pull_request' ||
+        (
+          github.event.workflow_run.path == '.github/workflows/pr-review-policy.yml' &&
+          (
+            github.event.workflow_run.event == 'pull_request_target' ||
+            github.event.workflow_run.event == 'pull_request_review'
+          )
+        )
+      ) &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_PROMPT_DISABLED: '1'
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      GIT_TERMINAL_PROMPT: '0'
+      REQUIRED_CHECK_APP_ID: '15368'
+      TRIGGER_DISPLAY_TITLE: ${{ github.event.workflow_run.display_title }}
+      TRIGGER_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+      TRIGGER_WORKFLOW_PATH: ${{ github.event.workflow_run.path }}
+    steps:
+      - name: Merge the exact tested pull request
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tested_sha="$TRIGGER_HEAD_SHA"
+          trigger_pr_number=''
+          if [ "$TRIGGER_WORKFLOW_PATH" = '.github/workflows/pr-review-policy.yml' ]; then
+            if [[ "$TRIGGER_DISPLAY_TITLE" =~ ^Review\ policy\ for\ \#([0-9]+)\ at\ ([0-9a-f]{40})$ ]]; then
+              trigger_pr_number="${BASH_REMATCH[1]}"
+              tested_sha="${BASH_REMATCH[2]}"
+            else
+              echo "::error::Review policy run title does not identify an exact pull request SHA."
+              exit 1
+            fi
+          fi
+
+          repository="$(gh api "repos/$GH_REPO")"
+          default_branch="$(jq -r '.default_branch' <<<"$repository")"
+          repository_id="$(jq -r '.id' <<<"$repository")"
+          contract="$(
+            gh api \
+              -H 'Accept: application/vnd.github.raw+json' \
+              "repos/$GH_REPO/contents/.github/genesis-delivery.json?ref=$default_branch"
+          )"
+
+          pull_requests="$(
+            gh api "repos/$GH_REPO/commits/$tested_sha/pulls" |
+              jq --arg sha "$tested_sha" --arg repo "$GH_REPO" --arg base "$default_branch" '
+                [
+                  .[]
+                  | select(
+                      .state == "open"
+                      and .base.ref == $base
+                      and .head.sha == $sha
+                      and .head.repo.full_name == $repo
+                      and .draft == false
+                    )
+                ]
+              '
+          )"
+          pull_request_count="$(jq 'length' <<<"$pull_requests")"
+
+          if [ "$pull_request_count" -eq 0 ]; then
+            echo "No ready same-repository pull request targets $default_branch at $tested_sha."
+            exit 0
+          fi
+          if [ "$pull_request_count" -ne 1 ]; then
+            echo "::error::$pull_request_count pull requests match tested commit $tested_sha."
+            exit 1
+          fi
+
+          pull_request_number="$(jq -r '.[0].number' <<<"$pull_requests")"
+          if [ -n "$trigger_pr_number" ] && [ "$pull_request_number" != "$trigger_pr_number" ]; then
+            echo "::error::Review policy run identified pull request $trigger_pr_number, but commit lookup found $pull_request_number."
+            exit 1
+          fi
+          pull_request="$(gh api "repos/$GH_REPO/pulls/$pull_request_number")"
+          current_sha="$(jq -r '.head.sha' <<<"$pull_request")"
+          current_base="$(jq -r '.base.ref' <<<"$pull_request")"
+          current_repo="$(jq -r '.head.repo.full_name' <<<"$pull_request")"
+          head_ref="$(jq -r '.head.ref // empty' <<<"$pull_request")"
+          head_repo_id="$(jq -r '.head.repo.id // empty' <<<"$pull_request")"
+          base_repo_id="$(jq -r '.base.repo.id // empty' <<<"$pull_request")"
+          current_state="$(jq -r '.state' <<<"$pull_request")"
+          current_draft="$(jq -r '.draft' <<<"$pull_request")"
+          current_title="$(jq -r '.title' <<<"$pull_request")"
+
+          if [ "$current_state" != "open" ] ||
+             [ "$current_draft" != "false" ] ||
+             [ "$current_base" != "$default_branch" ] ||
+             [ "$current_repo" != "$GH_REPO" ] ||
+             [ "$current_sha" != "$tested_sha" ]; then
+            echo "Pull request $pull_request_number changed after validation; leaving it open."
+            exit 0
+          fi
+          if [ -z "$head_ref" ] ||
+             [ "$head_repo_id" != "$repository_id" ] ||
+             [ "$base_repo_id" != "$repository_id" ] ||
+             [ "$head_ref" = "$default_branch" ]; then
+            echo "::error::Pull request $pull_request_number does not have a deletable same-repository head branch."
+            exit 1
+          fi
+          full_ref="refs/heads/$head_ref"
+          git check-ref-format --branch "$head_ref" >/dev/null
+          git check-ref-format "$full_ref" >/dev/null
+
+          title_pattern="$(jq -r '.pullRequestTitle.pattern' <<<"$contract")"
+          title_max_length="$(jq -r '.pullRequestTitle.maxLength' <<<"$contract")"
+          if [[ "$current_title" == *$'\n'* || "$current_title" == *$'\r'* ]] ||
+             (( ${#current_title} > title_max_length )) ||
+             [[ ! "$current_title" =~ $title_pattern ]]; then
+            echo "::error::Pull request $pull_request_number has an invalid conventional title."
+            exit 1
+          fi
+
+          check_runs="$(
+            gh api \
+              --paginate \
+              --slurp \
+              "repos/$GH_REPO/commits/$tested_sha/check-runs?filter=latest&per_page=100" |
+              jq '{check_runs: [.[].check_runs[]]}'
+          )"
+          while IFS= read -r required_check; do
+            conclusion="$(
+              jq -r \
+                --arg name "$required_check" \
+                --argjson app_id "$REQUIRED_CHECK_APP_ID" '
+                [
+                  .check_runs[]
+                  | select(.name == $name and .app.id == $app_id)
+                ] | first | .conclusion // ""
+              ' <<<"$check_runs"
+            )"
+            if [ "$conclusion" != "success" ]; then
+              echo "Required check '$required_check' is '$conclusion'; leaving pull request open."
+              exit 0
+            fi
+          done < <(jq -r '.requiredChecks[]' <<<"$contract")
+
+          current_base_sha="$(gh api "repos/$GH_REPO/commits/$default_branch" --jq '.sha')"
+          comparison_status="$(
+            gh api "repos/$GH_REPO/compare/$current_base_sha...$tested_sha" --jq '.status'
+          )"
+          if [ "$comparison_status" != 'ahead' ] && [ "$comparison_status" != 'identical' ]; then
+            echo "Pull request $pull_request_number does not contain current $default_branch commit $current_base_sha; update the branch and rerun CI."
+            exit 0
+          fi
+
+          merge_response="$(
+            gh api \
+              --method PUT \
+              "repos/$GH_REPO/pulls/$pull_request_number/merge" \
+              -f merge_method=squash \
+              -f sha="$tested_sha"
+          )"
+          if [ "$(jq -r '.merged' <<<"$merge_response")" != "true" ]; then
+            message="$(jq -r '.message // "GitHub declined the merge."' <<<"$merge_response")"
+            echo "::error::Pull request $pull_request_number was not merged: $message"
+            exit 1
+          fi
+
+          merge_sha="$(jq -r '.sha' <<<"$merge_response")"
+          echo "Merged pull request $pull_request_number at $merge_sha."
+
+          cleanup_default="$(gh api "repos/$GH_REPO" --jq '.default_branch')"
+          if [ "$head_ref" = "$cleanup_default" ]; then
+            echo "::error::Refusing to delete the current default branch '$head_ref'."
+            exit 1
+          fi
+
+          control_repo="$(mktemp -d "${RUNNER_TEMP:?}/genesis-merge-control.XXXXXX")"
+          trap 'rm -rf "$control_repo"' EXIT
+          git init --quiet "$control_repo"
+          gh auth setup-git --hostname github.com --force
+          remote_url="https://github.com/${GH_REPO}.git"
+
+          set +e
+          push_output="$(
+            git -C "$control_repo" push --porcelain \
+              "--force-with-lease=${full_ref}:${tested_sha}" \
+              "$remote_url" \
+              ":${full_ref}" 2>&1
+          )"
+          push_status=$?
+          set -e
+          printf '%s\n' "$push_output"
+
+          if (( push_status == 0 )); then
+            echo "Deleted merged head branch '$head_ref' at $tested_sha."
+            exit 0
+          fi
+
+          set +e
+          remote_record="$(
+            git -C "$control_repo" ls-remote \
+              --quiet --exit-code --refs \
+              "$remote_url" "$full_ref" 2>&1
+          )"
+          lookup_status=$?
+          set -e
+
+          case "$lookup_status" in
+            2)
+              echo "Head branch '$head_ref' is already absent; cleanup succeeded."
+              ;;
+            0)
+              read -r remote_sha _ <<<"$remote_record"
+              if [ "$remote_sha" != "$tested_sha" ]; then
+                echo "::error::Head branch advanced to $remote_sha; refusing deletion."
+              else
+                echo "::error::Head branch remains at $tested_sha, but deletion was rejected."
+              fi
+              exit 1
+              ;;
+            *)
+              printf '%s\n' "$remote_record" >&2
+              echo "::error::Unable to determine branch state after deletion failure."
+              exit 1
+              ;;
+          esac
