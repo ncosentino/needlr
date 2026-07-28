@@ -28,6 +28,7 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Generated Record Constructor Overloads](https://www.devleader.ca/projects/needlr/generated-record-constructor-overloads/) -- Generate one guarded forwarding constructor overload for a partial positional record from explicitly marked properties.
 - [Service Catalog](https://www.devleader.ca/projects/needlr/service-catalog/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Breadcrumbs](https://www.devleader.ca/projects/needlr/breadcrumbs/) -- Opinionated fluent dependency injection for .NET with source generation
+- [SignalR](https://www.devleader.ca/projects/needlr/signalr/) -- Register ASP.NET Core SignalR services with Needlr and map hubs through either source-generated AOT-safe endpoints or an explicit reflection fallback.
 - [.NET MAUI](https://www.devleader.ca/projects/needlr/maui/) -- Opinionated fluent dependency injection for .NET with source generation
 - [https://www.devleader.ca/projects/foundry](https://www.devleader.ca/projects/needlr/https://www.devleader.ca/projects/foundry/)
 

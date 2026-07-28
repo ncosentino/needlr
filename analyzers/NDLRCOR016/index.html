@@ -1098,6 +1098,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../signalr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SignalR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../maui/" class="md-nav__link">
         
   
@@ -4719,6 +4747,10 @@
 <h2 id="description">Description<a class="headerlink" href="#description" title="Permanent link">&para;</a></h2>
 <p><code>[DoNotAutoRegister]</code> tells the Needlr source generator to skip automatic DI service registration for the decorated type. Plugin interfaces like <code>IServiceCollectionPlugin</code>, <code>IWebApplicationPlugin</code>, and others already carry this attribute so that Needlr does not register the interface type itself as a DI service.</p>
 <p>Applying <code>[DoNotAutoRegister]</code> directly to a class that implements one of these interfaces is redundant. More importantly, in older versions of Needlr this pattern accidentally prevented the plugin class from being discovered at all (see fix for <code>IsPluginType</code>). Removing the attribute from the implementing class is the correct fix.</p>
+<p>Plugin discovery is structural and unconditional: a concrete type that implements a
+Needlr plugin interface is eligible to execute automatically. Do not implement a plugin
+interface for behavior that must remain explicitly opt-in. Use a non-plugin helper or an
+ordinary extension method instead.</p>
 <h2 id="severity">Severity<a class="headerlink" href="#severity" title="Permanent link">&para;</a></h2>
 <p><strong>Warning</strong> - The code compiles, but the attribute is redundant and may indicate a misunderstanding of how the attribute is intended to work.</p>
 <h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
@@ -4761,6 +4793,7 @@
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../../plugin-development/">Plugin Development</a></li>
+<li><a href="../../cross-generator-plugins/">Cross-Generator Plugin Registration</a></li>
 <li><a href="../NDLRCOR001/">NDLRCOR001</a></li>
 </ul><script type="application/ld+json">
 {

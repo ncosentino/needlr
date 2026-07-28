@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 7/28/2026 - 6:35:30 PM |
-| Coverage date: | 7/28/2026 - 6:32:45 PM - 7/28/2026 - 6:35:25 PM |
+| Generated on: | 7/28/2026 - 9:44:14 PM |
+| Coverage date: | 7/28/2026 - 9:36:35 PM - 7/28/2026 - 9:43:55 PM |
 | Parser: | MultiReport (25x Cobertura) |
 | Assemblies: | 20 |
 | Classes: | 250 |
-| Files: | 230 |
-| **Line coverage:** | 92.7% (13431 of 14481) |
-| Covered lines: | 13431 |
-| Uncovered lines: | 1050 |
-| Coverable lines: | 14481 |
-| Total lines: | 36133 |
-| **Branch coverage:** | 84.5% (6239 of 7378) |
-| Covered branches: | 6239 |
-| Total branches: | 7378 |
+| Files: | 231 |
+| **Line coverage:** | 92.7% (13454 of 14498) |
+| Covered lines: | 13454 |
+| Uncovered lines: | 1044 |
+| Coverable lines: | 14498 |
+| Total lines: | 36162 |
+| **Branch coverage:** | 84.5% (6245 of 7384) |
+| Covered branches: | 6245 |
+| Total branches: | 7384 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -387,17 +387,17 @@
 |NexusLabs.Needlr.Serilog.SerilogPlugin|100%||
 
 </details>
-<details><summary>NexusLabs.Needlr.SignalR - 62.5%</summary>
+<details><summary>NexusLabs.Needlr.SignalR - 76.4%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.SignalR**|**62.5%**|**78.5%**|
-|NexusLabs.Needlr.SignalR.Generated.NeedlrSourceGenModuleInitializer|83.3%|100%|
+|**NexusLabs.Needlr.SignalR**|**76.4%**|**85%**|
+|NexusLabs.Needlr.SignalR.Generated.NeedlrSourceGenModuleInitializer|100%|100%|
 |NexusLabs.Needlr.SignalR.Generated.ServiceCatalog|0%||
-|NexusLabs.Needlr.SignalR.Generated.TypeRegistry|69.2%||
+|NexusLabs.Needlr.SignalR.Generated.TypeRegistry|100%||
 |NexusLabs.Needlr.SignalR.GeneratedSignalRHubRegistration|100%||
 |NexusLabs.Needlr.SignalR.SignalRExtensions|100%|83.3%|
-|NexusLabs.Needlr.SignalR.SignalRHubRegistrationPlugin|100%|66.6%|
+|NexusLabs.Needlr.SignalR.SignalRHubReflectionMapper|100%|83.3%|
 |NexusLabs.Needlr.SignalR.SignalRWebApplicationBuilderPlugin|100%||
 
 </details>
