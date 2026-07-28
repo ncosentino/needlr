@@ -114,6 +114,7 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [NDLRGEN060](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN060/) -- Opinionated fluent dependency injection for .NET with source generation
 - [NDLRGEN061](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN061/) -- Opinionated fluent dependency injection for .NET with source generation
 - [NDLRGEN062](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN062/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN063](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN063/) -- Opinionated fluent dependency injection for .NET with source generation
 
 ## SignalR Analyzers
 
