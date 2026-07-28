@@ -339,7 +339,11 @@ internal static class GeneratedConstructorEligibility
         return false;
     }
 
-    private static List<IFieldSymbol> GetOrderedInstanceFields(INamedTypeSymbol typeSymbol)
+    /// <summary>
+    /// Returns explicit instance fields in the deterministic source order used by
+    /// generated-constructor discovery before eligibility filtering is applied.
+    /// </summary>
+    internal static List<IFieldSymbol> GetOrderedInstanceFields(INamedTypeSymbol typeSymbol)
     {
         return typeSymbol.GetMembers()
             .OfType<IFieldSymbol>()

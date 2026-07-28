@@ -146,6 +146,26 @@ public sealed partial class UserService
 
 The generated form preserves an ordinary public constructor while removing the repeated parameter, guard, and assignment code.
 
+### Finding mechanically replaceable constructors
+
+[NDLRGEN063](analyzers/NDLRGEN063.md) reports an `Info` diagnostic when one public
+hand-written or primary constructor has an exact generated-constructor equivalent.
+The analyzer preserves the authored parameter names, types, and order, and recognizes
+only assignments and built-in guards that Needlr can reproduce without changing
+behavior.
+
+The diagnostic deliberately does not propose architectural refactors. Constructors
+that normalize or derive values, copy collections, transfer ownership, perform side
+effects, chain to another constructor, pass base-constructor arguments, or expose
+multiple overloads remain authored code.
+
+Projects that require generated constructors can promote the suggestion:
+
+```ini
+[*.cs]
+dotnet_diagnostic.NDLRGEN063.severity = warning
+```
+
 ## Default: No Guards
 
 `[GenerateConstructor]` with no argument is equivalent to `[GenerateConstructor(ConstructorNullGuardMode.None)]`: field assignments are generated as-is, with **no** automatic runtime guard, even for a non-nullable reference field:
