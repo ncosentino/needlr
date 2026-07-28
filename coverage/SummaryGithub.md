@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 7/28/2026 - 10:53:39 PM |
-| Coverage date: | 7/28/2026 - 10:47:34 PM - 7/28/2026 - 10:53:23 PM |
+| Generated on: | 7/28/2026 - 11:46:51 PM |
+| Coverage date: | 7/28/2026 - 11:38:07 PM - 7/28/2026 - 11:46:30 PM |
 | Parser: | MultiReport (25x Cobertura) |
 | Assemblies: | 20 |
-| Classes: | 250 |
-| Files: | 231 |
-| **Line coverage:** | 92.7% (13453 of 14498) |
-| Covered lines: | 13453 |
-| Uncovered lines: | 1045 |
-| Coverable lines: | 14498 |
-| Total lines: | 36162 |
-| **Branch coverage:** | 84.5% (6244 of 7384) |
-| Covered branches: | 6244 |
-| Total branches: | 7384 |
+| Classes: | 251 |
+| Files: | 232 |
+| **Line coverage:** | 92.7% (13454 of 14506) |
+| Covered lines: | 13454 |
+| Uncovered lines: | 1052 |
+| Coverable lines: | 14506 |
+| Total lines: | 36189 |
+| **Branch coverage:** | 84.4% (6245 of 7396) |
+| Covered branches: | 6245 |
+| Total branches: | 7396 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -305,15 +305,15 @@
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.7%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.9%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.7%**|**89.3%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.9%**|**89.8%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|95.9%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||
@@ -364,11 +364,12 @@
 |NexusLabs.Needlr.Logging.Analyzers.NeedlrLoggerMessageAnalyzer|90.3%|80.7%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Maui - 91.6%</summary>
+<details><summary>NexusLabs.Needlr.Maui - 75%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Maui**|**91.6%**|**50%**|
+|**NexusLabs.Needlr.Maui**|**75%**|**22.7%**|
+|Microsoft.Maui.Controls.Generated.GeneratedBindingInterceptors|0%|0%|
 |NexusLabs.Needlr.Maui.MauiAppBuilderNeedlrExtensions|100%||
 |NexusLabs.Needlr.Maui.MauiSyringe|89.2%|50%|
 |NexusLabs.Needlr.Maui.SyringeMauiExtensions|100%||
