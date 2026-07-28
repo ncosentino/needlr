@@ -912,7 +912,7 @@ internal static class ConstructorGuardAnalysisHelper
         return "an unsupported value";
     }
 
-    private static bool CanBeRuntimeNull(ITypeSymbol type)
+    internal static bool CanBeRuntimeNull(ITypeSymbol type)
     {
         if (type.IsReferenceType)
             return true;
