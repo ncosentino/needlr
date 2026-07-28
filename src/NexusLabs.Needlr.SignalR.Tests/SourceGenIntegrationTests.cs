@@ -2,13 +2,18 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.AspNet;
 using NexusLabs.Needlr.Generators;
+using NexusLabs.Needlr.Injection;
+using NexusLabs.Needlr.Injection.Reflection;
 using NexusLabs.Needlr.Injection.Reflection.PluginFactories;
+using NexusLabs.Needlr.Injection.SourceGen;
 using NexusLabs.Needlr.Injection.SourceGen.PluginFactories;
+using NexusLabs.Needlr.SignalR.Tests.Generated;
 
 using Xunit;
 
@@ -121,9 +126,59 @@ public sealed class SourceGenIntegrationTests
             .Select(p => p.PluginType.Name)
             .ToList();
 
-        Assert.Equal(2, signalRPluginTypes.Count);
-        Assert.Contains("SignalRHubRegistrationPlugin", signalRPluginTypes);
+        Assert.Single(signalRPluginTypes);
+        Assert.DoesNotContain("SignalRHubRegistrationPlugin", signalRPluginTypes);
         Assert.Contains("SignalRWebApplicationBuilderPlugin", signalRPluginTypes);
+    }
+
+    /// <summary>
+    /// Verifies source-generated web composition does not execute the reflection
+    /// mapper and maps each generated hub exactly once when explicitly requested.
+    /// </summary>
+    [Fact]
+    public async Task UsingSourceGen_MapsHubsOnlyAfterGeneratedOptIn()
+    {
+        await using var app = new Syringe()
+            .UsingSourceGen()
+            .BuildWebApplication();
+
+        Assert.Equal(0, CountRouteEndpoints(app, "/chat"));
+
+        app.MapGeneratedHubs();
+
+        Assert.Equal(1, CountRouteEndpoints(app, "/chat"));
+    }
+
+    /// <summary>
+    /// Verifies reflection composition maps hubs only through the explicit
+    /// reflection extension.
+    /// </summary>
+    [Fact]
+    public async Task UsingReflection_MapsHubsOnlyAfterReflectionOptIn()
+    {
+        await using var app = new Syringe()
+            .UsingReflection()
+            .ForWebApplication()
+            .UsingConfigurationCallback((builder, _) =>
+                builder.Services.AddSignalR())
+            .BuildWebApplication();
+
+        Assert.Equal(0, CountRouteEndpoints(app, "/chat"));
+
+        app.UseSignalRHubsWithReflection();
+
+        Assert.Equal(1, CountRouteEndpoints(app, "/chat"));
+    }
+
+    private static int CountRouteEndpoints(
+        WebApplication app,
+        string routePattern)
+    {
+        return ((IEndpointRouteBuilder)app).DataSources
+            .SelectMany(dataSource => dataSource.Endpoints)
+            .OfType<RouteEndpoint>()
+            .Count(endpoint =>
+                endpoint.RoutePattern.RawText == routePattern);
     }
 }
 

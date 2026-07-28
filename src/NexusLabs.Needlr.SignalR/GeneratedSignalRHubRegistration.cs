@@ -18,8 +18,9 @@ namespace NexusLabs.Needlr.SignalR;
 /// </code>
 /// 
 /// This approach is preferred for AOT/trimmed applications because it avoids
-/// all runtime reflection. The <see cref="SignalRHubRegistrationPlugin"/> uses
-/// reflection and is marked with appropriate AOT warnings.
+/// all runtime reflection. The
+/// <see cref="SignalRExtensions.UseSignalRHubsWithReflection"/> extension is the
+/// explicit reflection-based alternative and carries the appropriate AOT warnings.
 /// 
 /// To enable hub registration generation, implement <see cref="IHubRegistrationPlugin"/>
 /// with compile-time constant property values:
@@ -50,4 +51,3 @@ public static class GeneratedSignalRHubRegistration
         // The actual MapGeneratedHubs() method is source-generated.
     }
 }
-

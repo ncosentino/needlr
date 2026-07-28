@@ -24,6 +24,8 @@ namespace NexusLabs.Needlr.SignalR;
 /// Required for AOT/trimmed applications.
 /// </description></item>
 /// </list>
+/// Hub endpoints are never mapped automatically. Call exactly one mapping extension
+/// after building the application.
 /// </remarks>
 /// <example>
 /// <code>
@@ -43,6 +45,10 @@ public static class SignalRExtensions
     /// <para>
     /// This method uses reflection to discover <see cref="IHubRegistrationPlugin"/> implementations
     /// and invoke <c>MapHub&lt;T&gt;()</c> at runtime.
+    /// </para>
+    /// <para>
+    /// This is an explicit post-build operation. Needlr does not add the reflection
+    /// mapper to automatic web-application plugin discovery.
     /// </para>
     /// <para>
     /// <strong>For AOT/trimmed applications</strong>, use the source-generated approach instead:
@@ -67,36 +73,12 @@ public static class SignalRExtensions
         pluginFactory ??= app.Services.GetRequiredService<IPluginFactory>();
         assemblies ??= app.Services.GetRequiredService<IReadOnlyList<System.Reflection.Assembly>>();
 
-        var plugin = new SignalRHubRegistrationPlugin();
         var assemblyList = assemblies as IReadOnlyList<System.Reflection.Assembly> ?? assemblies.ToList();
-        plugin.Configure(new WebApplicationPluginOptions(app, assemblyList, pluginFactory));
+        new SignalRHubReflectionMapper().Map(
+            app,
+            assemblyList,
+            pluginFactory);
 
         return app;
-    }
-
-    /// <summary>
-    /// Adds the reflection-based SignalR hub registration plugin to the service collection.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// This registers the <see cref="SignalRHubRegistrationPlugin"/> which uses reflection
-    /// to discover and map SignalR hubs at runtime.
-    /// </para>
-    /// <para>
-    /// <strong>For AOT/trimmed applications</strong>, do not use this method. Instead,
-    /// call <c>app.MapGeneratedHubs()</c> directly after building the application.
-    /// </para>
-    /// </remarks>
-    /// <param name="services">The service collection to configure.</param>
-    /// <returns>The service collection for chaining.</returns>
-    [RequiresUnreferencedCode("SignalR hub registration uses reflection. For AOT scenarios, use app.MapGeneratedHubs() instead.")]
-    [RequiresDynamicCode("SignalR hub registration uses MakeGenericMethod() which requires dynamic code generation.")]
-    public static IServiceCollection AddSignalRHubRegistrationWithReflection(this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        // Register the plugin so it gets picked up during web application configuration
-        services.AddSingleton<IWebApplicationPlugin, SignalRHubRegistrationPlugin>();
-        return services;
     }
 }

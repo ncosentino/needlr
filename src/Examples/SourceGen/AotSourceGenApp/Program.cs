@@ -1,4 +1,5 @@
 using AotSourceGenPlugin;
+using AotSourceGenApp.Generated;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +21,7 @@ var app = new Syringe()
     .UsingOptions(() => CreateWebApplicationOptions.Default.UsingCliArgs(args))
     .BuildWebApplication();
 
+app.MapGeneratedHubs();
 app.MapGet("/weather", static ([FromServices] IWeatherProvider weather) => Results.Text(weather.GetForecast()));
 app.MapGet("/time", static ([FromServices] ITimeProvider time) => Results.Text(time.GetNow().ToString("O")));
 app.MapGet("/manual/{value}", static ([FromServices] IManualService manual, string value) => Results.Text(manual.Echo(value)));
@@ -32,7 +34,7 @@ app.MapGet("/all", static ([FromServices] IWeatherProvider weather, [FromService
         AppJsonContext.Default.AllResponse));
 
 Console.WriteLine("AotSourceGenApp running. Reflection disabled; demonstrating source-gen parity.");
-Console.WriteLine("Endpoints: /weather, /time, /manual/{value}, /all, /plugin-weather, /plugin-time, /plugin-manual/{value}");
+Console.WriteLine("Endpoints: /weather, /time, /manual/{value}, /all, /aot-chat, /plugin-weather, /plugin-time, /plugin-manual/{value}");
 Console.WriteLine("Open Generic Decorator endpoints: /order/{id}, /notify/{message}");
 
 await app.RunAsync();

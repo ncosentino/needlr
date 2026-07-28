@@ -388,6 +388,7 @@ var webApplication = new Syringe()
 ## Next Steps
 
 - Set up [Solution-Wide Source Generation](solution-wide-source-generation.md) for multi-project solutions using `NexusLabs.Needlr.Build`
+- Map ASP.NET Core hubs through the AOT-safe or explicit reflection path with [SignalR](signalr.md)
 - Wire source-generated DI into a .NET MAUI app with [.NET MAUI](maui.md)
 - Bind typed settings from `appsettings.json` without manual registration via [Options Binding](options.md)
 - Source-generate named `HttpClient` registrations from typed options records via [HttpClient Options](http-clients.md)

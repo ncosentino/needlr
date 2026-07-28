@@ -74,6 +74,7 @@ nav:
     - Generated Record Constructor Overloads: generated-record-constructor-overloads.md
     - Service Catalog: service-catalog.md
     - Breadcrumbs: breadcrumbs.md
+    - SignalR: signalr.md
     - .NET MAUI: maui.md
     - Foundry AI/Agentic Framework: https://www.devleader.ca/projects/foundry
   - Advanced:

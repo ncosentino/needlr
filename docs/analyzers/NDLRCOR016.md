@@ -10,6 +10,11 @@ A class that implements a Needlr plugin interface has `[DoNotAutoRegister]` appl
 
 Applying `[DoNotAutoRegister]` directly to a class that implements one of these interfaces is redundant. More importantly, in older versions of Needlr this pattern accidentally prevented the plugin class from being discovered at all (see fix for `IsPluginType`). Removing the attribute from the implementing class is the correct fix.
 
+Plugin discovery is structural and unconditional: a concrete type that implements a
+Needlr plugin interface is eligible to execute automatically. Do not implement a plugin
+interface for behavior that must remain explicitly opt-in. Use a non-plugin helper or an
+ordinary extension method instead.
+
 ## Severity
 
 **Warning** - The code compiles, but the attribute is redundant and may indicate a misunderstanding of how the attribute is intended to work.
@@ -68,4 +73,5 @@ Suppress only if you are intentionally targeting an older version of Needlr that
 ## See Also
 
 - [Plugin Development](../plugin-development.md)
+- [Cross-Generator Plugin Registration](../cross-generator-plugins.md)
 - [NDLRCOR001](NDLRCOR001.md)
