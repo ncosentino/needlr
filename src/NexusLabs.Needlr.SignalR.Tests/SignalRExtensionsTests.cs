@@ -96,47 +96,6 @@ public sealed class SignalRExtensionsTests : IDisposable
         mockPluginFactory.Verify(f => f.CreatePluginsFromAssemblies<IHubRegistrationPlugin>(It.IsAny<IEnumerable<Assembly>>()), Times.Once);
     }
 
-    [Fact]
-    public void AddSignalRHubRegistrationWithReflection_WithNullServices_ThrowsArgumentNullException()
-    {
-        // Arrange
-        IServiceCollection services = null!;
-
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => services.AddSignalRHubRegistrationWithReflection());
-    }
-
-    [Fact]
-    public void AddSignalRHubRegistrationWithReflection_RegistersPlugin()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-
-        // Act
-        var result = services.AddSignalRHubRegistrationWithReflection();
-
-        // Assert
-        Assert.Same(services, result);
-        var descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(IWebApplicationPlugin));
-        Assert.NotNull(descriptor);
-        Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
-    }
-
-    [Fact]
-    public void AddSignalRHubRegistrationWithReflection_RegistersSignalRHubRegistrationPlugin()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-
-        // Act
-        services.AddSignalRHubRegistrationWithReflection();
-        var provider = services.BuildServiceProvider();
-        var plugins = provider.GetServices<IWebApplicationPlugin>();
-
-        // Assert
-        Assert.Contains(plugins, p => p is SignalRHubRegistrationPlugin);
-    }
-
     public void Dispose()
     {
         if (!_disposed && _app != null)

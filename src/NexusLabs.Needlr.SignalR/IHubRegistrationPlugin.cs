@@ -2,7 +2,8 @@
 
 /// <summary>
 /// Defines a plugin for registering SignalR hubs with the application.
-/// Implement this interface to provide hub routing information for automatic endpoint mapping.
+/// Implement this interface to provide hub routing information for source-generated
+/// or explicitly requested reflection-based endpoint mapping.
 /// </summary>
 [DoNotAutoRegister]
 [DoNotInject]

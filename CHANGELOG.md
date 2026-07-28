@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- **`NexusLabs.Needlr.SignalR` — source-generated composition no longer auto-executes the reflection hub mapper.** The reflection implementation is no longer a discoverable `IWebApplicationPlugin`, so `UsingSourceGen()` remains reflection-free and `MapGeneratedHubs()` maps each hub exactly once. Reflection consumers must opt in explicitly after building the application with `UseSignalRHubsWithReflection()`.
 - `NeedlrSourceGenBootstrap.ClearRegistrationsForTesting` now also clears registered extension registrars, so extension registrations can no longer leak between tests that share the process-wide source-generation bootstrap.
 - Type-filterer exclusions now win over lifetime overrides regardless of chaining order. Previously `filterer.Except<T>().UsingOnlyAsSingleton<IService>()` re-included the excluded type for reflection-based registration while source-generated registration still excluded it; `UsingOnlyAsScoped`/`UsingOnlyAsTransient`/`UsingOnlyAsSingleton` now honour the inner filterer's `IsTypeExcluded` result for every overload.
 - The generic `AddDecorator<TService, TDecorator>` overload now shares one implementation with `AddDecorator(Type, Type)`, so both overloads have identical descriptor, lifetime, and failure guarantees. An unsupported descriptor lifetime is rejected by both overloads before any registration is removed, leaving the service collection unchanged.
@@ -25,6 +26,7 @@
 
 ### Removed
 
+- **BREAKING (alpha): removed `SignalRHubRegistrationPlugin` and `AddSignalRHubRegistrationWithReflection()`.** The public plugin type was automatically executed despite being documented as opt-in, and the service-collection extension registered an `IWebApplicationPlugin` that Needlr's web composition root never consumed. Use `UseSignalRHubsWithReflection()` for explicit reflection mapping or `MapGeneratedHubs()` for source-generated mapping.
 - Removed the unreferenced internal `MermaidHelpers` and `StringHelpers` duplicates and impossible `ref`/`out`/`in` handling for positional-record parameters.
 - Removed compile-time regex parsing of referenced `ServiceCatalog` initializer syntax for graph locations. Each project graph now owns its source locations, while IDE consumers merge producer graphs and leave PE metadata locations explicitly unknown.
 

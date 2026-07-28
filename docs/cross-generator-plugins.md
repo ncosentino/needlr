@@ -40,6 +40,12 @@ internal static void Initialize()
 
 The CLR guarantees all `[ModuleInitializer]` methods in a loaded assembly complete before any user code in that assembly executes. By the time the application calls `IPluginFactory.CreatePluginsFromAssemblies<T>()`, all providers — from both `TypeRegistryGenerator` and your second generator — are already combined.
 
+Contributed plugin types have the same lifecycle as ordinary discovered plugins: they
+execute automatically when the corresponding Needlr composition phase runs.
+`RegisterPlugins()` has no opt-in filtering contract. Behavior that must remain explicit
+must not implement a Needlr plugin interface and must not be contributed through this
+bootstrap.
+
 ## Why Ordering Between Generators Doesn't Matter
 
 `TypeRegistryGenerator` and your second generator each write to `NeedlrSourceGenBootstrap._registrations` (an append-only list) via separate module initializers. The reader (`TryGetProviders`) is only ever called by application code, which runs **after** all module initializers have completed.
