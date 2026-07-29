@@ -16,7 +16,7 @@
         <link rel="prev" href="../ide-extensions/">
       
       
-        <link rel="next" href="../releasing/">
+        <link rel="next" href="../runner-image/">
       
       
         
@@ -1433,6 +1433,34 @@
 
       </a>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../runner-image/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository-Owned Runner Image
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -4574,6 +4602,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/adr-0010-own-repository-runner-image/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0010 Own a Repository Runner Image
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4627,6 +4690,10 @@ check.</p>
 service containers, Testcontainers, Windows, or macOS remain on an appropriate
 hosted or isolated runner profile. Needlr's Windows and MAUI jobs therefore
 continue using native GitHub-hosted runners.</p>
+<p>Needlr also publishes a repository-owned <code>needlr-ci</code> image profile with the exact
+.NET SDK and Native AOT prerequisites. See
+<a href="../runner-image/">Repository-Owned Runner Image</a> for publication, activation, update,
+hosted fallback, and rollback.</p>
 
 
 

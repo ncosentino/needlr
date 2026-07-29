@@ -89,6 +89,10 @@
     <lastmod>2026-07-29</lastmod>
   </url>
   <url>
+    <loc>https://www.devleader.ca/projects/needlr/runner-image/</loc>
+    <lastmod>2026-07-29</lastmod>
+  </url>
+  <url>
     <loc>https://www.devleader.ca/projects/needlr/releasing/</loc>
     <lastmod>2026-07-29</lastmod>
   </url>
@@ -150,6 +154,10 @@
   </url>
   <url>
     <loc>https://www.devleader.ca/projects/needlr/adr/adr-0008-own-version-aware-agent-marketplace/</loc>
+    <lastmod>2026-07-29</lastmod>
+  </url>
+  <url>
+    <loc>https://www.devleader.ca/projects/needlr/adr/adr-0010-own-repository-runner-image/</loc>
     <lastmod>2026-07-29</lastmod>
   </url>
   <url>
