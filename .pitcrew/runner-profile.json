@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ncosentino/pitcrew/87162e6fad6a961b9bc2f026639f2fa7df0795ba/runner-profile.schema.json",
+  "schemaVersion": 1,
+  "name": "needlr-ci",
+  "description": "Needlr repository CI workers with the pinned .NET SDK and Native AOT prerequisites.",
+  "image": "ghcr.io/ncosentino/needlr-runner@sha256:233a06905fc35312fe73099d12e93bf496ac1b98dd19a0482be000c12d7b4461",
+  "labels": [
+    "needlr"
+  ],
+  "replicas": 1,
+  "pullImage": true,
+  "disableDefaultLabels": true,
+  "verificationCommands": [
+    "test -x /actions-runner/bin/Runner.Listener",
+    "dotnet --list-sdks | grep -F '10.0.302'",
+    "clang --version",
+    "pwsh --version"
+  ]
+}

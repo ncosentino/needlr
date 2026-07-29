@@ -36,10 +36,14 @@ validation requires Docker:
 - the workflow captures the immutable registry manifest digest and uploads a
   `needlr-runner-publication` record.
 
-GHCR creates a new container package as private. After the first trusted publication, a
-repository owner must make `needlr-runner` public once in GitHub package settings (or
-through the package API) and verify an unauthenticated digest pull. Workflows and PitCrew
-profiles then deploy by digest, never by a mutable tag.
+The initial trusted publication produced:
+
+```text
+ghcr.io/ncosentino/needlr-runner@sha256:233a06905fc35312fe73099d12e93bf496ac1b98dd19a0482be000c12d7b4461
+```
+
+Anonymous manifest retrieval succeeds for that digest. Workflows and PitCrew profiles
+deploy by digest, never by a mutable tag.
 
 ## Bootstrap Sequence
 
@@ -62,9 +66,40 @@ PitCrew automatically adds the profile name as a routing label. A profile named
 `needlr-ci` therefore satisfies jobs whose `runs-on` value is `needlr-ci`, even when
 GitHub default labels are disabled.
 
-The activation command must replay the existing Needlr capacity rather than guessing it.
-The exact command is documented with the digest-pinning PR after reading the host's
-non-secret PitCrew state.
+Needlr's existing capacity is one worker. On the Zephyr host, run from the PitCrew
+checkout:
+
+```powershell
+.\Setup-Runner.ps1 `
+    -ProfilePath <needlr-checkout>\.pitcrew\runner-profile.json `
+    -Repos https://github.com/ncosentino/needlr=1
+```
+
+This creates a separate `needlr-ci` manager and does not change the existing
+general-purpose profile or Foundry capacity.
+
+Confirm the specialized runner is online before changing repository routing:
+
+```powershell
+gh api repos/ncosentino/needlr/actions/runners `
+    --jq '.runners[] | select(.labels[].name == "needlr-ci")'
+```
+
+Then route trusted Linux jobs:
+
+```powershell
+gh variable set CI_RUNNER `
+    --repo ncosentino/needlr `
+    --body needlr-ci
+```
+
+Run a full CI workflow and confirm `preflight`, build/test, package validation, both AOT
+jobs, and documentation use a runner carrying the `needlr-ci` label. The conditional
+setup action must report that SDK `10.0.302` is already installed.
+
+Only after the specialized route is proven should the old default profile stop providing
+Needlr capacity. Replay that profile with its existing non-Needlr repositories and
+counts; do not change Foundry capacity.
 
 Repository workflows never choose an OCI image or mutate PitCrew. Image activation is an
 operator-approved host operation.

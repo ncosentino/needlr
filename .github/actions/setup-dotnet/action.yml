@@ -1,0 +1,83 @@
+name: Setup pinned .NET SDK
+description: Uses an installed exact SDK when available and otherwise installs the repository's global.json version.
+
+inputs:
+  global-json-file:
+    description: Repository-relative global.json path.
+    required: false
+    default: global.json
+
+outputs:
+  setup-performed:
+    description: Whether actions/setup-dotnet installed the SDK.
+    value: ${{ steps.detect.outputs.setup-required }}
+  required-version:
+    description: Exact SDK version required by the selected global.json.
+    value: ${{ steps.detect.outputs.required-version }}
+
+runs:
+  using: composite
+  steps:
+  - name: Detect exact SDK
+    id: detect
+    shell: pwsh
+    env:
+      GLOBAL_JSON_FILE: ${{ inputs.global-json-file }}
+    run: |
+      $globalJsonPath = Join-Path $env:GITHUB_WORKSPACE $env:GLOBAL_JSON_FILE
+      if (-not (Test-Path -LiteralPath $globalJsonPath -PathType Leaf)) {
+        throw "global.json was not found at '$globalJsonPath'."
+      }
+
+      $globalJson = Get-Content -LiteralPath $globalJsonPath -Raw |
+        ConvertFrom-Json
+      $requiredVersion = [string]$globalJson.sdk.version
+      if ($requiredVersion -notmatch '^\d+\.\d+\.\d+$') {
+        throw "global.json must declare an exact SDK version; actual '$requiredVersion'."
+      }
+
+      $installedVersions = @()
+      $dotnet = Get-Command dotnet -ErrorAction SilentlyContinue
+      if ($null -ne $dotnet) {
+        $sdkOutput = & dotnet --list-sdks 2>&1
+        if ($LASTEXITCODE -ne 0) {
+          throw "The installed dotnet command could not enumerate SDKs.`n$($sdkOutput | Out-String)"
+        }
+        $installedVersions = @(
+          $sdkOutput |
+            ForEach-Object { ($_ -split '\s+', 2)[0] } |
+            Where-Object { $_ })
+      }
+
+      $setupRequired = $requiredVersion -notin $installedVersions
+      "required-version=$requiredVersion" |
+        Out-File $env:GITHUB_OUTPUT -Append
+      "setup-required=$($setupRequired.ToString().ToLowerInvariant())" |
+        Out-File $env:GITHUB_OUTPUT -Append
+
+      if ($setupRequired) {
+        Write-Host "SDK $requiredVersion is not installed; setup is required."
+      } else {
+        Write-Host "SDK $requiredVersion is already installed; setup is skipped."
+      }
+
+  - name: Configure writable install directory
+    if: steps.detect.outputs.setup-required == 'true'
+    shell: pwsh
+    run: |
+      $installDirectory =
+        if ($env:RUNNER_OS -eq 'Windows') {
+          Join-Path $env:RUNNER_TEMP 'dotnet'
+        } else {
+          Join-Path $env:RUNNER_TEMP 'dotnet'
+        }
+      "DOTNET_INSTALL_DIR=$installDirectory" |
+        Out-File $env:GITHUB_ENV -Append
+      $installDirectory |
+        Out-File $env:GITHUB_PATH -Append
+
+  - name: Install exact SDK
+    if: steps.detect.outputs.setup-required == 'true'
+    uses: actions/setup-dotnet@v4
+    with:
+      global-json-file: ${{ inputs.global-json-file }}

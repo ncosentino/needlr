@@ -90,7 +90,7 @@ $allWorkflowText = @(
 $setupDotnetCount = (
     [regex]::Matches(
         $allWorkflowText,
-        'uses:\s*actions/setup-dotnet@')).Count
+        'uses:\s*(?:actions/setup-dotnet@|\./\.github/actions/setup-dotnet)')).Count
 $globalJsonCount = (
     [regex]::Matches(
         $allWorkflowText,
@@ -100,6 +100,6 @@ Assert-Condition `
     -Message 'Workflows must not bypass the exact SDK pin with dotnet-version.'
 Assert-Condition `
     -Condition ($setupDotnetCount -eq $globalJsonCount) `
-    -Message 'Every actions/setup-dotnet step must use an exact global.json contract.'
+    -Message 'Every .NET setup step must use an exact global.json contract.'
 
 Write-Host 'Runner image contract validation passed.' -ForegroundColor Green

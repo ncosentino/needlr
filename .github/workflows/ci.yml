@@ -145,16 +145,9 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Configure writable .NET install directory
-      if: needs.changes.outputs.source_required == 'true'
-      shell: bash
-      run: |
-        echo "DOTNET_INSTALL_DIR=$RUNNER_TEMP/dotnet" >> "$GITHUB_ENV"
-        echo "$RUNNER_TEMP/dotnet" >> "$GITHUB_PATH"
-
     - name: Setup .NET
       if: needs.changes.outputs.source_required == 'true'
-      uses: actions/setup-dotnet@v4
+      uses: ./.github/actions/setup-dotnet
       with:
         global-json-file: global.json
 
@@ -186,6 +179,11 @@ jobs:
       if: needs.changes.outputs.source_required == 'true'
       shell: pwsh
       run: scripts/test-runner-image.ps1
+
+    - name: Validate runner profile contract
+      if: needs.changes.outputs.source_required == 'true'
+      shell: pwsh
+      run: scripts/test-runner-profile.ps1
 
     - name: Restore
       if: needs.changes.outputs.source_required == 'true'
@@ -242,16 +240,9 @@ jobs:
       with:
         fetch-depth: 0 # Needed for NBGV / SourceLink / deterministic builds
 
-    - name: Configure writable .NET install directory
-      if: needs.changes.outputs.source_required == 'true'
-      shell: bash
-      run: |
-        echo "DOTNET_INSTALL_DIR=$RUNNER_TEMP/dotnet" >> "$GITHUB_ENV"
-        echo "$RUNNER_TEMP/dotnet" >> "$GITHUB_PATH"
-
     - name: Setup .NET
       if: needs.changes.outputs.source_required == 'true'
-      uses: actions/setup-dotnet@v4
+      uses: ./.github/actions/setup-dotnet
       with:
         global-json-file: global.json
 
@@ -436,16 +427,9 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Configure writable .NET install directory
-      if: needs.changes.outputs.source_required == 'true'
-      shell: bash
-      run: |
-        echo "DOTNET_INSTALL_DIR=$RUNNER_TEMP/dotnet" >> "$GITHUB_ENV"
-        echo "$RUNNER_TEMP/dotnet" >> "$GITHUB_PATH"
-
     - name: Setup .NET
       if: needs.changes.outputs.source_required == 'true'
-      uses: actions/setup-dotnet@v4
+      uses: ./.github/actions/setup-dotnet
       with:
         global-json-file: global.json
 
@@ -502,16 +486,9 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Configure writable .NET install directory
-      if: needs.changes.outputs.source_required == 'true'
-      shell: bash
-      run: |
-        echo "DOTNET_INSTALL_DIR=$RUNNER_TEMP/dotnet" >> "$GITHUB_ENV"
-        echo "$RUNNER_TEMP/dotnet" >> "$GITHUB_PATH"
-
     - name: Setup .NET 10
       if: needs.changes.outputs.source_required == 'true'
-      uses: actions/setup-dotnet@v4
+      uses: ./.github/actions/setup-dotnet
       with:
         global-json-file: global.json
 
@@ -572,16 +549,9 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Configure writable .NET install directory
-      if: needs.changes.outputs.source_required == 'true'
-      shell: bash
-      run: |
-        echo "DOTNET_INSTALL_DIR=$RUNNER_TEMP/dotnet" >> "$GITHUB_ENV"
-        echo "$RUNNER_TEMP/dotnet" >> "$GITHUB_PATH"
-
     - name: Setup .NET 10
       if: needs.changes.outputs.source_required == 'true'
-      uses: actions/setup-dotnet@v4
+      uses: ./.github/actions/setup-dotnet
       with:
         global-json-file: global.json
 
