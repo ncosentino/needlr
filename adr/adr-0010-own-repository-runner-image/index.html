@@ -4833,6 +4833,34 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#outcome-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Outcome Notes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Outcome Notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2026-07-29-initial-image-publication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2026-07-29 - initial image publication
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#references" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4986,6 +5014,14 @@ must publish a digest before the profile PR can be created.</p>
 both Native AOT jobs, documentation generation, and a non-publishing release dry run.
 PitCrew rollout evidence must report the approved target image and preserve the existing
 Needlr capacity.</p>
+<h2 id="outcome-notes">Outcome Notes<a class="headerlink" href="#outcome-notes" title="Permanent link">&para;</a></h2>
+<h3 id="2026-07-29-initial-image-publication">2026-07-29 - initial image publication<a class="headerlink" href="#2026-07-29-initial-image-publication" title="Permanent link">&para;</a></h3>
+<p>Trusted <code>main</code> published the initial Linux amd64 image at:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>ghcr.io/ncosentino/needlr-runner@sha256:233a06905fc35312fe73099d12e93bf496ac1b98dd19a0482be000c12d7b4461
+</span></code></pre></div>
+<p>The package permits anonymous digest retrieval. The separately reviewed
+<code>.pitcrew/runner-profile.json</code> pins that identity and preserves Needlr's existing
+one-worker capacity.</p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
 <li>ADR-0009 records the staged release publication model whose preparation job benefits

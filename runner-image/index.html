@@ -4816,10 +4816,11 @@ validation requires Docker:</p>
 <li>the workflow captures the immutable registry manifest digest and uploads a
   <code>needlr-runner-publication</code> record.</li>
 </ul>
-<p>GHCR creates a new container package as private. After the first trusted publication, a
-repository owner must make <code>needlr-runner</code> public once in GitHub package settings (or
-through the package API) and verify an unauthenticated digest pull. Workflows and PitCrew
-profiles then deploy by digest, never by a mutable tag.</p>
+<p>The initial trusted publication produced:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>ghcr.io/ncosentino/needlr-runner@sha256:233a06905fc35312fe73099d12e93bf496ac1b98dd19a0482be000c12d7b4461
+</span></code></pre></div>
+<p>Anonymous manifest retrieval succeeds for that digest. Workflows and PitCrew profiles
+deploy by digest, never by a mutable tag.</p>
 <h2 id="bootstrap-sequence">Bootstrap Sequence<a class="headerlink" href="#bootstrap-sequence" title="Permanent link">&para;</a></h2>
 <p>Image publication and profile activation require two reviewed repository changes:</p>
 <ol>
@@ -4837,9 +4838,29 @@ two-PR sequence is intentional.</p>
 <p>PitCrew automatically adds the profile name as a routing label. A profile named
 <code>needlr-ci</code> therefore satisfies jobs whose <code>runs-on</code> value is <code>needlr-ci</code>, even when
 GitHub default labels are disabled.</p>
-<p>The activation command must replay the existing Needlr capacity rather than guessing it.
-The exact command is documented with the digest-pinning PR after reading the host's
-non-secret PitCrew state.</p>
+<p>Needlr's existing capacity is one worker. On the Zephyr host, run from the PitCrew
+checkout:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">.\</span><span class="n">Setup-Runner</span><span class="p">.</span><span class="n">ps1</span> <span class="p">`</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">-ProfilePath</span> <span class="p">&lt;</span><span class="n">needlr-checkout</span><span class="p">&gt;\.</span><span class="n">pitcrew</span><span class="p">\</span><span class="n">runner-profile</span><span class="p">.</span><span class="n">json</span> <span class="p">`</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">-Repos</span> <span class="n">https</span><span class="p">://</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">ncosentino</span><span class="p">/</span><span class="n">needlr</span><span class="p">=</span><span class="n">1</span>
+</span></code></pre></div>
+<p>This creates a separate <code>needlr-ci</code> manager and does not change the existing
+general-purpose profile or Foundry capacity.</p>
+<p>Confirm the specialized runner is online before changing repository routing:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">gh</span> <span class="n">api</span> <span class="n">repos</span><span class="p">/</span><span class="n">ncosentino</span><span class="p">/</span><span class="n">needlr</span><span class="p">/</span><span class="n">actions</span><span class="p">/</span><span class="n">runners</span> <span class="p">`</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="p">-</span><span class="n">-jq</span> <span class="s1">&#39;.runners[] | select(.labels[].name == &quot;needlr-ci&quot;)&#39;</span>
+</span></code></pre></div>
+<p>Then route trusted Linux jobs:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">gh</span> <span class="n">variable</span> <span class="nb">set </span><span class="n">CI_RUNNER</span> <span class="p">`</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="p">-</span><span class="n">-repo</span> <span class="n">ncosentino</span><span class="p">/</span><span class="n">needlr</span> <span class="p">`</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="p">-</span><span class="n">-body</span> <span class="n">needlr-ci</span>
+</span></code></pre></div>
+<p>Run a full CI workflow and confirm <code>preflight</code>, build/test, package validation, both AOT
+jobs, and documentation use a runner carrying the <code>needlr-ci</code> label. The conditional
+setup action must report that SDK <code>10.0.302</code> is already installed.</p>
+<p>Only after the specialized route is proven should the old default profile stop providing
+Needlr capacity. Replay that profile with its existing non-Needlr repositories and
+counts; do not change Foundry capacity.</p>
 <p>Repository workflows never choose an OCI image or mutate PitCrew. Image activation is an
 operator-approved host operation.</p>
 <h2 id="updating-the-image">Updating the Image<a class="headerlink" href="#updating-the-image" title="Permanent link">&para;</a></h2>
