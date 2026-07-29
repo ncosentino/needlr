@@ -34,3 +34,8 @@ PitCrew workers are socketless Linux containers. Workloads requiring Docker,
 service containers, Testcontainers, Windows, or macOS remain on an appropriate
 hosted or isolated runner profile. Needlr's Windows and MAUI jobs therefore
 continue using native GitHub-hosted runners.
+
+Needlr also publishes a repository-owned `needlr-ci` image profile with the exact
+.NET SDK and Native AOT prerequisites. See
+[Repository-Owned Runner Image](runner-image.md) for publication, activation, update,
+hosted fallback, and rollback.

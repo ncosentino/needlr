@@ -17,6 +17,7 @@ on:
       - 'src/Examples/Maui/**'
       - 'src/NexusLabs.Needlr.Generators/**'
       - 'src/NexusLabs.Needlr.Roslyn.Shared/**'
+      - 'global.json'
       - '.github/workflows/maui-example.yml'
       - 'scripts/build-maui-example.ps1'
   pull_request:
@@ -27,6 +28,7 @@ on:
       - 'src/Examples/Maui/**'
       - 'src/NexusLabs.Needlr.Generators/**'
       - 'src/NexusLabs.Needlr.Roslyn.Shared/**'
+      - 'global.json'
       - '.github/workflows/maui-example.yml'
       - 'scripts/build-maui-example.ps1'
 
@@ -48,8 +50,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            10.0.x
+          global-json-file: global.json
 
       - name: Install MAUI workloads
         run: dotnet workload install maui-android maui-windows

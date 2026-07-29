@@ -11,7 +11,6 @@ on:
 # never restore, build, or test: retrying a failed destination replays only that
 # destination against the artifacts prepared earlier in this run.
 env:
-  DOTNET_VERSION: '10.0.x'
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -106,7 +105,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        global-json-file: global.json
 
     - name: Add .NET global tools to PATH
       run: echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
@@ -334,7 +333,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        global-json-file: global.json
 
     - name: Download prepared packages
       uses: actions/download-artifact@v4
@@ -392,7 +391,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        global-json-file: global.json
 
     - name: Download prepared packages
       uses: actions/download-artifact@v4

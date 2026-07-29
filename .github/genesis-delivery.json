@@ -49,6 +49,16 @@
   "componentWorkflows": [
     {
       "source": "needlr",
+      "path": ".github/workflows/runner-image.yml",
+      "roles": [
+        "draft-optional",
+        "post-merge"
+      ],
+      "draftBehavior": "full",
+      "requiredChecks": []
+    },
+    {
+      "source": "needlr",
       "path": ".github/workflows/maui-example.yml",
       "roles": [
         "draft-optional"

@@ -14,7 +14,6 @@ on:
         default: true
 
 env:
-  DOTNET_VERSION: '9.0.x'
   NODE_VERSION: '20'
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
@@ -66,7 +65,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: ide-extensions/global.json
 
       - name: Update version in csproj
         shell: pwsh
@@ -77,10 +76,12 @@ jobs:
           Set-Content $csproj $content
 
       - name: Restore
-        run: dotnet restore ide-extensions/visualstudio/NeedlrCodeLens/NeedlrCodeLens.csproj
+        working-directory: ide-extensions
+        run: dotnet restore visualstudio/NeedlrCodeLens/NeedlrCodeLens.csproj
 
       - name: Build
-        run: dotnet build ide-extensions/visualstudio/NeedlrCodeLens/NeedlrCodeLens.csproj --configuration Release --no-restore
+        working-directory: ide-extensions
+        run: dotnet build visualstudio/NeedlrCodeLens/NeedlrCodeLens.csproj --configuration Release --no-restore
 
       - name: Rename VSIX with version
         shell: pwsh
@@ -105,7 +106,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: ide-extensions/global.json
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
@@ -119,10 +120,12 @@ jobs:
           Set-Content $manifest $content
 
       - name: Restore
-        run: dotnet restore ide-extensions/visualstudio/NeedlrToolsExtension/NeedlrToolsExtension.csproj
+        working-directory: ide-extensions
+        run: dotnet restore visualstudio/NeedlrToolsExtension/NeedlrToolsExtension.csproj
 
       - name: Build with MSBuild
-        run: msbuild ide-extensions/visualstudio/NeedlrToolsExtension/NeedlrToolsExtension.csproj /p:Configuration=Release /p:DeployExtension=false
+        working-directory: ide-extensions
+        run: msbuild visualstudio/NeedlrToolsExtension/NeedlrToolsExtension.csproj /p:Configuration=Release /p:DeployExtension=false
 
       - name: Rename VSIX with version
         shell: pwsh

@@ -3,6 +3,7 @@
 ### Changed
 
 - Release publication is now staged. `release.yml` verifies the same-commit `main` CI run, prepares a release candidate once, and hands digest-verified artifacts to separate NuGet.org, GitHub Packages, documentation, and GitHub Release jobs. Publication jobs never restore, build, or test, so retrying a failed destination replays only that destination instead of repeating validation that already passed for the exact commit. Every packaged file is bound to its source commit and validating CI run by `release-manifest.json`, and each publication job re-verifies that manifest before its irreversible step. See ADR-0009 and `docs/releasing.md`.
+- Needlr now pins .NET SDK `10.0.302` and validates a digest-pinned, repository-owned Linux runner image on pull requests. Trusted `main` publishes commit-tagged images to `ghcr.io/ncosentino/needlr-runner` and records the immutable manifest digest for a separately reviewed PitCrew profile rollout. Existing hosted and general-purpose runner routes remain unchanged until that profile is activated.
 
 ## [0.0.3-alpha.3] - 2026-07-28
 
