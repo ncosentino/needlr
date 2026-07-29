@@ -6,11 +6,16 @@ on:
       - 'v*'    # e.g., v1.2.3 or v1.2.3-rc.1
   workflow_dispatch:  # allow manual trigger; select the tag ref in the UI or --ref with gh CLI
 
+# Release delivery is staged. `prepare` performs every reversible operation once and
+# hands immutable, digest-verified artifacts to the publication jobs. Publication jobs
+# never restore, build, or test: retrying a failed destination replays only that
+# destination against the artifacts prepared earlier in this run.
 env:
   DOTNET_VERSION: '10.0.x'
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  RELEASE_ARTIFACT_RETENTION_DAYS: 7
 
 jobs:
   verify-main-ci:
@@ -20,9 +25,13 @@ jobs:
     permissions:
       actions: read
       contents: read
+    outputs:
+      run-id: ${{ steps.main-ci.outputs.run-id }}
+      run-url: ${{ steps.main-ci.outputs.run-url }}
 
     steps:
     - name: Wait for successful same-commit main CI
+      id: main-ci
       uses: actions/github-script@v8
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -55,7 +64,10 @@ jobs:
                   if (run.conclusion !== 'success') {
                     core.setFailed(
                       `Main CI must succeed before release: ${run.html_url}`);
+                    return;
                   }
+                  core.setOutput('run-id', String(run.id));
+                  core.setOutput('run-url', run.html_url);
                   return;
                 }
               } else {
@@ -72,15 +84,17 @@ jobs:
             `Timed out waiting for successful main CI on ${context.sha}.` +
             `${lastRun ? ` Last observed run: ${lastRun.html_url}` : ''}`);
 
-  publish:
+  prepare:
+    name: Prepare release
     needs: verify-main-ci
     # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
     runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
-    environment: release
+    timeout-minutes: 90
     permissions:
-      contents: write
-      id-token: write
-      packages: write
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      package-version: ${{ steps.version.outputs.package-version }}
 
     steps:
     - name: Checkout
@@ -105,18 +119,35 @@ jobs:
           --version 3.7.115
         echo "$RUNNER_TEMP/nbgv" >> "$GITHUB_PATH"
 
+    # Publication depends on this step proving that the workflow ref is a release tag,
+    # that verify-main-ci reported a validated run, and that the checked-out commit is
+    # the commit that run validated.
     - name: Validate release version
       id: version
       shell: bash
+      env:
+        VALIDATED_CI_RUN_ID: ${{ needs.verify-main-ci.outputs.run-id }}
+        VALIDATED_CI_RUN_URL: ${{ needs.verify-main-ci.outputs.run-url }}
       run: |
         if [[ "${GITHUB_REF_TYPE}" != "tag" ]]; then
           echo "::error::Run the release workflow from a version tag."
           exit 1
         fi
 
+        if [[ -z "${VALIDATED_CI_RUN_ID}" ]]; then
+          echo "::error::The main CI verification job did not report a validated run."
+          exit 1
+        fi
+
         TAG="${GITHUB_REF_NAME}"
         if [[ ! "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
           echo "::error::Tag '${TAG}' is not a supported semantic version tag."
+          exit 1
+        fi
+
+        HEAD_SHA="$(git rev-parse HEAD)"
+        if [[ "${HEAD_SHA}" != "${GITHUB_SHA}" ]]; then
+          echo "::error::Checked out commit '${HEAD_SHA}' is not the validated release commit '${GITHUB_SHA}'."
           exit 1
         fi
 
@@ -135,98 +166,68 @@ jobs:
 
         echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
         echo "package-version=${NUGET_VERSION}" >> "$GITHUB_OUTPUT"
+        echo "Releasing ${VERSION} from ${GITHUB_SHA}, validated by ${VALIDATED_CI_RUN_URL}."
 
+    # Restore, build, and the full test suite already succeeded for this exact commit
+    # in the main CI run verified above. The release path therefore builds only what
+    # packaging and API documentation generation require, and never repeats that
+    # validation.
     - name: Restore
       run: dotnet restore src/NexusLabs.Needlr.slnx
 
     - name: Build (Release)
       run: dotnet build src/NexusLabs.Needlr.slnx --configuration Release --no-restore -p:PublicRelease=true
 
-    - name: Test
+    - name: Pack release packages
+      shell: pwsh
       run: |
-        failed=0
-        while IFS= read -r proj; do
-          echo "::group::Testing $(basename "$proj")"
-          dotnet test "$proj" \
-            --configuration Release \
-            --no-build \
-            --verbosity normal \
-            --blame-hang \
-            --blame-hang-dump-type none \
-            --blame-hang-timeout 5m \
-            --filter "Category!=Integration" \
-            --collect:"XPlat Code Coverage" \
-            --results-directory coverage || failed=1
-          echo "::endgroup::"
-        done < <(find src -name '*.csproj' -path '*Tests*' | sort)
-        exit $failed
+        scripts/pack-release-packages.ps1 `
+          -OutputDirectory artifacts/packages `
+          -NoBuild `
+          -PublicRelease
 
-    - name: Install ReportGenerator
-      run: dotnet tool install -g dotnet-reportgenerator-globaltool
-
-    - name: Generate Coverage Reports
+    - name: Write release manifest
+      shell: pwsh
+      env:
+        RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        RELEASE_PACKAGE_VERSION: ${{ steps.version.outputs.package-version }}
+        VALIDATED_CI_RUN_ID: ${{ needs.verify-main-ci.outputs.run-id }}
       run: |
-        reportgenerator \
-          -reports:"coverage/**/coverage.cobertura.xml" \
-          -targetdir:"coverage/report" \
-          -reporttypes:"Html;JsonSummary;MarkdownSummaryGithub;Badges"
+        scripts/write-release-manifest.ps1 `
+          -PackageDirectory artifacts/packages `
+          -Version $env:RELEASE_VERSION `
+          -PackageVersion $env:RELEASE_PACKAGE_VERSION `
+          -SourceSha $env:GITHUB_SHA `
+          -ProducingRunId $env:GITHUB_RUN_ID `
+          -ProducingWorkflow 'release.yml' `
+          -ValidatedCiRunId $env:VALIDATED_CI_RUN_ID
 
-    # Pack only the subset: NexusLabs.Needlr*
-    - name: Pack subset (NexusLabs.Needlr*)
-      shell: bash
+    - name: Verify release candidate
+      shell: pwsh
+      env:
+        RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        RELEASE_PACKAGE_VERSION: ${{ steps.version.outputs.package-version }}
+        VALIDATED_CI_RUN_ID: ${{ needs.verify-main-ci.outputs.run-id }}
       run: |
-        mkdir -p artifacts/packages
-        mapfile -t PACK_PROJECTS < <(find src -name 'NexusLabs.Needlr*.csproj' \
-          ! -name '*.Tests.csproj' \
-          ! -name '*.Benchmarks.csproj' \
-          ! -name '*IntegrationTests.csproj' \
-          | sort)
-        if [ ${#PACK_PROJECTS[@]} -eq 0 ]; then
-          echo "No matching projects found (pattern: NexusLabs.Needlr*)."
-          exit 1
-        fi
-
-        echo "Packing projects:"
-        printf ' - %s\n' "${PACK_PROJECTS[@]}"
-
-        for csproj in "${PACK_PROJECTS[@]}"; do
-          dotnet pack "$csproj" \
-            --configuration Release \
-            --no-build \
-            -p:PublicRelease=true \
-            --output artifacts/packages
-        done
+        scripts/verify-release-manifest.ps1 `
+          -PackageDirectory artifacts/packages `
+          -ExpectedVersion $env:RELEASE_VERSION `
+          -ExpectedPackageVersion $env:RELEASE_PACKAGE_VERSION `
+          -ExpectedSourceSha $env:GITHUB_SHA `
+          -ExpectedProducingRunId $env:GITHUB_RUN_ID `
+          -ExpectedValidatedCiRunId $env:VALIDATED_CI_RUN_ID
 
     - name: List packages
       run: ls -la artifacts/packages
 
-    - name: Validate package versions
-      shell: pwsh
-      run: |
-        $expectedVersion = '${{ steps.version.outputs.package-version }}'
-        $packages = @(
-          Get-ChildItem artifacts/packages -Filter '*.nupkg'
-        )
-        if ($packages.Count -eq 0) {
-          throw 'No NuGet packages were produced.'
-        }
-        foreach ($package in $packages) {
-          if (-not $package.BaseName.EndsWith(
-            ".$expectedVersion",
-            [System.StringComparison]::OrdinalIgnoreCase)) {
-            throw "Package '$($package.Name)' does not use expected version '$expectedVersion'."
-          }
-        }
-
     - name: Extract Release Notes from CHANGELOG
-      id: release-notes
       shell: bash
+      env:
+        RELEASE_VERSION: ${{ steps.version.outputs.version }}
       run: |
-        VERSION="${GITHUB_REF_NAME#v}"  # v0.0.2-alpha.1 → 0.0.2-alpha.1
-        
         # Extract section between this version header and next version header
-        NOTES=$(awk -v ver="$VERSION" '
-          /^## \[/ { 
+        NOTES=$(awk -v ver="$RELEASE_VERSION" '
+          /^## \[/ {
             if (found) exit
             if (index($0, "[" ver "]")) {
               found=1
@@ -236,21 +237,15 @@ jobs:
           found && /^\[[^]]+\]: / { exit }
           found { print }
         ' CHANGELOG.md)
-        
-        if [ -z "$NOTES" ]; then
-          echo "::warning::No changelog entry found for version $VERSION"
-          NOTES="Release $VERSION - see CHANGELOG.md for details."
-        fi
-        
-        # Output for GitHub Release body (multiline)
-        {
-          echo "notes<<CHANGELOG_EOF"
-          echo "$NOTES"
-          echo "CHANGELOG_EOF"
-        } >> "$GITHUB_OUTPUT"
 
-    # Build documentation before publishing packages so Python setup and
-    # documentation-build failures happen before irreversible publication.
+        if [ -z "$NOTES" ]; then
+          echo "::warning::No changelog entry found for version $RELEASE_VERSION"
+          NOTES="Release $RELEASE_VERSION - see CHANGELOG.md for details."
+        fi
+
+        mkdir -p artifacts
+        printf '%s\n' "$NOTES" > artifacts/release-notes.md
+
     - name: Setup Python for MkDocs
       uses: actions/setup-python@v5
       with:
@@ -263,9 +258,9 @@ jobs:
       run: dotnet tool restore
 
     - name: Generate Versioned API Documentation
-      run: |
-        VERSION="${GITHUB_REF_NAME#v}"  # v0.0.2-alpha.1 → 0.0.2-alpha.1
-        ./scripts/generate-versioned-api-docs.sh "$VERSION"
+      env:
+        RELEASE_VERSION: ${{ steps.version.outputs.version }}
+      run: ./scripts/generate-versioned-api-docs.sh "$RELEASE_VERSION"
 
     - name: Generate Dev API Documentation
       run: ./scripts/generate-api-docs.sh docs/api/dev --update-index
@@ -284,15 +279,83 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: python scripts/build-sitemap-index.py ./site
 
-    - name: Add Coverage Report to Site
+    - name: Restrict deploy to release.yml-owned paths
       run: |
-        mkdir -p site/coverage
-        cp -r coverage/report/* site/coverage/
+        # release.yml owns: /api/stable/*, /api/v<this-version>/*, home,
+        # feature pages, assets, /api/index.html.
+        # ci.yml owns: /api/dev/*, /coverage/*.
+        #
+        # Delete the ci.yml-owned paths from our build output so the
+        # peaceiris deploy (with keep_files: true) preserves whatever the
+        # last ci.yml run wrote to those paths on gh-pages. This ensures
+        # /api/dev/ and /coverage/ keep reflecting the latest main commit --
+        # which, for a release tag, is this same validated commit.
+        #
+        # See also: ci.yml has the symmetric "rm -rf ./site/api/stable
+        # ./site/api/v*" so each workflow only writes to its own slices.
+        rm -rf ./site/api/dev ./site/coverage
+        echo "Restricted ./site/ to release.yml-owned paths."
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    # Everything above is reversible. The publication jobs below consume exactly
+    # these artifacts, so a failed or stalled destination never discards them.
+    - name: Upload release packages
+      uses: actions/upload-artifact@v4
       with:
-        node-version: '24'
+        name: release-packages
+        path: |
+          artifacts/packages
+          artifacts/release-notes.md
+        if-no-files-found: error
+        retention-days: ${{ env.RELEASE_ARTIFACT_RETENTION_DAYS }}
+
+    - name: Upload release documentation site
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-documentation-site
+        path: site/
+        if-no-files-found: error
+        retention-days: ${{ env.RELEASE_ARTIFACT_RETENTION_DAYS }}
+
+  publish-nuget:
+    name: Publish to NuGet.org
+    needs: [verify-main-ci, prepare]
+    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
+    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    timeout-minutes: 30
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+    - name: Checkout verification scripts
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Download prepared packages
+      uses: actions/download-artifact@v4
+      with:
+        name: release-packages
+        path: artifacts
+
+    - name: Verify prepared packages
+      shell: pwsh
+      env:
+        RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+        RELEASE_PACKAGE_VERSION: ${{ needs.prepare.outputs.package-version }}
+        VALIDATED_CI_RUN_ID: ${{ needs.verify-main-ci.outputs.run-id }}
+      run: |
+        scripts/verify-release-manifest.ps1 `
+          -PackageDirectory artifacts/packages `
+          -ExpectedVersion $env:RELEASE_VERSION `
+          -ExpectedPackageVersion $env:RELEASE_PACKAGE_VERSION `
+          -ExpectedSourceSha $env:GITHUB_SHA `
+          -ExpectedProducingRunId $env:GITHUB_RUN_ID `
+          -ExpectedValidatedCiRunId $env:VALIDATED_CI_RUN_ID
 
     - name: Authenticate to NuGet.org
       id: nuget-login
@@ -300,6 +363,8 @@ jobs:
       with:
         user: ncosentino
 
+    # --skip-duplicate keeps this destination idempotent, so retrying the job
+    # after a partial push republishes nothing that already exists.
     - name: Push to NuGet.org
       env:
         NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
@@ -309,55 +374,115 @@ jobs:
           --source https://api.nuget.org/v3/index.json \
           --skip-duplicate
 
+  publish-github-packages:
+    name: Publish to GitHub Packages
+    needs: [verify-main-ci, prepare]
+    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
+    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    timeout-minutes: 30
+    environment: release
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout verification scripts
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Download prepared packages
+      uses: actions/download-artifact@v4
+      with:
+        name: release-packages
+        path: artifacts
+
+    - name: Verify prepared packages
+      shell: pwsh
+      env:
+        RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+        RELEASE_PACKAGE_VERSION: ${{ needs.prepare.outputs.package-version }}
+        VALIDATED_CI_RUN_ID: ${{ needs.verify-main-ci.outputs.run-id }}
+      run: |
+        scripts/verify-release-manifest.ps1 `
+          -PackageDirectory artifacts/packages `
+          -ExpectedVersion $env:RELEASE_VERSION `
+          -ExpectedPackageVersion $env:RELEASE_PACKAGE_VERSION `
+          -ExpectedSourceSha $env:GITHUB_SHA `
+          -ExpectedProducingRunId $env:GITHUB_RUN_ID `
+          -ExpectedValidatedCiRunId $env:VALIDATED_CI_RUN_ID
+
     - name: Push to GitHub Packages
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_PACKAGES_SOURCE: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
       run: |
         dotnet nuget push "artifacts/packages/*.nupkg" \
           --api-key "$GITHUB_TOKEN" \
-          --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+          --source "$GITHUB_PACKAGES_SOURCE" \
           --skip-duplicate
 
-    - name: Restrict deploy to release.yml-owned paths
-      run: |
-        # release.yml owns: /api/stable/*, /api/v<this-version>/*, home,
-        # feature pages, assets, /api/index.html.
-        # ci.yml owns: /api/dev/*, /coverage/*.
-        #
-        # Delete the ci.yml-owned paths from our build output so the
-        # peaceiris deploy below (with keep_files: true) preserves whatever
-        # the last ci.yml run wrote to those paths on gh-pages. This ensures
-        # /api/dev/ always reflects the latest main commit, not whatever
-        # the release tag's commit happened to have.
-        #
-        # See also: ci.yml has the symmetric "rm -rf ./site/api/stable
-        # ./site/api/v*" so each workflow only writes to its own slices.
-        rm -rf ./site/api/dev
-        echo "Restricted ./site/ to release.yml-owned paths."
+  deploy-documentation:
+    name: Deploy documentation
+    # Documentation announces a shipped release, so it follows the registries the
+    # way the previous single publication job did. Each destination stays
+    # independently retryable because prepared artifacts outlive every attempt.
+    needs: [prepare, publish-nuget, publish-github-packages]
+    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
+    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    timeout-minutes: 30
+    environment: release
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout repository deployment scripts
+      uses: actions/checkout@v4
+      with:
+        path: source
+
+    - name: Download prepared documentation site
+      uses: actions/download-artifact@v4
+      with:
+        name: release-documentation-site
+        path: source/site
 
     - name: Deploy Documentation
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./site
+        publish_dir: ./source/site
         keep_files: true
 
     # gh-pages now holds the complete merged site (this run's own paths plus
-    # whatever ci.yml last wrote to /api/dev, preserved by keep_files above)
-    # -- check it out fresh and mirror that whole tree to Cloudflare Pages,
-    # rather than deploying our own partial ./site/.
+    # whatever ci.yml last wrote to /api/dev and /coverage, preserved by
+    # keep_files above) -- check it out fresh and mirror that whole tree to
+    # Cloudflare Pages, rather than deploying our own partial site artifact.
     - name: Checkout gh-pages for Cloudflare mirror
       uses: actions/checkout@v4
       with:
         ref: gh-pages
         path: gh-pages-mirror
 
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
     # Cloudflare Pages allows at most 20,000 files per deployment. Keep only
     # the newest API version archives (and rewrite versions.json to match);
     # older archives stay in gh-pages history but are not published here.
     # Also removes the checkout's .git so it is not uploaded.
     - name: Trim mirror before Cloudflare deploy
-      run: python scripts/trim-cloudflare-mirror.py gh-pages-mirror --keep 20
+      run: python source/scripts/trim-cloudflare-mirror.py gh-pages-mirror --keep 20
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24'
 
     - name: Deploy Documentation to Cloudflare Pages
       uses: cloudflare/wrangler-action@v4
@@ -377,15 +502,55 @@ jobs:
     # Generated docs now live exclusively on the gh-pages branch. Historical
     # per-version /api/v<N>/ directories are preserved forever because
     # nothing in either workflow ever deletes or overwrites them on
-    # gh-pages — peaceiris's keep_files: true handles that guarantee as
+    # gh-pages -- peaceiris's keep_files: true handles that guarantee as
     # long as neither workflow writes to those paths in its ./site/ output.
+
+  create-release:
+    name: Create GitHub Release
+    needs:
+      - verify-main-ci
+      - prepare
+      - publish-nuget
+      - publish-github-packages
+      - deploy-documentation
+    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
+    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    timeout-minutes: 20
+    environment: release
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout verification scripts
+      uses: actions/checkout@v4
+
+    - name: Download prepared packages
+      uses: actions/download-artifact@v4
+      with:
+        name: release-packages
+        path: artifacts
+
+    - name: Verify prepared packages
+      shell: pwsh
+      env:
+        RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+        RELEASE_PACKAGE_VERSION: ${{ needs.prepare.outputs.package-version }}
+        VALIDATED_CI_RUN_ID: ${{ needs.verify-main-ci.outputs.run-id }}
+      run: |
+        scripts/verify-release-manifest.ps1 `
+          -PackageDirectory artifacts/packages `
+          -ExpectedVersion $env:RELEASE_VERSION `
+          -ExpectedPackageVersion $env:RELEASE_PACKAGE_VERSION `
+          -ExpectedSourceSha $env:GITHUB_SHA `
+          -ExpectedProducingRunId $env:GITHUB_RUN_ID `
+          -ExpectedValidatedCiRunId $env:VALIDATED_CI_RUN_ID
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ github.ref_name }}
         name: Release ${{ github.ref_name }}
-        body: ${{ steps.release-notes.outputs.notes }}
+        body_path: artifacts/release-notes.md
         draft: false
         prerelease: ${{ contains(github.ref_name, '-') }}
         files: |

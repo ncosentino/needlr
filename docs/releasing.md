@@ -36,8 +36,9 @@ A Needlr release consists of:
    `## [x.y.z-label.N] - YYYY-MM-DD`.
 3. The same version in `version.json`.
 4. A lightweight `v<version>` tag on the squash-merge commit.
-5. Automated build, test, packaging, publication, release creation, and
-   documentation deployment from `.github/workflows/release.yml`.
+5. Automated packaging, publication, release creation, and documentation
+   deployment from `.github/workflows/release.yml`, gated on the successful
+   `main` CI run for that exact commit.
 
 The version, changelog, analyzer files, and documentation are reviewed in the
 preparation pull request. `scripts/release.ps1` only validates and tags the
@@ -374,24 +375,87 @@ identity are release blockers rather than warnings.
 
 ## What the tag triggers
 
-Pushing `v<version>` starts `.github/workflows/release.yml`.
+Pushing `v<version>` starts `.github/workflows/release.yml`. The workflow is
+staged: one verification job, one reversible preparation job, and four
+publication jobs that each own a single irreversible destination.
 
-Before publication, the workflow:
+| Job | Kind | Responsibility |
+|-----|------|----------------|
+| `verify-main-ci` | verification | Finds the `ci.yml` push run for `main` whose SHA equals the tag SHA, waits for it, and fails unless its conclusion is `success`. |
+| `prepare` | reversible | Validates the tag, builds, packs, writes and verifies the release manifest, extracts release notes, builds the documentation site, and uploads both artifacts. |
+| `publish-nuget` | irreversible | Verifies the prepared candidate and pushes it to NuGet.org through trusted publishing. |
+| `publish-github-packages` | irreversible | Verifies the prepared candidate and pushes it to GitHub Packages. |
+| `deploy-documentation` | irreversible | Deploys the prepared documentation site to `gh-pages` and mirrors it to Cloudflare Pages. |
+| `create-release` | irreversible | Verifies the prepared candidate and creates the GitHub Release with the prepared notes and package assets. |
 
-1. Finds the `ci.yml` push run for `main` whose SHA equals the tag SHA.
-2. Waits for that run to complete.
-3. Fails unless its conclusion is `success`.
-4. Checks that the tag version equals NBGV's semantic version.
-5. Checks that the exact changelog section exists.
-6. Restores, builds, tests, packs, validates package versions, and builds
-   documentation.
+`prepare` completes every gate before the first irreversible operation:
 
-After those gates, trusted publishing:
+1. The workflow ref is a supported `v<major>.<minor>.<patch>[-prerelease]` tag.
+2. `verify-main-ci` reported a validated run for that commit.
+3. The checked-out commit is that validated release commit.
+4. The tag version equals NBGV's semantic version.
+5. The exact changelog section exists.
+6. Every packed file carries the expected package version.
 
-- exchanges the workflow OIDC identity for a short-lived NuGet.org key;
-- pushes packages to NuGet.org and GitHub Packages;
-- deploys stable and versioned API documentation;
-- creates the GitHub Release and attaches package artifacts.
+The test suite does not run again in the release path. `verify-main-ci` already
+proves that this exact commit passed `main` CI, which builds, tests, validates
+packages, and compiles both AOT samples. Repeating that work would only widen
+the window in which a transient runner failure discards validated work.
+
+### The release candidate
+
+`prepare` uploads two artifacts, retained for the number of days configured by
+`RELEASE_ARTIFACT_RETENTION_DAYS` in the workflow:
+
+| Artifact | Contents |
+|----------|----------|
+| `release-packages` | `packages/*.nupkg`, `packages/*.snupkg`, `packages/release-manifest.json`, and `release-notes.md` |
+| `release-documentation-site` | The built documentation site, restricted to `release.yml`-owned paths |
+
+`scripts/write-release-manifest.ps1` writes `release-manifest.json`, which binds
+the candidate to the commit it came from:
+
+```json
+{
+  "schemaVersion": 1,
+  "version": "0.0.3-alpha.3",
+  "packageVersion": "0.0.3-alpha.3",
+  "sourceSha": "e54675a82bb9f186af657fcc0fe3bcc4afa1dcc2",
+  "producingRunId": "30406601340",
+  "producingWorkflow": "release.yml",
+  "validatedCiRunId": "30402851026",
+  "packages": [
+    {
+      "name": "NexusLabs.Needlr.0.0.3-alpha.3.nupkg",
+      "sha256": "9f2c...",
+      "sizeBytes": 120544
+    }
+  ]
+}
+```
+
+Every publication job re-runs `scripts/verify-release-manifest.ps1` before its
+irreversible step. Verification recomputes every digest and rejects a candidate
+that is tampered with, incomplete, carries unlisted files, or whose version,
+commit, producing run, or validated CI run does not match the release the job
+was asked to publish.
+
+`scripts/pack-release-packages.ps1` owns the published project selection, so the
+package set cannot drift between producers, and
+`scripts/test-release-artifacts.ps1` exercises the whole contract in CI
+preflight.
+
+### Retrying a failed publication
+
+Publication jobs never restore, build, or test, so a failed destination costs
+only its own retry. Use **Re-run failed jobs** on the release run: the prepared
+artifacts belong to that run, so the retry re-downloads them, re-verifies the
+manifest, and replays only the destination that failed. Package pushes use
+`--skip-duplicate`, documentation deployment rewrites its own paths, and release
+creation updates the existing release, so retries are idempotent.
+
+Re-running the entire workflow repeats `prepare`. That is safe, and it is the
+correct move only when the prepared artifacts have already expired.
 
 Tag pushes are separate from protected branch updates, so main protection does
 not block release finalization.
@@ -457,6 +521,34 @@ pwsh -NoProfile -File scripts/test-packages.ps1 -NoBuild
 
 Typical causes include missing package metadata, an incorrect analyzer asset
 path, or a transitive dependency exclusion regression.
+
+### A publication job failed
+
+Nothing prepared by the release run is lost. Open the run, choose **Re-run
+failed jobs**, and only the failed destination replays against the artifacts
+`prepare` already produced. Confirm the destination state first. A partially
+pushed package set is safe to push again because both registry destinations use
+`--skip-duplicate`.
+
+### `Manifest <field> is '<actual>' but the release requires '<expected>'`
+
+A publication job was handed a candidate that does not belong to the release it
+is publishing. This normally means the run was re-driven with a different tag or
+that artifacts from another run were substituted. Do not bypass the check.
+Restart the release from the tag so `prepare` rebuilds the candidate for the
+commit being released.
+
+### `Package '<name>' digest is '<actual>' but the manifest records '<expected>'`
+
+The prepared candidate changed after it was verified. Re-run the whole workflow
+so `prepare` produces a fresh candidate, and investigate the runner if the
+digest mismatch repeats.
+
+### `Artifact not found` when retrying a publication job
+
+Release artifacts are retained for the number of days configured by
+`RELEASE_ARTIFACT_RETENTION_DAYS`. After that window, re-run the entire workflow
+for the tag so `prepare` produces the candidate again.
 
 ### The tag exists locally after a failed push
 

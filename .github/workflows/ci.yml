@@ -177,6 +177,11 @@ jobs:
       shell: pwsh
       run: scripts/test-release.ps1
 
+    - name: Validate release artifacts
+      if: needs.changes.outputs.source_required == 'true'
+      shell: pwsh
+      run: scripts/test-release-artifacts.ps1
+
     - name: Restore
       if: needs.changes.outputs.source_required == 'true'
       run: dotnet restore src/NexusLabs.Needlr.slnx
