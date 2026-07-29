@@ -85,6 +85,7 @@ nav:
     - Cross-Generator Plugins: cross-generator-plugins.md
     - IDE Extensions: ide-extensions.md
     - Local CI Runners: local-runners.md
+    - Repository-Owned Runner Image: runner-image.md
     - Releasing Needlr: releasing.md
   - Benchmarks: benchmarks.md
   - Analyzers:
@@ -186,6 +187,7 @@ nav:
     - ADR-0007 Own Graph Source Locations Per Project: adr/adr-0007-own-graph-source-locations-per-project.md
     - ADR-0008 Own a Version-Aware Agent Marketplace: adr/adr-0008-own-version-aware-agent-marketplace.md
     - ADR-0009 Stage Release Publication: adr/adr-0009-stage-release-publication.md
+    - ADR-0010 Own a Repository Runner Image: adr/adr-0010-own-repository-runner-image.md
 
 plugins:
   - search

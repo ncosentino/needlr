@@ -156,7 +156,7 @@ jobs:
       if: needs.changes.outputs.source_required == 'true'
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 10.0.x
+        global-json-file: global.json
 
     - name: Validate delivery contract
       if: needs.changes.outputs.source_required == 'true'
@@ -181,6 +181,11 @@ jobs:
       if: needs.changes.outputs.source_required == 'true'
       shell: pwsh
       run: scripts/test-release-artifacts.ps1
+
+    - name: Validate runner image contract
+      if: needs.changes.outputs.source_required == 'true'
+      shell: pwsh
+      run: scripts/test-runner-image.ps1
 
     - name: Restore
       if: needs.changes.outputs.source_required == 'true'
@@ -248,8 +253,7 @@ jobs:
       if: needs.changes.outputs.source_required == 'true'
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: |
-          10.0.x
+        global-json-file: global.json
 
     - name: Add .NET global tools to PATH
       if: needs.changes.outputs.source_required == 'true'
@@ -443,8 +447,7 @@ jobs:
       if: needs.changes.outputs.source_required == 'true'
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: |
-          10.0.x
+        global-json-file: global.json
 
     - name: Validate CI scope classifier
       if: needs.changes.outputs.source_required == 'true'
@@ -510,7 +513,7 @@ jobs:
       if: needs.changes.outputs.source_required == 'true'
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 10.0.x
+        global-json-file: global.json
 
     - name: Install AOT dependencies
       if: needs.changes.outputs.source_required == 'true'
@@ -580,7 +583,7 @@ jobs:
       if: needs.changes.outputs.source_required == 'true'
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 10.0.x
+        global-json-file: global.json
 
     - name: Install AOT dependencies
       if: needs.changes.outputs.source_required == 'true'
