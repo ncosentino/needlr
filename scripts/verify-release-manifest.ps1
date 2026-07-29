@@ -65,8 +65,8 @@ function Assert-Expected {
     # An explicitly requested but empty expectation means the caller lost a workflow
     # value. Publishing against an unchecked field is never the safer outcome, so this
     # is recorded like every other failure and reported by the aggregate throw below.
-    # Comparing an empty expectation against the manifest afterwards would only repeat
-    # the same problem as a second, less useful message.
+    # Comparing an empty expectation against the manifest would only add a redundant,
+    # less useful message.
     if ([string]::IsNullOrWhiteSpace($Expected)) {
         Add-Failure "Expectation '$Parameter' was requested without a value."
         return

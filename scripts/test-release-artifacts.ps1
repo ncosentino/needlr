@@ -60,6 +60,8 @@ function New-DotnetShimDirectory {
     $workspaces.Add($path)
 
     if ($IsWindows) {
+        # Batch shims stay ASCII, and shell shims stay BOM-free UTF-8, matching the
+        # command shims in test-release.ps1.
         Set-Content -LiteralPath (Join-Path $path 'dotnet.cmd') -Encoding ascii -Value @'
 @echo off
 >>"%NEEDLR_PACK_LOG%" echo %*

@@ -119,7 +119,9 @@ jobs:
           --version 3.7.115
         echo "$RUNNER_TEMP/nbgv" >> "$GITHUB_PATH"
 
-    # The tag must identify exactly the commit whose main CI run was verified above.
+    # Publication depends on this step proving that the workflow ref is a release tag,
+    # that verify-main-ci reported a validated run, and that the checked-out commit is
+    # the commit that run validated.
     - name: Validate release version
       id: version
       shell: bash
