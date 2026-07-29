@@ -48,7 +48,7 @@ jobs:
           fetch-depth: 0 # Needed for NBGV / SourceLink on the referenced library projects
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: ./.github/actions/setup-dotnet
         with:
           global-json-file: global.json
 

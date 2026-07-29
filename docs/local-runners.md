@@ -12,7 +12,7 @@ Provision repository-scoped capacity from a PitCrew checkout:
 
 ```powershell
 .\Setup-Runner.ps1 `
-    -Repos https://github.com/ncosentino/needlr=2
+    -Repos https://github.com/ncosentino/needlr=1
 ```
 
 The workflows use the `CI_RUNNER` repository variable as PitCrew's manual
@@ -38,4 +38,5 @@ continue using native GitHub-hosted runners.
 Needlr also publishes a repository-owned `needlr-ci` image profile with the exact
 .NET SDK and Native AOT prerequisites. See
 [Repository-Owned Runner Image](runner-image.md) for publication, activation, update,
-hosted fallback, and rollback.
+hosted fallback, and rollback. The committed profile pins the public GHCR digest and
+preserves Needlr's existing capacity of one worker.

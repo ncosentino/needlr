@@ -142,6 +142,20 @@ both Native AOT jobs, documentation generation, and a non-publishing release dry
 PitCrew rollout evidence must report the approved target image and preserve the existing
 Needlr capacity.
 
+## Outcome Notes
+
+### 2026-07-29 - initial image publication
+
+Trusted `main` published the initial Linux amd64 image at:
+
+```text
+ghcr.io/ncosentino/needlr-runner@sha256:233a06905fc35312fe73099d12e93bf496ac1b98dd19a0482be000c12d7b4461
+```
+
+The package permits anonymous digest retrieval. The separately reviewed
+`.pitcrew/runner-profile.json` pins that identity and preserves Needlr's existing
+one-worker capacity.
+
 ## References
 
 - ADR-0009 records the staged release publication model whose preparation job benefits

@@ -103,7 +103,7 @@ jobs:
         fetch-tags: true    # ensure tags are available locally
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: ./.github/actions/setup-dotnet
       with:
         global-json-file: global.json
 
@@ -331,7 +331,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: ./.github/actions/setup-dotnet
       with:
         global-json-file: global.json
 
@@ -389,7 +389,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: ./.github/actions/setup-dotnet
       with:
         global-json-file: global.json
 
