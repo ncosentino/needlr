@@ -9,7 +9,6 @@ on:
     types: [submitted, dismissed]
 
 permissions:
-  checks: write
   contents: read
   pull-requests: read
 
@@ -19,7 +18,7 @@ concurrency:
 
 jobs:
   evaluate:
-    name: Evaluate review policy
+    name: Review policy
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
@@ -28,7 +27,7 @@ jobs:
       PR_NUMBER: ${{ github.event.pull_request.number }}
       REVIEW_POLICY: ${{ vars.GENESIS_REVIEW_POLICY || 'none' }}
     steps:
-      - name: Publish review policy check
+      - name: Evaluate review policy
         shell: bash
         run: |
           set -euo pipefail
@@ -39,7 +38,6 @@ jobs:
           author_type="$(jq -r '.user.type' <<<"$pull_request")"
           is_draft="$(jq -r '.draft' <<<"$pull_request")"
           conclusion=success
-          title='Review policy satisfied'
           summary='No author-specific review is required.'
 
           case "$REVIEW_POLICY" in
@@ -83,7 +81,6 @@ jobs:
                   )"
                   if [ "$approval_count" -lt 1 ]; then
                     conclusion=failure
-                    title='Human approval required'
                     summary='Copilot-authored ready pull requests require an OWNER, MEMBER, or COLLABORATOR approval on the current head SHA.'
                   else
                     summary='A trusted human approved the current Copilot-authored head SHA.'
@@ -93,33 +90,11 @@ jobs:
               ;;
             *)
               conclusion=failure
-              title='Unsupported review policy'
               summary="GENESIS_REVIEW_POLICY '$REVIEW_POLICY' is not supported."
               ;;
           esac
 
-          jq -n \
-            --arg name 'Review policy' \
-            --arg head_sha "$head_sha" \
-            --arg conclusion "$conclusion" \
-            --arg title "$title" \
-            --arg summary "$summary" '
-              {
-                name: $name,
-                head_sha: $head_sha,
-                status: "completed",
-                conclusion: $conclusion,
-                output: {
-                  title: $title,
-                  summary: $summary
-                }
-              }
-            ' |
-            gh api \
-              --method POST \
-              "repos/$GH_REPO/check-runs" \
-              --input - >/dev/null
-
+          echo "$summary"
           if [ "$conclusion" != 'success' ]; then
             echo "::error::$summary"
             exit 1
