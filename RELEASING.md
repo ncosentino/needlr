@@ -58,8 +58,12 @@ git push origin refs/tags/v0.0.3-alpha.3
 ```
 
 The tag triggers `.github/workflows/release.yml`. That workflow independently
-requires a successful `ci.yml` push run for the exact tag commit before it can
-publish packages or documentation.
+requires a successful `ci.yml` push run for the exact tag commit, then prepares
+a verified release candidate once and hands it to separate publication jobs for
+NuGet.org, GitHub Packages, documentation, and the GitHub Release. Publication
+never rebuilds or retests the commit, so a failed destination can be re-run on
+its own. See [`docs/releasing.md`](docs/releasing.md) for the full staging and
+retry model.
 
 ## Gates enforced by `scripts/release.ps1`
 
