@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.0.3-alpha.3] - 2026-07-28
+
 ### Added
 
 - **`NexusLabs.Needlr.Generators` — NDLRGEN063 suggests generated constructors for mechanically equivalent authored constructors.** The advisory analyzer reports at `Info` severity only when one public hand-written or primary constructor can be replaced without changing its parameter signature or supported guard behavior. It requires an exact parameter-to-field mapping, preserves field order, recognizes only Needlr-supported built-in guards, excludes transformations, constructor chaining, base arguments, overloads, peer-generated constructors, and parameterless-activation plugins, and can be promoted to `Warning` or `Error` through `.editorconfig` for stricter repositories.
@@ -29,6 +31,10 @@
 - **BREAKING (alpha): removed `SignalRHubRegistrationPlugin` and `AddSignalRHubRegistrationWithReflection()`.** The public plugin type was automatically executed despite being documented as opt-in, and the service-collection extension registered an `IWebApplicationPlugin` that Needlr's web composition root never consumed. Use `UseSignalRHubsWithReflection()` for explicit reflection mapping or `MapGeneratedHubs()` for source-generated mapping.
 - Removed the unreferenced internal `MermaidHelpers` and `StringHelpers` duplicates and impossible `ref`/`out`/`in` handling for positional-record parameters.
 - Removed compile-time regex parsing of referenced `ServiceCatalog` initializer syntax for graph locations. Each project graph now owns its source locations, while IDE consumers merge producer graphs and leave PE metadata locations explicitly unknown.
+
+### Shipped analyzers
+
+- `NDLRGEN057`, `NDLRGEN058`, `NDLRGEN059`, `NDLRGEN060`, `NDLRGEN061`, `NDLRGEN062`, and `NDLRGEN063`.
 
 ## [0.0.3-alpha.2] - 2026-07-22
 
