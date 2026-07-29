@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 7/28/2026 - 11:46:51 PM |
-| Coverage date: | 7/28/2026 - 11:38:07 PM - 7/28/2026 - 11:46:30 PM |
+| Generated on: | 7/29/2026 - 4:10:17 AM |
+| Coverage date: | 7/29/2026 - 4:06:59 AM - 7/29/2026 - 4:10:12 AM |
 | Parser: | MultiReport (25x Cobertura) |
 | Assemblies: | 20 |
-| Classes: | 251 |
-| Files: | 232 |
-| **Line coverage:** | 92.7% (13454 of 14506) |
+| Classes: | 250 |
+| Files: | 231 |
+| **Line coverage:** | 92.7% (13454 of 14498) |
 | Covered lines: | 13454 |
-| Uncovered lines: | 1052 |
-| Coverable lines: | 14506 |
-| Total lines: | 36189 |
-| **Branch coverage:** | 84.4% (6245 of 7396) |
+| Uncovered lines: | 1044 |
+| Coverable lines: | 14498 |
+| Total lines: | 36162 |
+| **Branch coverage:** | 84.5% (6245 of 7384) |
 | Covered branches: | 6245 |
-| Total branches: | 7396 |
+| Total branches: | 7384 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -364,12 +364,11 @@
 |NexusLabs.Needlr.Logging.Analyzers.NeedlrLoggerMessageAnalyzer|90.3%|80.7%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Maui - 75%</summary>
+<details><summary>NexusLabs.Needlr.Maui - 91.6%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Maui**|**75%**|**22.7%**|
-|Microsoft.Maui.Controls.Generated.GeneratedBindingInterceptors|0%|0%|
+|**NexusLabs.Needlr.Maui**|**91.6%**|**50%**|
 |NexusLabs.Needlr.Maui.MauiAppBuilderNeedlrExtensions|100%||
 |NexusLabs.Needlr.Maui.MauiSyringe|89.2%|50%|
 |NexusLabs.Needlr.Maui.SyringeMauiExtensions|100%||

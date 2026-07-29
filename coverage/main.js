@@ -584,7 +584,6 @@ var assemblies = [
   {
     "name": "NexusLabs.Needlr.Maui",
     "classes": [
-      { "name": "Microsoft.Maui.Controls.Generated.GeneratedBindingInterceptors", "rp": "NexusLabs.Needlr.Maui_GeneratedBindingInterceptors.html", "cl": 0, "ucl": 8, "cal": 8, "tl": 27, "cb": 0, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Maui.MauiAppBuilderNeedlrExtensions", "rp": "NexusLabs.Needlr.Maui_MauiAppBuilderNeedlrExtensions.html", "cl": 6, "ucl": 0, "cal": 6, "tl": 67, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Maui.MauiSyringe", "rp": "NexusLabs.Needlr.Maui_MauiSyringe.html", "cl": 25, "ucl": 3, "cal": 28, "tl": 110, "cb": 5, "tb": 10, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "NexusLabs.Needlr.Maui.SyringeMauiExtensions", "rp": "NexusLabs.Needlr.Maui_SyringeMauiExtensions.html", "cl": 2, "ucl": 0, "cal": 2, "tl": 30, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -704,12 +703,6 @@ var riskHotspots = [
     ]},
   {
     "assembly": "NexusLabs.Needlr.Generators.Attributes", "class": "NexusLabs.Needlr.Generators.ValidationError", "reportPath": "NexusLabs.Needlr.Generators.Attributes_ValidationError.html", "methodName": "Equals(System.Object)", "methodShortName": "Equals(...)", "fileIndex": 0, "line": 88,
-    "metrics": [
-      { "value": 72, "exceeded": true },
-      { "value": 8, "exceeded": false },
-    ]},
-  {
-    "assembly": "NexusLabs.Needlr.Maui", "class": "Microsoft.Maui.Controls.Generated.GeneratedBindingInterceptors", "reportPath": "NexusLabs.Needlr.Maui_GeneratedBindingInterceptors.html", "methodName": "ShouldUseSetter(Microsoft.Maui.Controls.BindingMode,Microsoft.Maui.Controls.BindableProperty)", "methodShortName": "ShouldUseSetter(...)", "fileIndex": 0, "line": 17,
     "metrics": [
       { "value": 72, "exceeded": true },
       { "value": 8, "exceeded": false },

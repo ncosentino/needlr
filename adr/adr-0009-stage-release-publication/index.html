@@ -10,13 +10,11 @@
       
       
       
-        <link rel="canonical" href="https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN035/">
+        <link rel="canonical" href="https://www.devleader.ca/projects/needlr/adr/adr-0009-stage-release-publication/">
       
       
-        <link rel="prev" href="../NDLRGEN034/">
+        <link rel="prev" href="../adr-0008-own-version-aware-agent-marketplace/">
       
-      
-        <link rel="next" href="../NDLRGEN036/">
       
       
         
@@ -27,7 +25,7 @@
     
     
       
-        <title>NDLRGEN035 - Needlr</title>
+        <title>ADR-0009: Stage release publication behind one prepared candidate - Needlr</title>
       
     
     
@@ -72,12 +70,12 @@
   
   
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="NDLRGEN035 – Needlr" />
+  <meta property="og:title" content="ADR-0009 Stage Release Publication – Needlr" />
   <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
   <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
-  <meta property="og:url" content="https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN035/" />
+  <meta property="og:url" content="https://www.devleader.ca/projects/needlr/adr/adr-0009-stage-release-publication/" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="NDLRGEN035 – Needlr" />
+  <meta name="twitter:title" content="ADR-0009 Stage Release Publication – Needlr" />
   <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
   <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
   
@@ -91,22 +89,15 @@
       {
         "@type": "ListItem",
         "position": 1,
-        "name": "Generator Analyzers",
+        "name": "Architecture Decisions",
         "item": "https://www.devleader.ca/projects/needlr/"
       },
       
       {
         "@type": "ListItem",
         "position": 2,
-        "name": "Analyzers",
-        "item": "https://www.devleader.ca/projects/needlr/"
-      },
-      
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": "NDLRGEN035",
-        "item": "https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN035/"
+        "name": "ADR-0009 Stage Release Publication",
+        "item": "https://www.devleader.ca/projects/needlr/adr/adr-0009-stage-release-publication/"
       }
     ]
   }
@@ -134,7 +125,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#ndlrgen035-registerclosedoverimplementationsof-source-type-must-be-an-open-generic-interface" class="md-skip">
+        <a href="#context-and-scope" class="md-skip">
           Skip to content
         </a>
       
@@ -167,7 +158,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              NDLRGEN035
+              ADR-0009: Stage release publication behind one prepared candidate
             
           </span>
         </div>
@@ -394,13 +385,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../analyzers/" class="md-tabs__link">
           
   
   
@@ -474,11 +463,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../adr/adr-0004-extract-ai-platform-to-foundry/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../adr-0004-extract-ai-platform-to-foundry/" class="md-tabs__link">
           
   
   
@@ -1498,31 +1489,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
             
   
   
@@ -1540,7 +1528,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1558,7 +1546,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../analyzers/" class="md-nav__link">
         
   
   
@@ -1592,13 +1580,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -1607,7 +1592,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
         
           
-          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
             
   
   
@@ -1643,7 +1628,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRCOR001/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR001/" class="md-nav__link">
         
   
   
@@ -1671,7 +1656,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRCOR002/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR002/" class="md-nav__link">
         
   
   
@@ -1699,7 +1684,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRCOR003/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR003/" class="md-nav__link">
         
   
   
@@ -1727,7 +1712,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRCOR004/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR004/" class="md-nav__link">
         
   
   
@@ -1755,7 +1740,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRCOR005/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR005/" class="md-nav__link">
         
   
   
@@ -1783,7 +1768,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRCOR006/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR006/" class="md-nav__link">
         
   
   
@@ -1811,7 +1796,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRCOR007/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR007/" class="md-nav__link">
         
   
   
@@ -1839,7 +1824,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRCOR008/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR008/" class="md-nav__link">
         
   
   
@@ -1867,7 +1852,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRCOR009/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR009/" class="md-nav__link">
         
   
   
@@ -1895,7 +1880,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRCOR010/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR010/" class="md-nav__link">
         
   
   
@@ -1923,7 +1908,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRCOR011/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR011/" class="md-nav__link">
         
   
   
@@ -1951,7 +1936,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRCOR012/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR012/" class="md-nav__link">
         
   
   
@@ -1979,7 +1964,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRCOR015/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR015/" class="md-nav__link">
         
   
   
@@ -2007,7 +1992,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRCOR016/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR016/" class="md-nav__link">
         
   
   
@@ -2040,31 +2025,28 @@
                 
   
   
-    
   
   
-  
     
     
     
     
       
       
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
         
           
-          
         
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_3" checked>
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
         
           
-          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
             
   
   
@@ -2082,7 +2064,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_7_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2100,7 +2082,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN001/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN001/" class="md-nav__link">
         
   
   
@@ -2128,7 +2110,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN002/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN002/" class="md-nav__link">
         
   
   
@@ -2156,7 +2138,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN003/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN003/" class="md-nav__link">
         
   
   
@@ -2184,7 +2166,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN004/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN004/" class="md-nav__link">
         
   
   
@@ -2212,7 +2194,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN005/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN005/" class="md-nav__link">
         
   
   
@@ -2240,7 +2222,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN006/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN006/" class="md-nav__link">
         
   
   
@@ -2268,7 +2250,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN007/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN007/" class="md-nav__link">
         
   
   
@@ -2296,7 +2278,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN008/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN008/" class="md-nav__link">
         
   
   
@@ -2324,7 +2306,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN014/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN014/" class="md-nav__link">
         
   
   
@@ -2352,7 +2334,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN015/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN015/" class="md-nav__link">
         
   
   
@@ -2380,7 +2362,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN016/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN016/" class="md-nav__link">
         
   
   
@@ -2408,7 +2390,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN017/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN017/" class="md-nav__link">
         
   
   
@@ -2436,7 +2418,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN018/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN018/" class="md-nav__link">
         
   
   
@@ -2464,7 +2446,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN019/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN019/" class="md-nav__link">
         
   
   
@@ -2492,7 +2474,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN020/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN020/" class="md-nav__link">
         
   
   
@@ -2520,7 +2502,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN021/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN021/" class="md-nav__link">
         
   
   
@@ -2548,7 +2530,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN022/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN022/" class="md-nav__link">
         
   
   
@@ -2576,7 +2558,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN031/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN031/" class="md-nav__link">
         
   
   
@@ -2604,7 +2586,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN032/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN032/" class="md-nav__link">
         
   
   
@@ -2632,7 +2614,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN033/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN033/" class="md-nav__link">
         
   
   
@@ -2660,7 +2642,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN034/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN034/" class="md-nav__link">
         
   
   
@@ -2685,37 +2667,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    NDLRGEN035
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../analyzers/NDLRGEN035/" class="md-nav__link">
         
   
   
@@ -2731,70 +2686,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#cause" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cause
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rule-description" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Rule Description
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-to-fix" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How to Fix
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#see-also" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        See Also
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2807,7 +2698,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN036/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN036/" class="md-nav__link">
         
   
   
@@ -2835,7 +2726,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN037/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN037/" class="md-nav__link">
         
   
   
@@ -2863,7 +2754,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN038/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN038/" class="md-nav__link">
         
   
   
@@ -2891,7 +2782,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN039/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN039/" class="md-nav__link">
         
   
   
@@ -2919,7 +2810,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN040/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN040/" class="md-nav__link">
         
   
   
@@ -2947,7 +2838,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN041/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN041/" class="md-nav__link">
         
   
   
@@ -2975,7 +2866,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN042/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN042/" class="md-nav__link">
         
   
   
@@ -3003,7 +2894,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN043/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN043/" class="md-nav__link">
         
   
   
@@ -3031,7 +2922,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN044/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN044/" class="md-nav__link">
         
   
   
@@ -3059,7 +2950,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN045/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN045/" class="md-nav__link">
         
   
   
@@ -3087,7 +2978,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN046/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN046/" class="md-nav__link">
         
   
   
@@ -3115,7 +3006,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN047/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN047/" class="md-nav__link">
         
   
   
@@ -3143,7 +3034,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN048/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN048/" class="md-nav__link">
         
   
   
@@ -3171,7 +3062,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN049/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN049/" class="md-nav__link">
         
   
   
@@ -3199,7 +3090,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN050/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN050/" class="md-nav__link">
         
   
   
@@ -3227,7 +3118,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN051/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN051/" class="md-nav__link">
         
   
   
@@ -3255,7 +3146,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN052/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN052/" class="md-nav__link">
         
   
   
@@ -3283,7 +3174,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN053/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN053/" class="md-nav__link">
         
   
   
@@ -3311,7 +3202,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN054/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN054/" class="md-nav__link">
         
   
   
@@ -3339,7 +3230,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN055/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN055/" class="md-nav__link">
         
   
   
@@ -3367,7 +3258,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN056/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN056/" class="md-nav__link">
         
   
   
@@ -3395,7 +3286,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN057/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN057/" class="md-nav__link">
         
   
   
@@ -3423,7 +3314,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN058/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN058/" class="md-nav__link">
         
   
   
@@ -3451,7 +3342,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN059/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN059/" class="md-nav__link">
         
   
   
@@ -3479,7 +3370,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN060/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN060/" class="md-nav__link">
         
   
   
@@ -3507,7 +3398,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN061/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN061/" class="md-nav__link">
         
   
   
@@ -3535,7 +3426,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN062/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN062/" class="md-nav__link">
         
   
   
@@ -3563,7 +3454,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRGEN063/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN063/" class="md-nav__link">
         
   
   
@@ -3605,13 +3496,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -3620,7 +3508,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_4" >
         
           
-          <label class="md-nav__link" for="__nav_7_4" id="__nav_7_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_7_4" id="__nav_7_4_label" tabindex="0">
             
   
   
@@ -3656,7 +3544,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRSIG001/" class="md-nav__link">
+      <a href="../../analyzers/NDLRSIG001/" class="md-nav__link">
         
   
   
@@ -3684,7 +3572,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRSIG002/" class="md-nav__link">
+      <a href="../../analyzers/NDLRSIG002/" class="md-nav__link">
         
   
   
@@ -3712,7 +3600,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRSIG003/" class="md-nav__link">
+      <a href="../../analyzers/NDLRSIG003/" class="md-nav__link">
         
   
   
@@ -3754,13 +3642,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -3769,7 +3654,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_5" >
         
           
-          <label class="md-nav__link" for="__nav_7_5" id="__nav_7_5_label" tabindex="">
+          <label class="md-nav__link" for="__nav_7_5" id="__nav_7_5_label" tabindex="0">
             
   
   
@@ -3805,7 +3690,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRLOG001/" class="md-nav__link">
+      <a href="../../analyzers/NDLRLOG001/" class="md-nav__link">
         
   
   
@@ -3833,7 +3718,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRLOG002/" class="md-nav__link">
+      <a href="../../analyzers/NDLRLOG002/" class="md-nav__link">
         
   
   
@@ -3861,7 +3746,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRLOG003/" class="md-nav__link">
+      <a href="../../analyzers/NDLRLOG003/" class="md-nav__link">
         
   
   
@@ -3889,7 +3774,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRLOG004/" class="md-nav__link">
+      <a href="../../analyzers/NDLRLOG004/" class="md-nav__link">
         
   
   
@@ -3917,7 +3802,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRLOG005/" class="md-nav__link">
+      <a href="../../analyzers/NDLRLOG005/" class="md-nav__link">
         
   
   
@@ -3945,7 +3830,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRLOG006/" class="md-nav__link">
+      <a href="../../analyzers/NDLRLOG006/" class="md-nav__link">
         
   
   
@@ -3987,13 +3872,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -4002,7 +3884,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
         
           
-          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
             
   
   
@@ -4038,7 +3920,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRHTTP001/" class="md-nav__link">
+      <a href="../../analyzers/NDLRHTTP001/" class="md-nav__link">
         
   
   
@@ -4066,7 +3948,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRHTTP002/" class="md-nav__link">
+      <a href="../../analyzers/NDLRHTTP002/" class="md-nav__link">
         
   
   
@@ -4094,7 +3976,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRHTTP003/" class="md-nav__link">
+      <a href="../../analyzers/NDLRHTTP003/" class="md-nav__link">
         
   
   
@@ -4122,7 +4004,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRHTTP004/" class="md-nav__link">
+      <a href="../../analyzers/NDLRHTTP004/" class="md-nav__link">
         
   
   
@@ -4150,7 +4032,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRHTTP005/" class="md-nav__link">
+      <a href="../../analyzers/NDLRHTTP005/" class="md-nav__link">
         
   
   
@@ -4178,7 +4060,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../NDLRHTTP006/" class="md-nav__link">
+      <a href="../../analyzers/NDLRHTTP006/" class="md-nav__link">
         
   
   
@@ -4417,28 +4299,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
-        
-          
-          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="">
             
   
   
@@ -4456,7 +4341,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_11">
             <span class="md-nav__icon md-icon"></span>
             
@@ -4474,7 +4359,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../adr/adr-0004-extract-ai-platform-to-foundry/" class="md-nav__link">
+      <a href="../adr-0004-extract-ai-platform-to-foundry/" class="md-nav__link">
         
   
   
@@ -4509,7 +4394,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../adr/adr-0005-generate-guarded-constructors/" class="md-nav__link">
+      <a href="../adr-0005-generate-guarded-constructors/" class="md-nav__link">
         
   
   
@@ -4544,7 +4429,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../adr/adr-0006-generate-record-constructor-overloads/" class="md-nav__link">
+      <a href="../adr-0006-generate-record-constructor-overloads/" class="md-nav__link">
         
   
   
@@ -4579,7 +4464,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../adr/adr-0007-own-graph-source-locations-per-project/" class="md-nav__link">
+      <a href="../adr-0007-own-graph-source-locations-per-project/" class="md-nav__link">
         
   
   
@@ -4614,7 +4499,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../adr/adr-0008-own-version-aware-agent-marketplace/" class="md-nav__link">
+      <a href="../adr-0008-own-version-aware-agent-marketplace/" class="md-nav__link">
         
   
   
@@ -4646,10 +4531,42 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../adr/adr-0009-stage-release-publication/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0009 Stage Release Publication
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -4672,6 +4589,179 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context-and-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context and scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision drivers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternatives considered
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Alternatives considered">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keep-one-monolithic-publication-job" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keep one monolithic publication job
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#promote-a-release-candidate-produced-by-main-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Promote a release candidate produced by main CI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#split-preparation-and-publication-only-for-retries-keeping-tests-in-the-release-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Split preparation and publication only for retries, keeping tests in the release path
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consequences
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Consequences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#positive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Positive
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#negative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Negative
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neutral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Neutral
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#confirmation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Confirmation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -4704,64 +4794,131 @@
   
 
 
-<h1 id="ndlrgen035-registerclosedoverimplementationsof-source-type-must-be-an-open-generic-interface">NDLRGEN035: [RegisterClosedOverImplementationsOf] source type must be an open generic interface<a class="headerlink" href="#ndlrgen035-registerclosedoverimplementationsof-source-type-must-be-an-open-generic-interface" title="Permanent link">&para;</a></h1>
-<h2 id="cause">Cause<a class="headerlink" href="#cause" title="Permanent link">&para;</a></h2>
-<p>The first type argument passed to <code>[RegisterClosedOverImplementationsOf]</code> is not an open generic interface (unbound generic type).</p>
-<h2 id="rule-description">Rule Description<a class="headerlink" href="#rule-description" title="Permanent link">&para;</a></h2>
-<p>The attribute discovers concrete closed implementations of an open generic interface and registers a composition closed over each implementation's type argument(s). The source type must be:</p>
-<ol>
-<li><strong>An interface</strong> (not a class or struct)</li>
-<li><strong>An open/unbound generic</strong> using the <code>typeof(IInterface&lt;&gt;)</code> syntax</li>
-</ol>
-<p>Common mistakes include passing a closed generic like <code>typeof(IFooDefinition&lt;string&gt;)</code>, a non-generic interface like <code>typeof(IService)</code>, or a class instead of an interface.</p>
-<h2 id="how-to-fix">How to Fix<a class="headerlink" href="#how-to-fix" title="Permanent link">&para;</a></h2>
-<p>Use the open generic <code>typeof()</code> syntax with empty angle brackets:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">NexusLabs.Needlr.Generators</span><span class="p">;</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">IFooDefinition</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">IFoo</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1">// ❌ WRONG - closed generic</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="na">[RegisterClosedOverImplementationsOf(typeof(IFooDefinition&lt;string&gt;), As = typeof(IFoo))]</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">FooCore</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IFoo</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1">// ❌ WRONG - non-generic interface</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="na">[RegisterClosedOverImplementationsOf(typeof(IFoo), As = typeof(IFoo))]</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">OtherCore</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IFoo</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="c1">// ✅ CORRECT - open generic interface</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="na">[RegisterClosedOverImplementationsOf(typeof(IFooDefinition&lt;&gt;), As = typeof(IFoo))]</span>
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">GoodCore</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IFoo</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
-</span></code></pre></div>
-<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+  <h1>ADR-0009 Stage Release Publication</h1>
+
+<h2 id="context-and-scope">Context and scope<a class="headerlink" href="#context-and-scope" title="Permanent link">&para;</a></h2>
+<p>Needlr publishes from a version tag. The tag workflow first confirms that the exact
+tagged commit already completed a successful <code>main</code> CI run, which restores, builds,
+runs the test suite, validates packages, and compiles both Native AOT samples. That
+verification proves the commit is releasable.</p>
+<p>Until this decision, the tag workflow then discarded the value of that proof. A single
+publication job repeated restore, build, the full test suite, coverage generation,
+packaging, and documentation generation, and only afterwards performed the irreversible
+operations: pushing to NuGet.org, pushing to GitHub Packages, deploying documentation,
+and creating the GitHub Release. The job declared no timeout. Release <code>v0.0.3-alpha.3</code>
+demonstrated the cost: main CI run <code>30402851026</code> succeeded for the exact commit, then
+release run <code>30406601340</code> began the entire validation sequence again, and a stalled
+publication worker meant the only recovery was cancelling and repeating all of it.</p>
+<p>This decision governs the staging, artifact contract, and retry model of
+<code>.github/workflows/release.yml</code>. It does not change what a release contains, which
+packages ship, how versions are validated, or the local gates in <code>scripts/release.ps1</code>.</p>
+<h2 id="decision-drivers">Decision drivers<a class="headerlink" href="#decision-drivers" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../NDLRGEN036/">NDLRGEN036</a> - Composition class must be an open generic with matching arity</li>
-<li><a href="../NDLRGEN037/">NDLRGEN037</a> - Composition class must implement the <code>As</code> service type</li>
-<li><a href="../../composed-closed-generics/">Compose and Expose Closed Generics</a></li>
-</ul><script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "What causes NDLRGEN035?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "The first type argument passed to [RegisterClosedOverImplementationsOf] is not an open generic interface (unbound generic type)."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How do I fix NDLRGEN035?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Use the open generic typeof() syntax with empty angle brackets:"
-      }
-    }
-  ]
-}
-</script>
+<li>A transient failure in an irreversible publication step must not force recompilation
+  or re-execution of tests that already passed for the same commit.</li>
+<li>Every reversible operation must complete before the first irreversible operation.</li>
+<li>Each publication destination must be independently retryable and idempotent.</li>
+<li>Anything published must be provably the artifact produced from the validated commit.</li>
+<li>Storage cost matters. Retaining artifacts between workflow runs must never become a
+  requirement of the release contract.</li>
+<li>The published package set, release notes, documentation output, provenance, and
+  permissions must not regress.</li>
+</ul>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p><code>release.yml</code> is staged into one verification job, one reversible preparation job, and
+four publication jobs.</p>
+<p><code>verify-main-ci</code> waits for the successful same-commit <code>main</code> CI run. <code>prepare</code> validates
+the tag against that verified run, builds, packs, produces a digest manifest, extracts
+release notes, builds the documentation site, and uploads two artifacts scoped to the
+release run. <code>publish-nuget</code>, <code>publish-github-packages</code>, <code>deploy-documentation</code>, and
+<code>create-release</code> each download the prepared artifacts, re-verify them, and perform
+exactly one irreversible operation. No publication job restores, builds, or tests.</p>
+<p>The release path no longer repeats the test suite or coverage generation. <code>verify-main-ci</code>
+is the gate that proves the commit passed those checks, and duplicating them only widened
+the window in which a runner failure destroyed validated work.</p>
+<p>A release candidate is defined by <code>release-manifest.json</code>, written by
+<code>scripts/write-release-manifest.ps1</code>. The manifest records the schema version, release
+version, package version, source commit SHA, producing run identifier, producing workflow,
+the identifier of the validated CI run, and a SHA-256 digest and size for every packaged
+file. <code>scripts/verify-release-manifest.ps1</code> recomputes the digests and rejects a candidate
+that is incomplete, tampered with, carries unlisted packages, or does not match the
+version, commit, producing run, and validated CI run the publishing job expects.
+<code>scripts/pack-release-packages.ps1</code> owns the published project selection so the package set
+cannot drift between producers, and <code>scripts/test-release-artifacts.ps1</code> exercises the whole
+contract during CI preflight.</p>
+<p>Artifacts remain scoped to the release run. Retrying a destination replays only that
+destination against artifacts the same run already produced.</p>
+<h2 id="alternatives-considered">Alternatives considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
+<h3 id="keep-one-monolithic-publication-job">Keep one monolithic publication job<a class="headerlink" href="#keep-one-monolithic-publication-job" title="Permanent link">&para;</a></h3>
+<p>The status quo needs no artifact contract and keeps the whole release readable in one
+place. It was rejected because it makes every irreversible step depend on a fresh, full,
+redundant validation sequence, so any late failure costs the entire release again. It also
+leaves no way to retry a single destination.</p>
+<h3 id="promote-a-release-candidate-produced-by-main-ci">Promote a release candidate produced by main CI<a class="headerlink" href="#promote-a-release-candidate-produced-by-main-ci" title="Permanent link">&para;</a></h3>
+<p>Main CI could pack a candidate, upload it, and let the tag workflow download and publish
+that exact bundle, giving the strongest provenance and the fastest possible tag workflow.
+It was rejected as the default because it makes cross-run artifact retention a hard
+requirement of the release contract and imposes storage cost on every main build, which is
+an unacceptable steady-state expense for this repository. The saving is also smaller than
+it appears: <code>scripts/generate-api-docs.sh</code> requires the Release build's XML documentation
+output, so the release run must build regardless, and promoting packages alone would only
+avoid <code>dotnet pack</code>.</p>
+<p>The manifest format is deliberately producer-agnostic. It records the producing workflow
+and the validated CI run separately, so an opt-in accelerator that promotes a candidate
+from another run can be added later without changing the verification contract or making
+retention mandatory.</p>
+<h3 id="split-preparation-and-publication-only-for-retries-keeping-tests-in-the-release-path">Split preparation and publication only for retries, keeping tests in the release path<a class="headerlink" href="#split-preparation-and-publication-only-for-retries-keeping-tests-in-the-release-path" title="Permanent link">&para;</a></h3>
+<p>Retaining the release-path test run would preserve the previous belt-and-braces validation
+while still gaining restartability. It was rejected because the tests add no information
+that <code>verify-main-ci</code> has not already established for the identical commit, while
+lengthening the pre-publication window that the change is meant to shorten.</p>
+<h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
+<h3 id="positive">Positive<a class="headerlink" href="#positive" title="Permanent link">&para;</a></h3>
+<ul>
+<li>A failed destination is retried on its own; publication never rebuilds or retests.</li>
+<li>All validation completes before the first irreversible operation.</li>
+<li>Published artifacts are digest-bound to the validated commit and run.</li>
+<li>Every job has an explicit timeout and least-privilege permissions.</li>
+<li>Release duration drops by the length of the duplicated test and coverage run.</li>
+</ul>
+<h3 id="negative">Negative<a class="headerlink" href="#negative" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The release workflow is longer and has more moving parts than one job.</li>
+<li>Prepared artifacts occupy run-scoped storage for their retention window, and a retry
+  attempted after expiry requires a full workflow re-run.</li>
+<li>The <code>release</code> environment now gates four jobs instead of one, so required reviewers, if
+  ever configured, would prompt per destination.</li>
+<li>Release-path confidence now depends on <code>verify-main-ci</code> being correct about the commit.</li>
+</ul>
+<h3 id="neutral">Neutral<a class="headerlink" href="#neutral" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Documentation deployment still follows package publication, as in the previous
+  sequential job, so documentation never announces a release whose packages failed.</li>
+<li>Coverage output is no longer produced by the release path. The documentation ownership
+  contract already assigns <code>/coverage/*</code> to <code>ci.yml</code>, and <code>keep_files</code> preserves the copy
+  published by the same commit's CI run.</li>
+</ul>
+<h2 id="confirmation">Confirmation<a class="headerlink" href="#confirmation" title="Permanent link">&para;</a></h2>
+<p><code>scripts/test-release-artifacts.ps1</code> runs in CI preflight and asserts the published project
+selection, the pack invocation contract, manifest creation, and every rejection case:
+digest tampering, missing packages, unlisted packages, mismatched version, mismatched
+commit, mismatched producing run, mismatched validated CI run, unsupported schema, and
+expectations supplied without a value.</p>
+<p>The workflow structure is confirmed by inspection and by <code>actionlint</code>: no publication job
+contains a restore, build, or test step, and every publication job verifies the manifest
+before its irreversible step.</p>
+<p>Retry behavior against live registries cannot be confirmed from the repository. It is
+observed on the first release that exercises a failed destination.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Issue "Release workflow rebuilds an already validated commit instead of promoting its
+  artifacts" reports the duplicated validation and the resulting failed release attempt.</li>
+<li><code>docs/releasing.md</code> documents the staged jobs, the candidate contract, and the retry
+  procedure for maintainers.</li>
+<li><code>.github/instructions/docs.instructions.md</code> defines the <code>gh-pages</code> path ownership split
+  that keeps <code>ci.yml</code> responsible for <code>/api/dev/*</code> and <code>/coverage/*</code> while <code>release.yml</code>
+  owns <code>/api/stable/*</code> and <code>/api/v&lt;version&gt;/*</code>.</li>
+</ul>
 
 
 
@@ -4769,6 +4926,8 @@
 
 
 
+  
+  
 
 
 

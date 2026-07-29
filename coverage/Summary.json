@@ -1,23 +1,23 @@
 {
   "summary": {
-    "generatedon": "2026-07-28T23:46:51Z",
+    "generatedon": "2026-07-29T04:10:17Z",
     "parser": "MultiReport (25x Cobertura)",
     "assemblies": 20,
-    "classes": 251,
-    "files": 232,
+    "classes": 250,
+    "files": 231,
     "coveredlines": 13454,
-    "uncoveredlines": 1052,
-    "coverablelines": 14506,
-    "totallines": 36189,
+    "uncoveredlines": 1044,
+    "coverablelines": 14498,
+    "totallines": 36162,
     "linecoverage": 92.7,
     "coveredbranches": 6245,
-    "totalbranches": 7396,
-    "branchcoverage": 84.4,
+    "totalbranches": 7384,
+    "branchcoverage": 84.5,
     "coveredmethods": 1582,
     "fullcoveredmethods": 1319,
-    "totalmethods": 1739,
-    "methodcoverage": 90.9,
-    "fullmethodcoverage": 75.8
+    "totalmethods": 1737,
+    "methodcoverage": 91,
+    "fullmethodcoverage": 75.9
  },
   "coverage": {
     "assemblies": [
@@ -267,8 +267,7 @@
       { "name": "NexusLabs.Needlr.Logging.Analyzers", "classes": 2, "coverage": 93.8, "coveredlines": 138, "coverablelines": 147, "totallines": 320, "branchcoverage": 80.7, "coveredbranches": 63, "totalbranches": 78, "methodcoverage": 100, "fullmethodcoverage": 30, "coveredmethods": 10, "fullcoveredmethods": 3, "totalmethods": 10, "classesinassembly": [
         { "name": "NexusLabs.Needlr.Logging.Analyzers.DiagnosticDescriptors", "coverage": 100, "coveredlines": 54, "coverablelines": 54, "totallines": 90, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 1, "fullcoveredmethods": 1, "totalmethods": 1 },
         { "name": "NexusLabs.Needlr.Logging.Analyzers.NeedlrLoggerMessageAnalyzer", "coverage": 90.3, "coveredlines": 84, "coverablelines": 93, "totallines": 230, "branchcoverage": 80.7, "coveredbranches": 63, "totalbranches": 78, "methodcoverage": 100, "fullmethodcoverage": 22.2, "coveredmethods": 9, "fullcoveredmethods": 2, "totalmethods": 9 } ] },
-      { "name": "NexusLabs.Needlr.Maui", "classes": 4, "coverage": 75, "coveredlines": 33, "coverablelines": 44, "totallines": 234, "branchcoverage": 22.7, "coveredbranches": 5, "totalbranches": 22, "methodcoverage": 75, "fullmethodcoverage": 62.5, "coveredmethods": 6, "fullcoveredmethods": 5, "totalmethods": 8, "classesinassembly": [
-        { "name": "Microsoft.Maui.Controls.Generated.GeneratedBindingInterceptors", "coverage": 0, "coveredlines": 0, "coverablelines": 8, "totallines": 27, "branchcoverage": 0, "coveredbranches": 0, "totalbranches": 12, "methodcoverage": 0, "fullmethodcoverage": 0, "coveredmethods": 0, "fullcoveredmethods": 0, "totalmethods": 2 },
+      { "name": "NexusLabs.Needlr.Maui", "classes": 3, "coverage": 91.6, "coveredlines": 33, "coverablelines": 36, "totallines": 207, "branchcoverage": 50, "coveredbranches": 5, "totalbranches": 10, "methodcoverage": 100, "fullmethodcoverage": 83.3, "coveredmethods": 6, "fullcoveredmethods": 5, "totalmethods": 6, "classesinassembly": [
         { "name": "NexusLabs.Needlr.Maui.MauiAppBuilderNeedlrExtensions", "coverage": 100, "coveredlines": 6, "coverablelines": 6, "totallines": 67, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 2, "fullcoveredmethods": 2, "totalmethods": 2 },
         { "name": "NexusLabs.Needlr.Maui.MauiSyringe", "coverage": 89.2, "coveredlines": 25, "coverablelines": 28, "totallines": 110, "branchcoverage": 50, "coveredbranches": 5, "totalbranches": 10, "methodcoverage": 100, "fullmethodcoverage": 66.6, "coveredmethods": 3, "fullcoveredmethods": 2, "totalmethods": 3 },
         { "name": "NexusLabs.Needlr.Maui.SyringeMauiExtensions", "coverage": 100, "coveredlines": 2, "coverablelines": 2, "totallines": 30, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 1, "fullcoveredmethods": 1, "totalmethods": 1 } ] },

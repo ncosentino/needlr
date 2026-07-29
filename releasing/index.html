@@ -1741,6 +1741,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="What the tag triggers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-release-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The release candidate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retrying-a-failed-publication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retrying a failed publication
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1837,6 +1865,50 @@
     <span class="md-ellipsis">
       
         Package validation fails
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-publication-job-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A publication job failed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manifest-field-is-actual-but-the-release-requires-expected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manifest &lt;field&gt; is '&lt;actual&gt;' but the release requires '&lt;expected&gt;'
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#package-name-digest-is-actual-but-the-manifest-records-expected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package '&lt;name&gt;' digest is '&lt;actual&gt;' but the manifest records '&lt;expected&gt;'
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#artifact-not-found-when-retrying-a-publication-job" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Artifact not found when retrying a publication job
       
     </span>
   </a>
@@ -4974,6 +5046,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/adr-0009-stage-release-publication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0009 Stage Release Publication
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5034,8 +5141,9 @@ commit that bypassed pull-request validation.</p>
    <code>## [x.y.z-label.N] - YYYY-MM-DD</code>.</li>
 <li>The same version in <code>version.json</code>.</li>
 <li>A lightweight <code>v&lt;version&gt;</code> tag on the squash-merge commit.</li>
-<li>Automated build, test, packaging, publication, release creation, and
-   documentation deployment from <code>.github/workflows/release.yml</code>.</li>
+<li>Automated packaging, publication, release creation, and documentation
+   deployment from <code>.github/workflows/release.yml</code>, gated on the successful
+   <code>main</code> CI run for that exact commit.</li>
 </ol>
 <p>The version, changelog, analyzer files, and documentation are reviewed in the
 preparation pull request. <code>scripts/release.ps1</code> only validates and tags the
@@ -5352,24 +5460,121 @@ pending, or failing, the release is not ready.</p>
 <p>Every gate fails closed. API errors, missing tools, and unparsable repository
 identity are release blockers rather than warnings.</p>
 <h2 id="what-the-tag-triggers">What the tag triggers<a class="headerlink" href="#what-the-tag-triggers" title="Permanent link">&para;</a></h2>
-<p>Pushing <code>v&lt;version&gt;</code> starts <code>.github/workflows/release.yml</code>.</p>
-<p>Before publication, the workflow:</p>
+<p>Pushing <code>v&lt;version&gt;</code> starts <code>.github/workflows/release.yml</code>. The workflow is
+staged: one verification job, one reversible preparation job, and four
+publication jobs that each own a single irreversible destination.</p>
+<table>
+<thead>
+<tr>
+<th>Job</th>
+<th>Kind</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>verify-main-ci</code></td>
+<td>verification</td>
+<td>Finds the <code>ci.yml</code> push run for <code>main</code> whose SHA equals the tag SHA, waits for it, and fails unless its conclusion is <code>success</code>.</td>
+</tr>
+<tr>
+<td><code>prepare</code></td>
+<td>reversible</td>
+<td>Validates the tag, builds, packs, writes and verifies the release manifest, extracts release notes, builds the documentation site, and uploads both artifacts.</td>
+</tr>
+<tr>
+<td><code>publish-nuget</code></td>
+<td>irreversible</td>
+<td>Verifies the prepared candidate and pushes it to NuGet.org through trusted publishing.</td>
+</tr>
+<tr>
+<td><code>publish-github-packages</code></td>
+<td>irreversible</td>
+<td>Verifies the prepared candidate and pushes it to GitHub Packages.</td>
+</tr>
+<tr>
+<td><code>deploy-documentation</code></td>
+<td>irreversible</td>
+<td>Deploys the prepared documentation site to <code>gh-pages</code> and mirrors it to Cloudflare Pages.</td>
+</tr>
+<tr>
+<td><code>create-release</code></td>
+<td>irreversible</td>
+<td>Verifies the prepared candidate and creates the GitHub Release with the prepared notes and package assets.</td>
+</tr>
+</tbody>
+</table>
+<p><code>prepare</code> completes every gate before the first irreversible operation:</p>
 <ol>
-<li>Finds the <code>ci.yml</code> push run for <code>main</code> whose SHA equals the tag SHA.</li>
-<li>Waits for that run to complete.</li>
-<li>Fails unless its conclusion is <code>success</code>.</li>
-<li>Checks that the tag version equals NBGV's semantic version.</li>
-<li>Checks that the exact changelog section exists.</li>
-<li>Restores, builds, tests, packs, validates package versions, and builds
-   documentation.</li>
+<li>The workflow ref is a supported <code>v&lt;major&gt;.&lt;minor&gt;.&lt;patch&gt;[-prerelease]</code> tag.</li>
+<li><code>verify-main-ci</code> reported a validated run for that commit.</li>
+<li>The checked-out commit is that validated release commit.</li>
+<li>The tag version equals NBGV's semantic version.</li>
+<li>The exact changelog section exists.</li>
+<li>Every packed file carries the expected package version.</li>
 </ol>
-<p>After those gates, trusted publishing:</p>
-<ul>
-<li>exchanges the workflow OIDC identity for a short-lived NuGet.org key;</li>
-<li>pushes packages to NuGet.org and GitHub Packages;</li>
-<li>deploys stable and versioned API documentation;</li>
-<li>creates the GitHub Release and attaches package artifacts.</li>
-</ul>
+<p>The test suite does not run again in the release path. <code>verify-main-ci</code> already
+proves that this exact commit passed <code>main</code> CI, which builds, tests, validates
+packages, and compiles both AOT samples. Repeating that work would only widen
+the window in which a transient runner failure discards validated work.</p>
+<h3 id="the-release-candidate">The release candidate<a class="headerlink" href="#the-release-candidate" title="Permanent link">&para;</a></h3>
+<p><code>prepare</code> uploads two artifacts, retained for the number of days configured by
+<code>RELEASE_ARTIFACT_RETENTION_DAYS</code> in the workflow:</p>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>release-packages</code></td>
+<td><code>packages/*.nupkg</code>, <code>packages/*.snupkg</code>, <code>packages/release-manifest.json</code>, and <code>release-notes.md</code></td>
+</tr>
+<tr>
+<td><code>release-documentation-site</code></td>
+<td>The built documentation site, restricted to <code>release.yml</code>-owned paths</td>
+</tr>
+</tbody>
+</table>
+<p><code>scripts/write-release-manifest.ps1</code> writes <code>release-manifest.json</code>, which binds
+the candidate to the commit it came from:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="p">{</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span><span class="nt">&quot;schemaVersion&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.0.3-alpha.3&quot;</span><span class="p">,</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">  </span><span class="nt">&quot;packageVersion&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.0.3-alpha.3&quot;</span><span class="p">,</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">  </span><span class="nt">&quot;sourceSha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;e54675a82bb9f186af657fcc0fe3bcc4afa1dcc2&quot;</span><span class="p">,</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">  </span><span class="nt">&quot;producingRunId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;30406601340&quot;</span><span class="p">,</span>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="w">  </span><span class="nt">&quot;producingWorkflow&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;release.yml&quot;</span><span class="p">,</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">  </span><span class="nt">&quot;validatedCiRunId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;30402851026&quot;</span><span class="p">,</span>
+</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="w">  </span><span class="nt">&quot;packages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;NexusLabs.Needlr.0.0.3-alpha.3.nupkg&quot;</span><span class="p">,</span>
+</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="w">      </span><span class="nt">&quot;sha256&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;9f2c...&quot;</span><span class="p">,</span>
+</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="w">      </span><span class="nt">&quot;sizeBytes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">120544</span>
+</span><span id="__span-17-14"><a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-17-15"><a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a><span class="w">  </span><span class="p">]</span>
+</span><span id="__span-17-16"><a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>Every publication job re-runs <code>scripts/verify-release-manifest.ps1</code> before its
+irreversible step. Verification recomputes every digest and rejects a candidate
+that is tampered with, incomplete, carries unlisted files, or whose version,
+commit, producing run, or validated CI run does not match the release the job
+was asked to publish.</p>
+<p><code>scripts/pack-release-packages.ps1</code> owns the published project selection, so the
+package set cannot drift between producers, and
+<code>scripts/test-release-artifacts.ps1</code> exercises the whole contract in CI
+preflight.</p>
+<h3 id="retrying-a-failed-publication">Retrying a failed publication<a class="headerlink" href="#retrying-a-failed-publication" title="Permanent link">&para;</a></h3>
+<p>Publication jobs never restore, build, or test, so a failed destination costs
+only its own retry. Use <strong>Re-run failed jobs</strong> on the release run: the prepared
+artifacts belong to that run, so the retry re-downloads them, re-verifies the
+manifest, and replays only the destination that failed. Package pushes use
+<code>--skip-duplicate</code>, documentation deployment rewrites its own paths, and release
+creation updates the existing release, so retries are idempotent.</p>
+<p>Re-running the entire workflow repeats <code>prepare</code>. That is safe, and it is the
+correct move only when the prepared artifacts have already expired.</p>
 <p>Tag pushes are separate from protected branch updates, so main protection does
 not block release finalization.</p>
 <h2 id="post-release-verification">Post-release verification<a class="headerlink" href="#post-release-verification" title="Permanent link">&para;</a></h2>
@@ -5410,15 +5615,35 @@ shipped file under the base-version header, commit that change through a pull
 request, and do not tag until it merges.</p>
 <h3 id="package-validation-fails">Package validation fails<a class="headerlink" href="#package-validation-fails" title="Permanent link">&para;</a></h3>
 <p>Run the failing command directly:</p>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">dotnet</span> <span class="n">pack</span> <span class="n">src</span><span class="p">/</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">slnx</span> <span class="n">-c</span> <span class="n">Release</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="n">pwsh</span> <span class="n">-NoProfile</span> <span class="o">-File</span> <span class="n">scripts</span><span class="p">/</span><span class="nb">test-packages</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-NoBuild</span>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">dotnet</span> <span class="n">pack</span> <span class="n">src</span><span class="p">/</span><span class="n">NexusLabs</span><span class="p">.</span><span class="n">Needlr</span><span class="p">.</span><span class="n">slnx</span> <span class="n">-c</span> <span class="n">Release</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">pwsh</span> <span class="n">-NoProfile</span> <span class="o">-File</span> <span class="n">scripts</span><span class="p">/</span><span class="nb">test-packages</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-NoBuild</span>
 </span></code></pre></div>
 <p>Typical causes include missing package metadata, an incorrect analyzer asset
 path, or a transitive dependency exclusion regression.</p>
+<h3 id="a-publication-job-failed">A publication job failed<a class="headerlink" href="#a-publication-job-failed" title="Permanent link">&para;</a></h3>
+<p>Nothing prepared by the release run is lost. Open the run, choose <strong>Re-run
+failed jobs</strong>, and only the failed destination replays against the artifacts
+<code>prepare</code> already produced. Confirm the destination state first. A partially
+pushed package set is safe to push again because both registry destinations use
+<code>--skip-duplicate</code>.</p>
+<h3 id="manifest-field-is-actual-but-the-release-requires-expected"><code>Manifest &lt;field&gt; is '&lt;actual&gt;' but the release requires '&lt;expected&gt;'</code><a class="headerlink" href="#manifest-field-is-actual-but-the-release-requires-expected" title="Permanent link">&para;</a></h3>
+<p>A publication job was handed a candidate that does not belong to the release it
+is publishing. This normally means the run was re-driven with a different tag or
+that artifacts from another run were substituted. Do not bypass the check.
+Restart the release from the tag so <code>prepare</code> rebuilds the candidate for the
+commit being released.</p>
+<h3 id="package-name-digest-is-actual-but-the-manifest-records-expected"><code>Package '&lt;name&gt;' digest is '&lt;actual&gt;' but the manifest records '&lt;expected&gt;'</code><a class="headerlink" href="#package-name-digest-is-actual-but-the-manifest-records-expected" title="Permanent link">&para;</a></h3>
+<p>The prepared candidate changed after it was verified. Re-run the whole workflow
+so <code>prepare</code> produces a fresh candidate, and investigate the runner if the
+digest mismatch repeats.</p>
+<h3 id="artifact-not-found-when-retrying-a-publication-job"><code>Artifact not found</code> when retrying a publication job<a class="headerlink" href="#artifact-not-found-when-retrying-a-publication-job" title="Permanent link">&para;</a></h3>
+<p>Release artifacts are retained for the number of days configured by
+<code>RELEASE_ARTIFACT_RETENTION_DAYS</code>. After that window, re-run the entire workflow
+for the tag so <code>prepare</code> produces the candidate again.</p>
 <h3 id="the-tag-exists-locally-after-a-failed-push">The tag exists locally after a failed push<a class="headerlink" href="#the-tag-exists-locally-after-a-failed-push" title="Permanent link">&para;</a></h3>
 <p>Inspect it before retrying:</p>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">git</span> <span class="n">show</span> <span class="n">v0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3-alpha</span><span class="p">.</span><span class="n">3</span>
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">git</span> <span class="n">ls-remote</span> <span class="p">-</span><span class="n">-tags</span> <span class="n">origin</span> <span class="n">refs</span><span class="p">/</span><span class="n">tags</span><span class="p">/</span><span class="n">v0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3-alpha</span><span class="p">.</span><span class="n">3</span>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">git</span> <span class="n">show</span> <span class="n">v0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3-alpha</span><span class="p">.</span><span class="n">3</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">git</span> <span class="n">ls-remote</span> <span class="p">-</span><span class="n">-tags</span> <span class="n">origin</span> <span class="n">refs</span><span class="p">/</span><span class="n">tags</span><span class="p">/</span><span class="n">v0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">3-alpha</span><span class="p">.</span><span class="n">3</span>
 </span></code></pre></div>
 <p>If the remote tag does not exist and the local tag points at the correct,
 unchanged <code>main</code> commit, retrying the push manually is possible. If there is

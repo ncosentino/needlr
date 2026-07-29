@@ -156,3 +156,4 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [ADR-0006 Generate Record Constructor Overloads](https://www.devleader.ca/projects/needlr/adr/adr-0006-generate-record-constructor-overloads/) -- Opinionated fluent dependency injection for .NET with source generation
 - [ADR-0007 Own Graph Source Locations Per Project](https://www.devleader.ca/projects/needlr/adr/adr-0007-own-graph-source-locations-per-project/) -- Opinionated fluent dependency injection for .NET with source generation
 - [ADR-0008 Own a Version-Aware Agent Marketplace](https://www.devleader.ca/projects/needlr/adr/adr-0008-own-version-aware-agent-marketplace/) -- Opinionated fluent dependency injection for .NET with source generation
+- [ADR-0009 Stage Release Publication](https://www.devleader.ca/projects/needlr/adr/adr-0009-stage-release-publication/) -- Opinionated fluent dependency injection for .NET with source generation
