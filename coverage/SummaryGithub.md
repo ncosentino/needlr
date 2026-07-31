@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 7/29/2026 - 7:16:36 AM |
-| Coverage date: | 7/29/2026 - 7:13:14 AM - 7/29/2026 - 7:16:32 AM |
+| Generated on: | 7/31/2026 - 3:48:58 AM |
+| Coverage date: | 7/31/2026 - 3:46:29 AM - 7/31/2026 - 3:48:54 AM |
 | Parser: | MultiReport (25x Cobertura) |
 | Assemblies: | 20 |
 | Classes: | 250 |
 | Files: | 231 |
-| **Line coverage:** | 92.7% (13454 of 14498) |
-| Covered lines: | 13454 |
-| Uncovered lines: | 1044 |
-| Coverable lines: | 14498 |
-| Total lines: | 36162 |
-| **Branch coverage:** | 84.5% (6245 of 7384) |
-| Covered branches: | 6245 |
-| Total branches: | 7384 |
+| **Line coverage:** | 92.7% (13461 of 14514) |
+| Covered lines: | 13461 |
+| Uncovered lines: | 1053 |
+| Coverable lines: | 14514 |
+| Total lines: | 36198 |
+| **Branch coverage:** | 84.5% (6241 of 7378) |
+| Covered branches: | 6241 |
+| Total branches: | 7378 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -126,11 +126,11 @@
 |NexusLabs.Needlr.FluentValidation.ValidationFailureConverter|88.8%|50%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Generators - 94.4%</summary>
+<details><summary>NexusLabs.Needlr.Generators - 94.3%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Generators**|**94.4%**|**86.1%**|
+|**NexusLabs.Needlr.Generators**|**94.3%**|**86.2%**|
 |NexusLabs.Needlr.Generators.AssemblyDiscoveryHelper|100%|94%|
 |NexusLabs.Needlr.Generators.BreadcrumbWriter|91.8%|83.3%|
 |NexusLabs.Needlr.Generators.CaptiveDependencyAnalyzer|89.3%|88%|
@@ -139,7 +139,7 @@
 |NexusLabs.Needlr.Generators.CodeGen.ConstructorGuardCodeGenerator|98.1%|96%|
 |NexusLabs.Needlr.Generators.CodeGen.DecoratorsCodeGenerator|85.4%|82.6%|
 |NexusLabs.Needlr.Generators.CodeGen.EmptyTypeRegistryCodeGenerator|100%||
-|NexusLabs.Needlr.Generators.CodeGen.FactoryCodeGenerator|99.2%|83.3%|
+|NexusLabs.Needlr.Generators.CodeGen.FactoryCodeGenerator|96%|91.6%|
 |NexusLabs.Needlr.Generators.CodeGen.GeneratedConstructorCodeGenerator|100%|94.4%|
 |NexusLabs.Needlr.Generators.CodeGen.HttpClientCodeGenerator|100%|100%|
 |NexusLabs.Needlr.Generators.CodeGen.InjectableTypesCodeGenerator|88%|86.3%|
@@ -173,7 +173,7 @@
 |NexusLabs.Needlr.Generators.GeneratedConstructorAnalyzer|94.9%|94.7%|
 |NexusLabs.Needlr.Generators.GeneratedConstructorGenerator|100%|50%|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttributeAnalyzer|87.3%|75%|
-|NexusLabs.Needlr.Generators.GeneratorHelpers|92.2%|83%|
+|NexusLabs.Needlr.Generators.GeneratorHelpers|89.9%|81.2%|
 |NexusLabs.Needlr.Generators.Helpers.OptionsNamingHelper|100%|100%|
 |NexusLabs.Needlr.Generators.HttpClientOptionsAnalyzer|100%|88.8%|
 |NexusLabs.Needlr.Generators.HttpClientOptionsAttributeHelper|98.9%|95%|
@@ -305,15 +305,15 @@
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|88.2%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.9%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.7%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.9%**|**89.8%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.7%**|**89.3%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|95.9%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||
