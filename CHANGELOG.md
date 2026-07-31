@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixed
+
+- **`NexusLabs.Needlr.Generators` — `[GenerateFactory]` no longer emits invalid identifiers for generic constructor parameter types.** The generated backing field, constructor parameter, and construction argument for an injectable dependency are now derived from the original constructor parameter name (escaped when it is a C# keyword) instead of the dependency's simple type name, so a generic injected dependency such as `ILogger<T>` no longer produces a dangling `>` in the generated identifier. This also prevents two distinct injectable dependencies whose type arguments coincidentally share a simple name (e.g. `ILogger<Report>` and `IOptions<Report>`) from colliding on the same generated field name.
+
 ### Changed
 
 - Release publication is now staged. `release.yml` verifies the same-commit `main` CI run, prepares a release candidate once, and hands digest-verified artifacts to separate NuGet.org, GitHub Packages, documentation, and GitHub Release jobs. Publication jobs never restore, build, or test, so retrying a failed destination replays only that destination instead of repeating validation that already passed for the exact commit. Every packaged file is bound to its source commit and validating CI run by `release-manifest.json`, and each publication job re-verifies that manifest before its irreversible step. See ADR-0009 and `docs/releasing.md`.

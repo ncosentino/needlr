@@ -15,6 +15,46 @@ namespace NexusLabs.Needlr.Generators.CodeGen;
 /// </summary>
 internal static class FactoryCodeGenerator
 {
+    private static string GetParameterBaseName(TypeDiscoveryHelper.ConstructorParameterInfo parameter)
+    {
+        if (!string.IsNullOrWhiteSpace(parameter.ParameterName))
+            return parameter.ParameterName!;
+
+        var typeName = GeneratorHelpers.GetShortTypeName(parameter.TypeName);
+        var genericStart = typeName.IndexOf('<');
+        if (genericStart >= 0)
+            typeName = typeName.Substring(0, genericStart);
+
+        return GeneratorHelpers.ToCamelCase(typeName);
+    }
+
+    private static string GetParameterIdentifierName(TypeDiscoveryHelper.ConstructorParameterInfo parameter)
+    {
+        return GeneratorHelpers.EscapeIdentifier(GetParameterBaseName(parameter));
+    }
+
+    private static Dictionary<string, string> GetInjectableNamesByType(
+        IEnumerable<TypeDiscoveryHelper.ConstructorParameterInfo> parameters)
+    {
+        var namesByType = new Dictionary<string, string>(StringComparer.Ordinal);
+        var usedNames = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var parameter in parameters)
+        {
+            if (namesByType.ContainsKey(parameter.TypeName))
+                continue;
+
+            var baseName = GetParameterBaseName(parameter);
+            var uniqueName = baseName;
+            for (var suffix = 2; !usedNames.Add(uniqueName); suffix++)
+                uniqueName = baseName + suffix;
+
+            namesByType.Add(parameter.TypeName, uniqueName);
+        }
+
+        return namesByType;
+    }
+
     internal static void GenerateFactoryInterface(StringBuilder builder, DiscoveredFactory factory, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
         var factoryName = $"I{factory.SimpleTypeName}Factory";
@@ -29,11 +69,8 @@ internal static class FactoryCodeGenerator
         // Generate Create method for each constructor
         foreach (var ctor in factory.Constructors)
         {
-            var runtimeParamList = string.Join(", ", ctor.RuntimeParameters.Select(p => 
-            {
-                var simpleTypeName = GeneratorHelpers.GetSimpleTypeName(p.TypeName);
-                return $"{p.TypeName} {p.ParameterName ?? GeneratorHelpers.ToCamelCase(simpleTypeName)}";
-            }));
+            var runtimeParamList = string.Join(", ", ctor.RuntimeParameters.Select(p =>
+                $"{p.TypeName} {GetParameterIdentifierName(p)}"));
 
             builder.AppendLine($"    /// <summary>Creates a new instance of {factory.SimpleTypeName}.</summary>");
             
@@ -42,7 +79,7 @@ internal static class FactoryCodeGenerator
             {
                 if (!string.IsNullOrWhiteSpace(param.DocumentationComment))
                 {
-                    var paramName = param.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(param.TypeName));
+                    var paramName = GetParameterBaseName(param);
                     var escapedDoc = GeneratorHelpers.EscapeXmlContent(param.DocumentationComment!);
                     builder.AppendLine($"    /// <param name=\"{paramName}\">{escapedDoc}</param>");
                 }
@@ -59,12 +96,12 @@ internal static class FactoryCodeGenerator
         var factoryInterfaceName = $"I{factory.SimpleTypeName}Factory";
         var factoryImplName = $"{factory.SimpleTypeName}Factory";
 
-        // Collect all unique injectable parameters across all constructors
         var allInjectableParams = factory.Constructors
             .SelectMany(c => c.InjectableParameters)
             .GroupBy(p => p.TypeName)
             .Select(g => g.First())
             .ToList();
+        var injectableNamesByType = GetInjectableNamesByType(allInjectableParams);
 
         builder.AppendLine("/// <summary>");
         builder.AppendLine($"/// Factory implementation for creating instances of <see cref=\"{factory.TypeName}\"/>.");
@@ -76,20 +113,24 @@ internal static class FactoryCodeGenerator
         // Fields for injectable dependencies
         foreach (var param in allInjectableParams)
         {
-            var fieldName = "_" + GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(param.TypeName));
+            var fieldName = "_" + injectableNamesByType[param.TypeName];
             builder.AppendLine($"    private readonly {param.TypeName} {fieldName};");
         }
 
         builder.AppendLine();
 
         // Constructor
-        var ctorParams = string.Join(", ", allInjectableParams.Select(p => $"{p.TypeName} {GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(p.TypeName))}"));
+        var ctorParams = string.Join(
+            ", ",
+            allInjectableParams.Select(p =>
+                $"{p.TypeName} {GeneratorHelpers.EscapeIdentifier(injectableNamesByType[p.TypeName])}"));
         builder.AppendLine($"    public {factoryImplName}({ctorParams})");
         builder.AppendLine("    {");
         foreach (var param in allInjectableParams)
         {
-            var fieldName = "_" + GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(param.TypeName));
-            var paramName = GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(param.TypeName));
+            var parameterName = injectableNamesByType[param.TypeName];
+            var fieldName = "_" + parameterName;
+            var paramName = GeneratorHelpers.EscapeIdentifier(parameterName);
             builder.AppendLine($"        {fieldName} = {paramName};");
         }
         builder.AppendLine("    }");
@@ -98,11 +139,8 @@ internal static class FactoryCodeGenerator
         // Create methods for each constructor
         foreach (var ctor in factory.Constructors)
         {
-            var runtimeParamList = string.Join(", ", ctor.RuntimeParameters.Select(p => 
-            {
-                var paramName = p.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(p.TypeName));
-                return $"{p.TypeName} {paramName}";
-            }));
+            var runtimeParamList = string.Join(", ", ctor.RuntimeParameters.Select(p =>
+                $"{p.TypeName} {GetParameterIdentifierName(p)}"));
 
             builder.AppendLine($"    public {factory.ReturnTypeName} Create({runtimeParamList})");
             builder.AppendLine("    {");
@@ -116,13 +154,13 @@ internal static class FactoryCodeGenerator
             var allArgs = new List<string>();
             foreach (var inj in ctor.InjectableParameters)
             {
-                var fieldName = "_" + GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(inj.TypeName));
-                var argName = inj.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(inj.TypeName));
+                var fieldName = "_" + injectableNamesByType[inj.TypeName];
+                var argName = GetParameterIdentifierName(inj);
                 allArgs.Add($"{argName}: {fieldName}");
             }
             foreach (var rt in ctor.RuntimeParameters)
             {
-                var paramName = rt.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(rt.TypeName));
+                var paramName = GetParameterIdentifierName(rt);
                 allArgs.Add($"{paramName}: {paramName}");
             }
 
@@ -141,8 +179,7 @@ internal static class FactoryCodeGenerator
         var funcType = $"Func<{runtimeTypes}, {factory.ReturnTypeName}>";
 
         // Build the lambda
-        var runtimeParams = string.Join(", ", ctor.RuntimeParameters.Select(p => 
-            p.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(p.TypeName))));
+        var runtimeParams = string.Join(", ", ctor.RuntimeParameters.Select(GetParameterIdentifierName));
 
         builder.AppendLine($"{indent}services.AddSingleton<{funcType}>(sp =>");
         builder.AppendLine($"{indent}    ({runtimeParams}) => new {factory.TypeName}(");
@@ -153,7 +190,7 @@ internal static class FactoryCodeGenerator
         var allArgs = new List<string>();
         foreach (var inj in ctor.InjectableParameters)
         {
-            var argName = inj.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(inj.TypeName));
+            var argName = GetParameterIdentifierName(inj);
             if (inj.IsKeyed)
             {
                 allArgs.Add($"{argName}: sp.GetRequiredKeyedService<{inj.TypeName}>(\"{GeneratorHelpers.EscapeStringLiteral(inj.ServiceKey!)}\")");
@@ -165,7 +202,7 @@ internal static class FactoryCodeGenerator
         }
         foreach (var rt in ctor.RuntimeParameters)
         {
-            var paramName = rt.ParameterName ?? GeneratorHelpers.ToCamelCase(GeneratorHelpers.GetSimpleTypeName(rt.TypeName));
+            var paramName = GetParameterIdentifierName(rt);
             allArgs.Add($"{paramName}: {paramName}");
         }
 
@@ -256,4 +293,3 @@ internal static class FactoryCodeGenerator
         return builder.ToString();
     }
 }
-

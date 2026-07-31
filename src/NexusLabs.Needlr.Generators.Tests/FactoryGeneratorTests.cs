@@ -1,5 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.DependencyInjection;
 
 using Xunit;
 
@@ -267,10 +268,8 @@ namespace TestApp
 
         var generatedCode = RunGenerator(source);
 
-        // Should generate implementation class
         Assert.Contains("internal sealed class MyServiceFactory : IMyServiceFactory", generatedCode);
-        // Implementation should have injectable deps as constructor params (uses type-derived name)
-        Assert.Contains("public MyServiceFactory(global::TestApp.IDependency dependency)", generatedCode);
+        Assert.Contains("public MyServiceFactory(global::TestApp.IDependency dep)", generatedCode);
     }
 
     [Fact]
@@ -596,6 +595,198 @@ namespace TestApp
         // Should preserve XML escaping
         Assert.Contains(@"<param name=""filter"">Filter expression using &lt;T&gt; syntax.</param>", generatedCode);
     }
+
+    /// <summary>
+    /// Verifies generic injectable types use the constructor parameter name for generated identifiers.
+    /// </summary>
+    [Fact]
+    public void Generator_WithGenericInjectableDependency_GeneratesValidIdentifiers()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IReportLogger<T> { }
+
+    [GenerateFactory]
+    public sealed class Report
+    {
+        public Report(IReportLogger<Report> logger, string title) { }
+    }
+}";
+
+        var runner = GeneratorTestRunner.ForFactory().WithReference<IServiceCollection>().WithSource(source);
+        var generatedCode = runner.RunTypeRegistryGenerator();
+
+        Assert.Contains(
+            "private readonly global::TestApp.IReportLogger<global::TestApp.Report> _logger;",
+            generatedCode);
+        Assert.Contains(
+            "public ReportFactory(global::TestApp.IReportLogger<global::TestApp.Report> logger)",
+            generatedCode);
+        Assert.Contains("logger: _logger", generatedCode);
+        AssertGeneratedFactoriesCompile(runner);
+    }
+
+    /// <summary>
+    /// Verifies repeated injectable types share one field while retaining both constructor argument names.
+    /// </summary>
+    [Fact]
+    public void Generator_WithTwoSameTypedConstructorParameters_GeneratesValidNonCollidingCode()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IDependency { }
+
+    [GenerateFactory]
+    public class MyService
+    {
+        public MyService(IDependency primary, IDependency secondary, string title) { }
+    }
+}";
+
+        var runner = GeneratorTestRunner.ForFactory().WithReference<IServiceCollection>().WithSource(source);
+        var generatedCode = runner.RunTypeRegistryGenerator();
+
+        Assert.Contains(
+            "public MyServiceFactory(global::TestApp.IDependency primary)",
+            generatedCode);
+        Assert.Contains(
+            "primary: _primary, secondary: _primary, title: title",
+            generatedCode);
+        Assert.DoesNotContain("_secondary", generatedCode);
+        AssertGeneratedFactoriesCompile(runner);
+    }
+
+    /// <summary>
+    /// Verifies different generic dependencies with the same type argument receive distinct fields.
+    /// </summary>
+    [Fact]
+    public void Generator_WithDistinctGenericDependenciesSharingTypeArgument_GeneratesDistinctFields()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IReportLogger<T> { }
+
+    public interface IReportOptions<T> { }
+
+    [GenerateFactory]
+    public sealed class Report
+    {
+        public Report(IReportLogger<Report> logger, IReportOptions<Report> options, string title) { }
+    }
+}";
+
+        var runner = GeneratorTestRunner.ForFactory().WithReference<IServiceCollection>().WithSource(source);
+        var generatedCode = runner.RunTypeRegistryGenerator();
+
+        Assert.Contains(
+            "private readonly global::TestApp.IReportLogger<global::TestApp.Report> _logger;",
+            generatedCode);
+        Assert.Contains(
+            "private readonly global::TestApp.IReportOptions<global::TestApp.Report> _options;",
+            generatedCode);
+        Assert.Contains("logger: _logger, options: _options, title: title", generatedCode);
+        AssertGeneratedFactoriesCompile(runner);
+    }
+
+    /// <summary>
+    /// Verifies injectable names remain unique when constructor overloads reuse a parameter name.
+    /// </summary>
+    [Fact]
+    public void Generator_WithOverloadsReusingInjectableParameterName_GeneratesUniqueFields()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IPrimaryDependency { }
+    public interface ISecondaryDependency { }
+
+    [GenerateFactory]
+    public sealed class MyService
+    {
+        public MyService(IPrimaryDependency dependency, string name) { }
+        public MyService(ISecondaryDependency dependency, int id) { }
+    }
+}";
+
+        var runner = GeneratorTestRunner.ForFactory().WithReference<IServiceCollection>().WithSource(source);
+        var generatedCode = runner.RunTypeRegistryGenerator();
+
+        Assert.Contains(
+            "private readonly global::TestApp.IPrimaryDependency _dependency;",
+            generatedCode);
+        Assert.Contains(
+            "private readonly global::TestApp.ISecondaryDependency _dependency2;",
+            generatedCode);
+        Assert.Contains("dependency: _dependency, name: name", generatedCode);
+        Assert.Contains("dependency: _dependency2, id: id", generatedCode);
+        AssertGeneratedFactoriesCompile(runner);
+    }
+
+    /// <summary>
+    /// Verifies escaped constructor parameter names remain valid in generated code.
+    /// </summary>
+    [Fact]
+    public void Generator_WithKeywordNamedConstructorParameter_EscapesGeneratedIdentifier()
+    {
+        var source = @"
+using NexusLabs.Needlr;
+using NexusLabs.Needlr.Generators;
+
+[assembly: GenerateTypeRegistry]
+
+namespace TestApp
+{
+    public interface IDependency { }
+
+    [GenerateFactory]
+    public class MyService
+    {
+        public MyService(IDependency @class, string title) { }
+    }
+}";
+
+        var runner = GeneratorTestRunner.ForFactory().WithReference<IServiceCollection>().WithSource(source);
+        var generatedCode = runner.RunTypeRegistryGenerator();
+
+        Assert.Contains("private readonly global::TestApp.IDependency _class;", generatedCode);
+        Assert.Contains("public MyServiceFactory(global::TestApp.IDependency @class)", generatedCode);
+        Assert.Contains("@class: _class, title: title", generatedCode);
+        AssertGeneratedFactoriesCompile(runner);
+    }
+
+    private static void AssertGeneratedFactoriesCompile(GeneratorTestRunner runner)
+    {
+        var errors = runner
+            .RunGeneratorCompilationErrors(new TypeRegistryGenerator())
+            .Where(e => e.Location.SourceTree?.FilePath.EndsWith("Factories.g.cs") == true)
+            .ToList();
+
+        Assert.Empty(errors);
+    }
+
     private static string RunGenerator(string source)
     {
         return GeneratorTestRunner.ForFactory()
