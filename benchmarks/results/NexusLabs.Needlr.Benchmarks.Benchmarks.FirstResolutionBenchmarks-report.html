@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.FirstResolutionBenchmarks-20260719-041323</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.FirstResolutionBenchmarks-20260802-041513</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,7 +14,7 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
+12th Gen Intel Core i7-12700H, 1 CPU, 20 logical and 10 physical cores
 .NET SDK 10.0.302
   [Host]   : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
   ShortRun : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
@@ -26,9 +26,9 @@ LaunchCount=1  UnrollFactor=1  WarmupCount=3
 <table>
 <thead><tr><th>Method                          </th><th>Mean </th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_BuildAndResolveFirst</td><td>26.76 &mu;s</td><td>4.687 &mu;s</td><td>0.725 &mu;s</td><td>1.00</td><td>0.03</td><td>1</td><td>-</td><td>NA</td>
-</tr><tr><td>Needlr_Reflection_BuildAndResolveFirst</td><td>5,486.12 &mu;s</td><td>158.551 &mu;s</td><td>41.175 &mu;s</td><td>205.11</td><td>5.13</td><td>3</td><td>1319576 B</td><td>NA</td>
-</tr><tr><td>Needlr_SourceGen_BuildAndResolveFirst</td><td>453.96 &mu;s</td><td>115.685 &mu;s</td><td>30.043 &mu;s</td><td>16.97</td><td>1.11</td><td>2</td><td>216424 B</td><td>NA</td>
+</thead><tbody><tr><td>ManualDI_BuildAndResolveFirst</td><td>29.13 &mu;s</td><td>27.51 &mu;s</td><td>4.258 &mu;s</td><td>1.02</td><td>0.21</td><td>1</td><td>8.17 KB</td><td>1.00</td>
+</tr><tr><td>Needlr_Reflection_BuildAndResolveFirst</td><td>4,707.45 &mu;s</td><td>1,375.93 &mu;s</td><td>212.926 &mu;s</td><td>164.67</td><td>25.88</td><td>3</td><td>1291.47 KB</td><td>158.04</td>
+</tr><tr><td>Needlr_SourceGen_BuildAndResolveFirst</td><td>508.97 &mu;s</td><td>492.36 &mu;s</td><td>127.864 &mu;s</td><td>17.80</td><td>4.94</td><td>2</td><td>214.45 KB</td><td>26.24</td>
 </tr></tbody></table>
 </body>
 </html>

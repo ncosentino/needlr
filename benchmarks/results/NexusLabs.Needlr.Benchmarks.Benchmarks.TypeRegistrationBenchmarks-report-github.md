@@ -1,7 +1,7 @@
 ```
 
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
+12th Gen Intel Core i7-12700H, 1 CPU, 20 logical and 10 physical cores
 .NET SDK 10.0.302
   [Host]   : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
   ShortRun : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
@@ -10,8 +10,8 @@ Job=ShortRun  IterationCount=5  LaunchCount=1
 WarmupCount=3  
 
 ```
-| Method                          | Mean           | Error           | StdDev        | Ratio     | RatioSD  | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
-|-------------------------------- |---------------:|----------------:|--------------:|----------:|---------:|-----:|--------:|-------:|----------:|------------:|
-| ManualDI_RegisterTypes          |       103.7 ns |         2.45 ns |       0.64 ns |      1.00 |     0.01 |    1 |  0.0315 |      - |     528 B |        1.00 |
-| Needlr_Reflection_RegisterTypes | 1,870,791.6 ns | 2,794,824.57 ns | 725,807.07 ns | 18,038.49 | 6,389.50 |    3 | 31.2500 |      - |  589831 B |    1,117.10 |
-| Needlr_SourceGen_RegisterTypes  |    15,087.5 ns |       545.66 ns |     141.71 ns |    145.48 |     1.49 |    2 |  1.8158 | 0.1373 |   30440 B |       57.65 |
+| Method                          | Mean         | Error         | StdDev       | Ratio    | RatioSD | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
+|-------------------------------- |-------------:|--------------:|-------------:|---------:|--------:|-----:|--------:|-------:|----------:|------------:|
+| ManualDI_RegisterTypes          |     104.0 ns |      27.39 ns |      7.11 ns |     1.00 |    0.09 |    1 |  0.0421 |      - |     528 B |        1.00 |
+| Needlr_Reflection_RegisterTypes | 951,135.7 ns | 209,532.33 ns | 32,425.36 ns | 9,181.18 |  647.64 |    3 | 46.8750 | 3.9063 |  591591 B |    1,120.44 |
+| Needlr_SourceGen_RegisterTypes  |  12,531.7 ns |   1,516.12 ns |    393.73 ns |   120.97 |    8.41 |    2 |  2.4567 | 0.1984 |   30960 B |       58.64 |

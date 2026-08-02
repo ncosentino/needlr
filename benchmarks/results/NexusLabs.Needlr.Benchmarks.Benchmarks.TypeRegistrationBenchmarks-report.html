@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.TypeRegistrationBenchmarks-20260719-041928</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.TypeRegistrationBenchmarks-20260802-042105</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,7 +14,7 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
+12th Gen Intel Core i7-12700H, 1 CPU, 20 logical and 10 physical cores
 .NET SDK 10.0.302
   [Host]   : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
   ShortRun : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
@@ -24,11 +24,11 @@ WarmupCount=3
 </code></pre>
 
 <table>
-<thead><tr><th>Method                   </th><th>Mean    </th><th>Error    </th><th>StdDev </th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Gen0</th><th>Gen1</th><th>Allocated</th><th>Alloc Ratio</th>
+<thead><tr><th>Method                   </th><th>Mean  </th><th>Error  </th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Gen0</th><th>Gen1</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_RegisterTypes</td><td>103.7 ns</td><td>2.45 ns</td><td>0.64 ns</td><td>1.00</td><td>0.01</td><td>1</td><td>0.0315</td><td>-</td><td>528 B</td><td>1.00</td>
-</tr><tr><td>Needlr_Reflection_RegisterTypes</td><td>1,870,791.6 ns</td><td>2,794,824.57 ns</td><td>725,807.07 ns</td><td>18,038.49</td><td>6,389.50</td><td>3</td><td>31.2500</td><td>-</td><td>589831 B</td><td>1,117.10</td>
-</tr><tr><td>Needlr_SourceGen_RegisterTypes</td><td>15,087.5 ns</td><td>545.66 ns</td><td>141.71 ns</td><td>145.48</td><td>1.49</td><td>2</td><td>1.8158</td><td>0.1373</td><td>30440 B</td><td>57.65</td>
+</thead><tbody><tr><td>ManualDI_RegisterTypes</td><td>104.0 ns</td><td>27.39 ns</td><td>7.11 ns</td><td>1.00</td><td>0.09</td><td>1</td><td>0.0421</td><td>-</td><td>528 B</td><td>1.00</td>
+</tr><tr><td>Needlr_Reflection_RegisterTypes</td><td>951,135.7 ns</td><td>209,532.33 ns</td><td>32,425.36 ns</td><td>9,181.18</td><td>647.64</td><td>3</td><td>46.8750</td><td>3.9063</td><td>591591 B</td><td>1,120.44</td>
+</tr><tr><td>Needlr_SourceGen_RegisterTypes</td><td>12,531.7 ns</td><td>1,516.12 ns</td><td>393.73 ns</td><td>120.97</td><td>8.41</td><td>2</td><td>2.4567</td><td>0.1984</td><td>30960 B</td><td>58.64</td>
 </tr></tbody></table>
 </body>
 </html>
