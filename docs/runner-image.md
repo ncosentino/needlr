@@ -76,7 +76,7 @@ checkout:
 ```
 
 This creates a separate `needlr-ci` manager and does not change the existing
-general-purpose profile or Foundry capacity.
+general-purpose profile or unrelated repository capacity.
 
 Confirm the specialized runner is online before changing repository routing:
 
@@ -98,8 +98,8 @@ jobs, and documentation use a runner carrying the `needlr-ci` label. The conditi
 setup action must report that SDK `10.0.302` is already installed.
 
 Only after the specialized route is proven should the old default profile stop providing
-Needlr capacity. Replay that profile with its existing non-Needlr repositories and
-counts; do not change Foundry capacity.
+Needlr capacity. Replay that profile with its existing repositories and counts; do not
+change unrelated capacity.
 
 Repository workflows never choose an OCI image or mutate PitCrew. Image activation is an
 operator-approved host operation.

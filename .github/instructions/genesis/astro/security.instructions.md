@@ -68,10 +68,15 @@ If the site includes contact forms or any user input:
 - Audit third-party scripts for security — each one is an attack vector
 - Use Subresource Integrity (SRI) hashes for CDN-hosted scripts
 
-## Deploy token security
+## Deploy secret security
 
-The `DEPLOY_REPO_TOKEN` GitHub secret used in the deploy workflow must:
-- Be a fine-grained PAT with minimal scope (Contents: Read and Write on the public repo only)
+The Cloudflare Pages deploy workflow authenticates with two GitHub repository secrets:
+
+- `CLOUDFLARE_API_TOKEN` — scope it to **Account › Cloudflare Pages › Edit** only, so it cannot
+  reach DNS, other zones, or any non-Pages resource.
+- `CLOUDFLARE_ACCOUNT_ID` — the target Cloudflare account id.
+
+Both must:
 - Never be logged or echoed in workflow output
 - Be rotated periodically
 - Never be stored in `.env` files or source code

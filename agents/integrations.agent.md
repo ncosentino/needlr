@@ -42,7 +42,6 @@ separately when they differ.
   must be reasoned about explicitly.
 - A reflection implementation does not prove the corresponding source-generated
   or Native AOT path is valid.
-- AI provider and agent-framework integrations belong to Foundry.
 
 ## Boundaries
 

@@ -25,7 +25,7 @@ The `site` property must be set to the production domain. It is used by:
 - `robots.txt` sitemap reference
 - All JSON-LD structured data URLs
 
-The template ships with `https://CHANGE-ME.example.com` — update this FIRST before creating
+The site URL defaults to `https://CHANGE-ME.example.com` — update this FIRST before creating
 any pages. Never leave it as a placeholder in committed code. Every JSON-LD schema, every
 canonical URL, and every sitemap entry depends on this value.
 

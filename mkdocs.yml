@@ -76,7 +76,6 @@ nav:
     - Breadcrumbs: breadcrumbs.md
     - SignalR: signalr.md
     - .NET MAUI: maui.md
-    - Foundry AI/Agentic Framework: https://www.devleader.ca/projects/foundry
   - Advanced:
     - Advanced Usage: advanced-usage.md
     - Serilog Bootstrap: serilog.md
@@ -87,6 +86,22 @@ nav:
     - Local CI Runners: local-runners.md
     - Repository-Owned Runner Image: runner-image.md
     - Releasing Needlr: releasing.md
+  - Contributor Guidance:
+    - Guide Index: guides/index.md
+    - Building from Source: building.md
+    - Configuration Model: configuration.md
+    - Architecture:
+      - Architecture Decisions: architecture/decisions.md
+      - Project Structure: architecture/project-structure.md
+      - Data Access Boundary: architecture/data-access.md
+      - HTTP Clients and Options: architecture/http-clients-and-options.md
+    - Development:
+      - .NET Engineering: development/dotnet-engineering.md
+      - Roslyn Analyzers: development/roslyn-analyzers.md
+      - Validation and Scheduling Boundaries: development/request-validation-and-jobs.md
+      - Performance: performance/dotnet-performance.md
+      - Testing and Benchmarks: testing/evaluations-and-benchmarks.md
+      - Blazor Boundary: ui/blazor-extensibility.md
   - Benchmarks: benchmarks.md
   - Analyzers:
     - Overview: analyzers/README.md
