@@ -1,0 +1,135 @@
+{
+  "$schema": "./genesis-guidance.schema.json",
+  "schemaVersion": 1,
+  "docs": {
+    "mapPath": "docs/index.md",
+    "pages": [
+      {
+        "path": "docs/architecture/decisions.md",
+        "title": "Architecture decisions",
+        "section": "Architecture",
+        "order": 10,
+        "owner": "seed:common"
+      },
+      {
+        "path": "docs/architecture/data-access.md",
+        "title": "Data access and repositories",
+        "section": "Architecture",
+        "order": 20,
+        "owner": "tag:dotnet"
+      },
+      {
+        "path": "docs/architecture/http-clients-and-options.md",
+        "title": "HTTP clients and options",
+        "section": "Architecture",
+        "order": 30,
+        "owner": "tag:dotnet"
+      },
+      {
+        "path": "docs/architecture/project-structure.md",
+        "title": ".NET project and feature structure",
+        "section": "Architecture",
+        "order": 40,
+        "owner": "tag:dotnet"
+      },
+      {
+        "path": "docs/development/dotnet-engineering.md",
+        "title": ".NET engineering conventions",
+        "section": "Development",
+        "order": 10,
+        "owner": "tag:dotnet"
+      },
+      {
+        "path": "docs/performance/dotnet-performance.md",
+        "title": ".NET performance",
+        "section": "Development",
+        "order": 20,
+        "owner": "tag:dotnet"
+      },
+      {
+        "path": "docs/development/roslyn-analyzers.md",
+        "title": "Roslyn analyzers",
+        "section": "Development",
+        "order": 30,
+        "owner": "tag:dotnet"
+      },
+      {
+        "path": "docs/testing/evaluations-and-benchmarks.md",
+        "title": "Testing and benchmarks",
+        "section": "Development",
+        "order": 40,
+        "owner": "tag:dotnet"
+      },
+      {
+        "path": "docs/development/request-validation-and-jobs.md",
+        "title": "Request validation and job scheduling",
+        "section": "Development",
+        "order": 50,
+        "owner": "tag:dotnet"
+      },
+      {
+        "path": "docs/building.md",
+        "title": "Building from Source",
+        "section": "Guides",
+        "order": 1000,
+        "owner": "inferred:final-output"
+      },
+      {
+        "path": "docs/configuration.md",
+        "title": "Configuration",
+        "section": "Guides",
+        "order": 1000,
+        "owner": "inferred:final-output"
+      },
+      {
+        "path": "docs/getting-started.md",
+        "title": "Getting Started",
+        "section": "Guides",
+        "order": 1000,
+        "owner": "inferred:final-output"
+      },
+      {
+        "path": "docs/guides/index.md",
+        "title": "Guides",
+        "section": "Guides",
+        "order": 1000,
+        "owner": "inferred:final-output"
+      },
+      {
+        "path": "docs/ui/blazor-extensibility.md",
+        "title": "Blazor extensibility",
+        "section": "UI",
+        "order": 10,
+        "owner": "tag:dotnet"
+      }
+    ]
+  },
+  "agents": {
+    "path": "AGENTS.md",
+    "maxLines": 60,
+    "maxBytes": 3072,
+    "redirects": {
+      "claude": "CLAUDE.md",
+      "copilot": ".github/copilot-instructions.md"
+    }
+  },
+  "instructions": {
+    "managedRoot": ".github/instructions/genesis",
+    "individualReviewThreshold": {
+      "lines": 100,
+      "bytes": 8192
+    },
+    "matchedContext": {
+      "targetLines": 300,
+      "targetBytes": 16384,
+      "maxLines": 600,
+      "maxBytes": 32768
+    }
+  },
+  "review": {
+    "skillPath": ".github/skills/review-changes/SKILL.md",
+    "instructionResolver": "scripts/guidance/Get-ApplicableInstructions.ps1",
+    "validationInventory": "scripts/guidance/Get-ValidationInventory.ps1"
+  },
+  "contextExceptions": []
+}

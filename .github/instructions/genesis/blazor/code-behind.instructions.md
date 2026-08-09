@@ -12,7 +12,7 @@ Code-behind classes are `partial` and match the component name. They do not expl
 from `ComponentBase` unless overriding lifecycle methods — the `.razor` file already implies it:
 
 ```csharp
-namespace TemplateProject.Features.Products;
+namespace NexusLabs.Needlr.Features.Products;
 
 public sealed partial class ProductDetail
 {
@@ -66,7 +66,7 @@ Override only the lifecycle methods you need. Prefer async versions:
 
 ## Source-generated logging
 
-Use `[LoggerMessage]` partial methods (same pattern as all other genesis projects):
+Use `[LoggerMessage]` partial methods for source-generated logging:
 
 ```csharp
 public sealed partial class ProductDetail

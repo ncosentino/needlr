@@ -60,14 +60,14 @@ internal sealed class CreateThingUnitOfWork(
 
 ### Web API request DTOs as parameters
 
-NEVER accept a web request DTO (e.g., `CreateSiteRequest`, `UpdateThingRequest`) as a UnitOfWork parameter. These types are bound at the HTTP layer and must not bleed into business logic. The Carter module owns the translation from the web DTO to a service-layer input type:
+NEVER accept a web request DTO (e.g., `CreateOrderRequest`, `UpdateThingRequest`) as a UnitOfWork parameter. These types are bound at the HTTP layer and must not bleed into business logic. The Carter module owns the translation from the web DTO to a service-layer input type:
 
 ```csharp
 // WRONG — request DTO bleeds into business logic
-Task<TriedEx<Site>> TryCreateAsync(CreateSiteRequest request, string ownerUserId, CancellationToken cancellationToken);
+Task<TriedEx<Order>> TryCreateAsync(CreateOrderRequest request, string ownerUserId, CancellationToken cancellationToken);
 
 // CORRECT — UoW accepts a service-layer input type
-Task<TriedEx<Site>> TryCreateAsync(CreateSiteInput input, string ownerUserId, CancellationToken cancellationToken);
+Task<TriedEx<Order>> TryCreateAsync(CreateOrderInput input, string ownerUserId, CancellationToken cancellationToken);
 ```
 
 Define a dedicated `*Input` record in the same feature slice as a service-layer type. The Carter module maps the web DTO into this type before calling the UoW.
@@ -82,16 +82,12 @@ Use `LogWarning` — not `LogError` — when logging transient or expected runti
 
 ```csharp
 // WRONG
-error => _logger.LogError(error, "Failed to commit {SiteId}", id)
+error => _logger.LogError(error, "Failed to commit {OrderId}", id)
 
 // CORRECT
-error => _logger.LogWarning(error, "Failed to commit {SiteId}", id)
+error => _logger.LogWarning(error, "Failed to commit {OrderId}", id)
 ```
 
 ## Testing
 
 Tests target UnitOfWork classes directly with real MySQL via `TestFixtureBuilder`. Do NOT test business logic through Carter modules or consumers — test the UnitOfWork directly.
-
-## Reference
-
-- `documentation/architecture/patterns/try-patterns.md`

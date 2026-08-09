@@ -1,59 +1,29 @@
 ---
-applyTo: "**/*Analyzer.cs,**/DiagnosticDescriptors.cs,**/AnalyzerReleases.*.md"
+applyTo: "**/*Analyzer.cs,**/*CodeFixProvider.cs,**/DiagnosticDescriptors.cs,**/AnalyzerReleases.*.md"
 ---
 
-# Roslyn Analyzer Rules
+# Roslyn analyzers
 
-## Diagnostic ID convention
-
-Choose a short project-level prefix (e.g., `MYAPP`) and assign component codes to group related diagnostics:
-
-| Component | Prefix | Example |
-|-----------|--------|---------|
-| Core | `MYAPPCOR` | `MYAPPCOR001` |
-| Generators | `MYAPPGEN` | `MYAPPGEN001` |
-
-Maintain sequential numbering within each component. Never reuse a retired ID.
-
-## Release tracking (RS2000)
-
-Every new diagnostic MUST be added to `AnalyzerReleases.Unshipped.md` in the same project. Format:
-
-```
-MYAPPXXX | MyApp.Analyzers | Error | AnalyzerClassName, Short title
-```
-
-Forgetting this causes `RS2000` build errors.
-
-## Message format (RS1032)
-
-- **Single sentence**: no trailing period. Example: `"Type '{0}' must implement IDisposable"`
-- **Multi-sentence**: trailing period on the last sentence. Example: `"Type '{0}' has conflicting attributes. Remove one of them."`
-
-## Compilation-end diagnostics (RS1037)
-
-If a diagnostic is reported from a `RegisterCompilationEndAction`, the descriptor MUST include `customTags: WellKnownDiagnosticTags.CompilationEnd`.
-
-## Analyzer class shape
-
-```csharp
-[DiagnosticAnalyzer(LanguageNames.CSharp)]
-public sealed class MyAnalyzer : DiagnosticAnalyzer
-{
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ...;
-    public override void Initialize(AnalysisContext context)
-    {
-        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-        context.EnableConcurrentExecution();
-        context.RegisterSyntaxNodeAction(...) or RegisterSymbolAction(...);
-    }
-}
-```
-
-- Always `public sealed class`
-- Always call `ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None)` — analyzers should not run on generated code
-- Always call `EnableConcurrentExecution()` for performance
-
-## Suppressing analyzer warnings
-
-`[System.Diagnostics.CodeAnalysis.SuppressMessage]` is **STRICTLY FORBIDDEN** without explicit team lead approval. Never suppress analyzer warnings to make code compile. Fix the code instead.
+- Choose one diagnostic-ID model per repository/package: product+component prefix or
+  one short package prefix with a sequential numeric series. Never mix or reuse IDs.
+- Use conventional categories; default to `Usage` when no more precise category fits.
+- Severity is `Error` only for unambiguous defects, `Warning` for strong opt-in
+  conventions, `Info` for suggestions, and `Hidden` only for IDE-only refactorings.
+- Add every new diagnostic to `AnalyzerReleases.Unshipped.md` (`RS2000`).
+- Message punctuation follows `RS1032`.
+- Title/message state what is wrong and name the concrete fix visible in build output.
+  Critical remediation cannot live only in `description`.
+- Every descriptor has a stable rule-specific `helpLinkUri`.
+- Compilation-end diagnostics include
+  `WellKnownDiagnosticTags.CompilationEnd` (`RS1037`).
+- Analyzer classes are public sealed, ignore generated code, enable concurrent
+  execution, and forward compiler cancellation.
+- Code-fix providers are public sealed, set an equivalence key, forward cancellation,
+  and use batch fix-all unless ordering makes it unsafe.
+- Do not add `SuppressMessage` merely to make the build green.
+- Analyzer packages target `netstandard2.0` and set `IsRoslynComponent`,
+  `EnforceExtendedAnalyzerRules`, `DevelopmentDependency`,
+  `BuildOutputTargetFolder=analyzers/dotnet/cs`,
+  `SuppressDependenciesWhenPacking`, and `NoPackageAnalysis`.
+- Do not use the `IncludeBuildOutput=false`/manual `None Pack` shape that causes
+  `NU5017`. A transient consumer smoke test proves the packed DLL loads.

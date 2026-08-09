@@ -81,5 +81,3 @@ or lifecycle rule.
 - Distinguish verified facts from assumptions and recommendations.
 - If the available evidence does not establish an answer, say what remains
   unknown.
-- Route former Needlr Agent Framework, Copilot, Semantic Kernel, evaluation, and
-  AI-provider questions to Foundry.
