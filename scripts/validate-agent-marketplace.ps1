@@ -6,7 +6,7 @@
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$expectedVersion = '1.0.0'
+$expectedVersion = '1.0.1'
 $expectedAgents = @('application', 'integrations', 'source-generation')
 
 function Read-JsonFile {

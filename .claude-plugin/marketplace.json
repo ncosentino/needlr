@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Official Needlr agents and skills for application design, source generation, and framework integrations.",
-    "version": "1.0.0"
+    "version": "1.0.1"
   },
   "plugins": [
     {
       "name": "needlr",
       "description": "Version-aware specialists grounded in the Needlr repository, releases, tests, and documentation.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "source": "./",
       "category": "developer-tools",
       "homepage": "https://www.devleader.ca/projects/needlr/"

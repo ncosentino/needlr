@@ -39,8 +39,6 @@ which code, release, and documentation are authoritative.
   than relying on constructor shape, visibility, or namespace accidents.
 - Recommendations must account for service lifetime and activation semantics,
   not only whether a registration compiles.
-- AI and agentic runtime capabilities belong to Foundry. Do not resurrect the
-  removed Needlr AI, Copilot, or Semantic Kernel package identities.
 
 ## Boundaries
 

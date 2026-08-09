@@ -14,27 +14,27 @@ MassTransit message types use two distinct suffixes to clearly separate them fro
 ## `*Contract` — message sent to a consumer
 
 ```csharp
-// In NexusAI.SDK / shared namespace
-public sealed record CreateScheduledPostContract(
+// In MyProduct.SDK / shared namespace
+public sealed record PlaceOrderContract(
     UserId OwnerUserId,
     DateTimeOffset TargetDateTime,
     DateTimeOffset ExpiresDateTime,
-    IReadOnlyList<SocialAccountId> SocialAccountIds,
+    IReadOnlyList<CustomerId> CustomerIds,
     IReadOnlyDictionary<string, string?> Fields);
 ```
 
 ## `*ConsumerResponse` — response from a consumer
 
 ```csharp
-// In NexusAI.SDK / shared namespace
-public sealed record CreateScheduledPostConsumerResponse(
-    ContentId ContentId);
+// In MyProduct.SDK / shared namespace
+public sealed record PlaceOrderConsumerResponse(
+    OrderId OrderId);
 ```
 
 Used in the consumer like this:
 
 ```csharp
-await context.RespondAsync(new CreateScheduledPostConsumerResponse(result.Value.ContentId))
+await context.RespondAsync(new PlaceOrderConsumerResponse(result.Value.OrderId))
     .ConfigureAwait(false);
 ```
 
@@ -47,7 +47,7 @@ Both `*Contract` and `*ConsumerResponse` types **MUST live in the SDK project** 
 ### Shape
 
 - **Immutable positional records** — always
-- **Strong-typed IDs** — use `ContentId`, `UserId`, `SocialAccountId`, etc. These types are in-process; they do not cross a web boundary and are not subject to the `long`-to-`string` serialization rule
+- **Strong-typed IDs** — use `OrderId`, `UserId`, `CustomerId`, etc. These types are in-process; they do not cross a web boundary and are not subject to the `long`-to-`string` serialization rule
 - **No success/failure properties** — use `ConsumerError.CreateResponse(error)` for error responses; never add `bool Success` to a contract or response
 
 ### Error responses

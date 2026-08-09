@@ -1,7 +1,7 @@
 {
   "name": "needlr",
   "description": "Version-aware Needlr application, source-generation, and framework-integration specialists.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Nick Cosentino"
   },
