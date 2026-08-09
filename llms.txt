@@ -30,7 +30,6 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Breadcrumbs](https://www.devleader.ca/projects/needlr/breadcrumbs/) -- Opinionated fluent dependency injection for .NET with source generation
 - [SignalR](https://www.devleader.ca/projects/needlr/signalr/) -- Register ASP.NET Core SignalR services with Needlr and map hubs through either source-generated AOT-safe endpoints or an explicit reflection fallback.
 - [.NET MAUI](https://www.devleader.ca/projects/needlr/maui/) -- Opinionated fluent dependency injection for .NET with source generation
-- [https://www.devleader.ca/projects/foundry](https://www.devleader.ca/projects/needlr/https://www.devleader.ca/projects/foundry/)
 
 ## Advanced
 
@@ -43,6 +42,28 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Local CI Runners](https://www.devleader.ca/projects/needlr/local-runners/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Repository-Owned Runner Image](https://www.devleader.ca/projects/needlr/runner-image/) -- Build, publish, activate, update, and roll back Needlr's repository-owned PitCrew runner image.
 - [Releasing Needlr](https://www.devleader.ca/projects/needlr/releasing/) -- Opinionated fluent dependency injection for .NET with source generation
+
+## Contributor Guidance
+
+- [Guide Index](https://www.devleader.ca/projects/needlr/guides/) -- Task-focused guides for getting the most out of NexusLabs.Needlr.
+- [Building from Source](https://www.devleader.ca/projects/needlr/building/) -- Compile, test, and pack NexusLabs.Needlr from source.
+- [Configuration Model](https://www.devleader.ca/projects/needlr/configuration/) -- How Needlr selects discovery, registration, and generated configuration behavior.
+
+## Architecture
+
+- [Architecture Decisions](https://www.devleader.ca/projects/needlr/architecture/decisions/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Project Structure](https://www.devleader.ca/projects/needlr/architecture/project-structure/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Data Access Boundary](https://www.devleader.ca/projects/needlr/architecture/data-access/) -- Opinionated fluent dependency injection for .NET with source generation
+- [HTTP Clients and Options](https://www.devleader.ca/projects/needlr/architecture/http-clients-and-options/) -- Opinionated fluent dependency injection for .NET with source generation
+
+## Development
+
+- [.NET Engineering](https://www.devleader.ca/projects/needlr/development/dotnet-engineering/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Roslyn Analyzers](https://www.devleader.ca/projects/needlr/development/roslyn-analyzers/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Validation and Scheduling Boundaries](https://www.devleader.ca/projects/needlr/development/request-validation-and-jobs/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Performance](https://www.devleader.ca/projects/needlr/performance/dotnet-performance/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Testing and Benchmarks](https://www.devleader.ca/projects/needlr/testing/evaluations-and-benchmarks/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Blazor Boundary](https://www.devleader.ca/projects/needlr/ui/blazor-extensibility/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Benchmarks](https://www.devleader.ca/projects/needlr/benchmarks/) -- Opinionated fluent dependency injection for .NET with source generation
 
 ## Analyzers
