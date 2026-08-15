@@ -32,6 +32,21 @@ public sealed class SyringeBundleExtensionsTests
     }
 
     [Fact]
+    public void UsingAutoConfiguration_WithRegistryParticipant_IncludesParticipantAssembly()
+    {
+        using var scope = NeedlrSourceGenBootstrap.BeginTestScope(
+            () => [],
+            () => [],
+            [typeof(SyringeBundleExtensionsTests)]);
+
+        var syringe = new Syringe().UsingAutoConfiguration();
+
+        var assembly = Assert.Single(
+            syringe.GetOrCreateAssemblyProvider().GetCandidateAssemblies());
+        Assert.Same(typeof(SyringeBundleExtensionsTests).Assembly, assembly);
+    }
+
+    [Fact]
     public void UsingAutoConfiguration_WithoutSourceGen_FallsBackToReflection()
     {
         // Arrange - ensure no source-gen bootstrap

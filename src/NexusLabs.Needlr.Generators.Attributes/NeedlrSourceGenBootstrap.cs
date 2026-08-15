@@ -10,7 +10,7 @@ namespace NexusLabs.Needlr.Generators;
 /// </summary>
 /// <remarks>
 /// The source generator emits a module initializer in the host assembly that calls
-/// one of the Register overloads with the generated TypeRegistry providers.
+/// one of the Register overloads with the generated TypeRegistry identity and providers.
 /// Needlr runtime can then discover generated registries without any runtime reflection.
 /// </remarks>
 public static class NeedlrSourceGenBootstrap
@@ -20,17 +20,22 @@ public static class NeedlrSourceGenBootstrap
         public Registration(
             Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
             Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
+            IReadOnlyList<Type>? registryParticipantTypes = null,
             Action<object>? decoratorApplier = null,
             Action<object, object>? optionsRegistrar = null)
         {
             InjectableTypeProvider = injectableTypeProvider;
             PluginTypeProvider = pluginTypeProvider;
+            RegistryParticipantTypes = registryParticipantTypes is null
+                ? Array.Empty<Type>()
+                : registryParticipantTypes.ToArray();
             DecoratorApplier = decoratorApplier;
             OptionsRegistrar = optionsRegistrar;
         }
 
         public Func<IReadOnlyList<InjectableTypeInfo>> InjectableTypeProvider { get; }
         public Func<IReadOnlyList<PluginTypeInfo>> PluginTypeProvider { get; }
+        public IReadOnlyList<Type> RegistryParticipantTypes { get; }
         public Action<object>? DecoratorApplier { get; }
         public Action<object, object>? OptionsRegistrar { get; }
     }
@@ -131,12 +136,113 @@ public static class NeedlrSourceGenBootstrap
         Action<object>? decoratorApplier,
         Action<object, object>? optionsRegistrar)
     {
+        RegisterCore(
+            injectableTypeProvider,
+            pluginTypeProvider,
+            Array.Empty<Type>(),
+            decoratorApplier,
+            optionsRegistrar);
+    }
+
+    /// <summary>
+    /// Registers the generated registry identity and its type and plugin providers.
+    /// </summary>
+    /// <param name="registryParticipantType">
+    /// A generated type whose assembly identifies the registry participant.
+    /// </param>
+    /// <param name="injectableTypeProvider">Provider for injectable types.</param>
+    /// <param name="pluginTypeProvider">Provider for plugin types.</param>
+    /// <remarks>
+    /// The generated <c>TypeRegistry</c> type is carried separately from injectable and plugin
+    /// metadata so assemblies with empty registries remain visible to Needlr plugins.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// NeedlrSourceGenBootstrap.Register(
+    ///     typeof(MyApp.Generated.TypeRegistry),
+    ///     MyApp.Generated.TypeRegistry.GetInjectableTypes,
+    ///     MyApp.Generated.TypeRegistry.GetPluginTypes);
+    /// </code>
+    /// </example>
+    public static void Register(
+        Type registryParticipantType,
+        Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
+    {
+        Register(
+            registryParticipantType,
+            injectableTypeProvider,
+            pluginTypeProvider,
+            null,
+            null);
+    }
+
+    /// <summary>
+    /// Registers the generated registry identity and its type, plugin, decorator, and options providers.
+    /// </summary>
+    /// <param name="registryParticipantType">
+    /// A generated type whose assembly identifies the registry participant.
+    /// </param>
+    /// <param name="injectableTypeProvider">Provider for injectable types.</param>
+    /// <param name="pluginTypeProvider">Provider for plugin types.</param>
+    /// <param name="decoratorApplier">
+    /// Action that applies decorators to the service collection.
+    /// The parameter is an IServiceCollection, but typed as object to avoid dependency on Microsoft.Extensions.DependencyInjection in this assembly.
+    /// </param>
+    /// <param name="optionsRegistrar">
+    /// Action that registers options with the service collection and configuration.
+    /// Parameters are (IServiceCollection, IConfiguration), typed as object to avoid dependencies.
+    /// </param>
+    /// <remarks>
+    /// Generated module initializers use this overload so the runtime can retain assembly identity
+    /// even when both metadata providers return empty collections.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// NeedlrSourceGenBootstrap.Register(
+    ///     typeof(MyApp.Generated.TypeRegistry),
+    ///     MyApp.Generated.TypeRegistry.GetInjectableTypes,
+    ///     MyApp.Generated.TypeRegistry.GetPluginTypes,
+    ///     null,
+    ///     null);
+    /// </code>
+    /// </example>
+    public static void Register(
+        Type registryParticipantType,
+        Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
+        Action<object>? decoratorApplier,
+        Action<object, object>? optionsRegistrar)
+    {
+        if (registryParticipantType is null) throw new ArgumentNullException(nameof(registryParticipantType));
+
+        RegisterCore(
+            injectableTypeProvider,
+            pluginTypeProvider,
+            new[] { registryParticipantType },
+            decoratorApplier,
+            optionsRegistrar);
+    }
+
+    private static void RegisterCore(
+        Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
+        IReadOnlyList<Type> registryParticipantTypes,
+        Action<object>? decoratorApplier,
+        Action<object, object>? optionsRegistrar)
+    {
         if (injectableTypeProvider is null) throw new ArgumentNullException(nameof(injectableTypeProvider));
         if (pluginTypeProvider is null) throw new ArgumentNullException(nameof(pluginTypeProvider));
+        if (registryParticipantTypes is null) throw new ArgumentNullException(nameof(registryParticipantTypes));
 
         lock (_gate)
         {
-            _registrations.Add(new Registration(injectableTypeProvider, pluginTypeProvider, decoratorApplier, optionsRegistrar));
+            _registrations.Add(new Registration(
+                injectableTypeProvider,
+                pluginTypeProvider,
+                registryParticipantTypes,
+                decoratorApplier,
+                optionsRegistrar));
             _cachedCombined = null;
         }
     }
@@ -182,11 +288,50 @@ public static class NeedlrSourceGenBootstrap
         out Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
         out Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
     {
+        return TryGetProviders(
+            out injectableTypeProvider,
+            out pluginTypeProvider,
+            out _);
+    }
+
+    /// <summary>
+    /// Gets the registered providers and generated registry participant types, if any.
+    /// </summary>
+    /// <param name="injectableTypeProvider">The combined injectable type provider.</param>
+    /// <param name="pluginTypeProvider">The combined plugin type provider.</param>
+    /// <param name="registryParticipantTypes">
+    /// Generated types whose assemblies identify every registered TypeRegistry participant.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when at least one source-generated registration exists; otherwise,
+    /// <see langword="false"/>.
+    /// </returns>
+    /// <remarks>
+    /// Participant types are returned in registration order and deduplicated by type. Consumers
+    /// can derive assembly identity from them without scanning the current <c>AppDomain</c>.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// if (NeedlrSourceGenBootstrap.TryGetProviders(
+    ///     out var injectableTypes,
+    ///     out var pluginTypes,
+    ///     out var registryParticipants))
+    /// {
+    ///     // Configure the source-generated runtime from the returned metadata.
+    /// }
+    /// </code>
+    /// </example>
+    public static bool TryGetProviders(
+        out Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+        out Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
+        out IReadOnlyList<Type> registryParticipantTypes)
+    {
         var local = _asyncLocalOverride.Value;
         if (local is not null)
         {
             injectableTypeProvider = local.InjectableTypeProvider;
             pluginTypeProvider = local.PluginTypeProvider;
+            registryParticipantTypes = local.RegistryParticipantTypes;
             return true;
         }
 
@@ -196,6 +341,7 @@ public static class NeedlrSourceGenBootstrap
             {
                 injectableTypeProvider = null!;
                 pluginTypeProvider = null!;
+                registryParticipantTypes = null!;
                 return false;
             }
 
@@ -206,6 +352,7 @@ public static class NeedlrSourceGenBootstrap
 
             injectableTypeProvider = _cachedCombined.InjectableTypeProvider;
             pluginTypeProvider = _cachedCombined.PluginTypeProvider;
+            registryParticipantTypes = _cachedCombined.RegistryParticipantTypes;
             return true;
         }
     }
@@ -297,7 +444,7 @@ public static class NeedlrSourceGenBootstrap
     /// <returns>True if any extension registrars are registered.</returns>
     /// <remarks>
     /// The returned action invokes every registrar in registration order. Unlike
-    /// <see cref="TryGetProviders"/>, extension registrars are not affected by test scopes.
+    /// <c>TryGetProviders</c>, extension registrars are not affected by test scopes.
     /// </remarks>
     public static bool TryGetExtensionRegistrar(out Action<object, object>? extensionRegistrar)
     {
@@ -339,11 +486,26 @@ public static class NeedlrSourceGenBootstrap
         Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
         Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
     {
+        return BeginTestScope(
+            injectableTypeProvider,
+            pluginTypeProvider,
+            Array.Empty<Type>());
+    }
+
+    internal static IDisposable BeginTestScope(
+        Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
+        IReadOnlyList<Type> registryParticipantTypes)
+    {
         if (injectableTypeProvider is null) throw new ArgumentNullException(nameof(injectableTypeProvider));
         if (pluginTypeProvider is null) throw new ArgumentNullException(nameof(pluginTypeProvider));
+        if (registryParticipantTypes is null) throw new ArgumentNullException(nameof(registryParticipantTypes));
 
         var prior = _asyncLocalOverride.Value;
-        _asyncLocalOverride.Value = new Registration(injectableTypeProvider, pluginTypeProvider);
+        _asyncLocalOverride.Value = new Registration(
+            injectableTypeProvider,
+            pluginTypeProvider,
+            registryParticipantTypes);
         return new Scope(prior);
     }
 
@@ -369,6 +531,19 @@ public static class NeedlrSourceGenBootstrap
         var pluginProviders = registrations.Select(r => r.PluginTypeProvider).ToArray();
         var decoratorAppliers = registrations.Where(r => r.DecoratorApplier is not null).Select(r => r.DecoratorApplier!).ToArray();
         var optionsRegistrars = registrations.Where(r => r.OptionsRegistrar is not null).Select(r => r.OptionsRegistrar!).ToArray();
+        var registryParticipantTypes = new List<Type>();
+        var seenRegistryParticipantTypes = new HashSet<Type>();
+
+        foreach (var registration in registrations)
+        {
+            foreach (var registryParticipantType in registration.RegistryParticipantTypes)
+            {
+                if (seenRegistryParticipantTypes.Add(registryParticipantType))
+                {
+                    registryParticipantTypes.Add(registryParticipantType);
+                }
+            }
+        }
 
         IReadOnlyList<InjectableTypeInfo> GetInjectableTypes()
         {
@@ -428,6 +603,11 @@ public static class NeedlrSourceGenBootstrap
             }
             : null;
 
-        return new Registration(GetInjectableTypes, GetPluginTypes, combinedDecoratorApplier, combinedOptionsRegistrar);
+        return new Registration(
+            GetInjectableTypes,
+            GetPluginTypes,
+            registryParticipantTypes,
+            combinedDecoratorApplier,
+            combinedOptionsRegistrar);
     }
 }

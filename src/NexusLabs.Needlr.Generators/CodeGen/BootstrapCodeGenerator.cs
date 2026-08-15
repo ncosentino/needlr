@@ -13,7 +13,7 @@ internal static class BootstrapCodeGenerator
 {
     /// <summary>
     /// Emits the module-initializer bootstrap source that registers TypeRegistry
-    /// callbacks and runs referenced TypeRegistry module constructors.
+    /// identity and callbacks and runs referenced TypeRegistry module constructors.
     /// </summary>
     internal static string GenerateModuleInitializerBootstrapSource(string assemblyName, IReadOnlyList<string> referencedAssemblies, BreadcrumbWriter breadcrumbs, bool hasFactories, bool hasOptions, bool hasProviders)
     {
@@ -43,6 +43,7 @@ internal static class BootstrapCodeGenerator
         }
 
         builder.AppendLine("        global::NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.Register(");
+        builder.AppendLine($"            typeof(global::{safeAssemblyName}.Generated.TypeRegistry),");
         builder.AppendLine($"            global::{safeAssemblyName}.Generated.TypeRegistry.GetInjectableTypes,");
         builder.AppendLine($"            global::{safeAssemblyName}.Generated.TypeRegistry.GetPluginTypes,");
 

@@ -81,18 +81,19 @@ ship the same target as defense-in-depth.
 
 ## Multi-Assembly TypeRegistry Composition
 
-When multiple projects in your solution each have `[assembly: GenerateTypeRegistry]`, Needlr generates a `TypeRegistry` in each of them. At runtime, each assembly's `[ModuleInitializer]` calls `NeedlrSourceGenBootstrap.Register()`, which accumulates all registered providers.
+When multiple projects in your solution each have `[assembly: GenerateTypeRegistry]`, Needlr generates a `TypeRegistry` in each of them. At runtime, each assembly's `[ModuleInitializer]` calls `NeedlrSourceGenBootstrap.Register()`, which accumulates the registry identity together with its generated providers.
 
-When you call `new Syringe().UsingSourceGen()`, it calls `TryGetProviders()`, which combines and deduplicates all registered providers from all loaded assemblies. This means:
+When you call `new Syringe().UsingSourceGen()`, it calls `TryGetProviders()`, which combines and deduplicates all registered providers and registry participants from all loaded assemblies. This means:
 
 - An entry-point project referencing a Bootstrap project (which references feature projects) gets all types from all of them
 - Test projects that reference any of those get full service resolution without needing their own TypeRegistry
+- Plugin assembly options include every generated registry participant, even when a participant contributes no injectable or plugin metadata, when runtime assembly metadata is available
 
 ### Participants With No Registerable Types
 
 A project can carry `[assembly: GenerateTypeRegistry]` (for example because `NeedlrAutoGenerate=true` is set solution-wide) yet contain nothing to register — a domain, contracts, or abstractions library made up only of `record`, `enum`, and `interface` types is the common case.
 
-Such a project still emits a **minimal** `TypeRegistry` (empty `GetInjectableTypes()` / `GetPluginTypes()` providers and a module initializer). This matters because any project that references it force-loads `typeof(<Assembly>.Generated.TypeRegistry)` to run that module initializer; if the registry were omitted, the referencing project would fail to compile with `CS0234`. Emitting the minimal registry keeps the producer and consumer in agreement, so adding a type-less participant never breaks an aggregator build.
+Such a project still emits a **minimal** `TypeRegistry` (empty `GetInjectableTypes()` / `GetPluginTypes()` providers and a module initializer). This matters because any project that references it force-loads `typeof(<Assembly>.Generated.TypeRegistry)` to run that module initializer; if the registry were omitted, the referencing project would fail to compile with `CS0234`. The generated registry type also preserves the participant's assembly identity, so `ServiceCollectionPluginOptions.Assemblies` includes it without a synthetic service, a synthetic plugin, or runtime assembly scanning.
 
 The minimal registry depends only on the attributes package (`NexusLabs.Needlr.Generators.Attributes`) — never on the injection packages. A project must already reference the attributes package to use `[GenerateTypeRegistry]`, so the registry always compiles, **even for a project that references no Needlr injection packages** (a pure contracts or documentation library). It does not register a `ServiceCatalog` or apply decorators, because there is nothing to register.
 

@@ -9,8 +9,8 @@ namespace NexusLabs.Needlr.Injection.Tests.Bootstrap;
 
 /// <summary>
 /// Contract coverage for how <see cref="NeedlrSourceGenBootstrap"/> composes generated
-/// registrations: empty state, single and multiple registrars, ordering, deduplication,
-/// cache invalidation, test scopes, and argument guards.
+/// registrations: empty state, participant identities, single and multiple registrars,
+/// ordering, deduplication, cache invalidation, test scopes, and argument guards.
 /// </summary>
 [Collection(SourceGenBootstrapCollection.Name)]
 public sealed class NeedlrSourceGenBootstrapCompositionTests : IDisposable
@@ -35,6 +35,20 @@ public sealed class NeedlrSourceGenBootstrapCompositionTests : IDisposable
         Assert.False(found, "Expected no providers when nothing has been registered");
         Assert.Null(injectableTypeProvider);
         Assert.Null(pluginTypeProvider);
+    }
+
+    [Fact]
+    public void TryGetProviders_NoRegistrations_WithParticipantOutput_ReturnsFalseWithNullOutputs()
+    {
+        var found = NeedlrSourceGenBootstrap.TryGetProviders(
+            out var injectableTypeProvider,
+            out var pluginTypeProvider,
+            out var registryParticipantTypes);
+
+        Assert.False(found, "Expected no providers when nothing has been registered");
+        Assert.Null(injectableTypeProvider);
+        Assert.Null(pluginTypeProvider);
+        Assert.Null(registryParticipantTypes);
     }
 
     [Fact]
@@ -107,6 +121,41 @@ public sealed class NeedlrSourceGenBootstrapCompositionTests : IDisposable
         Assert.Equal(
             [typeof(BootstrapTestPluginOne), typeof(BootstrapTestPluginTwo)],
             pluginTypeProvider().Select(p => p.PluginType).ToArray());
+    }
+
+    [Fact]
+    public void TryGetProviders_RegistryParticipants_PreservesRegistrationOrderAndDeduplicates()
+    {
+        NeedlrSourceGenBootstrap.Register(
+            typeof(BootstrapTestServiceOne),
+            () => [],
+            () => []);
+        NeedlrSourceGenBootstrap.Register(
+            typeof(BootstrapTestServiceTwo),
+            () => [],
+            () => []);
+        NeedlrSourceGenBootstrap.Register(
+            typeof(BootstrapTestServiceOne),
+            () => [],
+            () => []);
+
+        Assert.True(
+            NeedlrSourceGenBootstrap.TryGetProviders(out _, out _, out var registryParticipantTypes),
+            "Expected providers after registry participants were registered");
+        Assert.Equal(
+            [typeof(BootstrapTestServiceOne), typeof(BootstrapTestServiceTwo)],
+            registryParticipantTypes);
+    }
+
+    [Fact]
+    public void TryGetProviders_LegacyRegistration_HasNoRegistryParticipants()
+    {
+        NeedlrSourceGenBootstrap.Register(() => [], () => []);
+
+        Assert.True(
+            NeedlrSourceGenBootstrap.TryGetProviders(out _, out _, out var registryParticipantTypes),
+            "Expected providers after a legacy registration");
+        Assert.Empty(registryParticipantTypes);
     }
 
     [Fact]
@@ -464,6 +513,15 @@ public sealed class NeedlrSourceGenBootstrapCompositionTests : IDisposable
             NeedlrSourceGenBootstrap.Register(null!, () => []));
 
         Assert.Equal("injectableTypeProvider", exception.ParamName);
+    }
+
+    [Fact]
+    public void Register_NullRegistryParticipantType_ThrowsArgumentNullException()
+    {
+        var exception = Assert.Throws<ArgumentNullException>(() =>
+            NeedlrSourceGenBootstrap.Register(null!, () => [], () => []));
+
+        Assert.Equal("registryParticipantType", exception.ParamName);
     }
 
     [Fact]

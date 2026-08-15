@@ -11,7 +11,10 @@ namespace NexusLabs.Needlr;
 /// </summary>
 /// <param name="Services">The service collection for registering dependencies.</param>
 /// <param name="Config">The application configuration.</param>
-/// <param name="Assemblies">The list of assemblies discovered by Needlr.</param>
+/// <param name="Assemblies">
+/// The candidate assemblies selected by Needlr. Source-generated discovery includes every
+/// generated TypeRegistry participant, including empty registries, when assembly metadata is available.
+/// </param>
 /// <param name="PluginFactory">Factory for creating additional plugin instances.</param>
 public sealed record ServiceCollectionPluginOptions(
     IServiceCollection Services,

@@ -90,6 +90,7 @@ public sealed class BootstrapCodeGeneratorRuntimeTests
                 public static class NeedlrSourceGenBootstrap
                 {
                     public static void Register(
+                        Type registryParticipantType,
                         Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
                         Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
                         Action<object> decoratorApplier,

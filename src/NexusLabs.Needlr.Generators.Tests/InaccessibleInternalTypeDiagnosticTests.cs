@@ -376,8 +376,11 @@ namespace NexusLabs.Needlr.Generators
     public static class NeedlrSourceGenBootstrap
     {
         public static void Register(
+            System.Type registryParticipantType,
             System.Func<System.Collections.Generic.IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
-            System.Func<System.Collections.Generic.IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
+            System.Func<System.Collections.Generic.IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
+            System.Action<object>? decoratorApplier = null,
+            System.Action<object, object>? optionsRegistrar = null)
         {
         }
     }
