@@ -9,7 +9,10 @@ namespace NexusLabs.Needlr.AspNet;
 /// Contains the built web application, discovered assemblies, and plugin factory.
 /// </summary>
 /// <param name="WebApplication">The built web application to configure.</param>
-/// <param name="Assemblies">The list of assemblies discovered by Needlr.</param>
+/// <param name="Assemblies">
+/// The candidate assemblies selected by Needlr. Source-generated discovery includes every
+/// generated TypeRegistry participant, including empty registries, when assembly metadata is available.
+/// </param>
 /// <param name="PluginFactory">Factory for creating additional plugin instances.</param>
 public sealed record WebApplicationPluginOptions(
     WebApplication WebApplication,

@@ -785,8 +785,11 @@ namespace NexusLabs.Needlr.Generators
     public static class NeedlrSourceGenBootstrap
     {
         public static void Register(
+            System.Type registryParticipantType,
             System.Func<System.Collections.Generic.IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
-            System.Func<System.Collections.Generic.IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
+            System.Func<System.Collections.Generic.IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
+            System.Action<object>? decoratorApplier = null,
+            System.Action<object, object>? optionsRegistrar = null)
         {
         }
     }
@@ -869,6 +872,9 @@ namespace MainApp
 
         var (_, mainGeneratedCode) = RunGeneratorWithReferencedAssembly(referencedAssemblySource, mainAssemblySource);
 
+        Assert.Contains(
+            "typeof(global::MainApp.Generated.TypeRegistry),",
+            mainGeneratedCode);
         // Should generate ForceLoadReferencedAssemblies method
         Assert.Contains("ForceLoadReferencedAssemblies", mainGeneratedCode);
         Assert.Contains(
@@ -1098,8 +1104,11 @@ namespace NexusLabs.Needlr.Generators
     public static class NeedlrSourceGenBootstrap
     {
         public static void Register(
+            System.Type registryParticipantType,
             System.Func<System.Collections.Generic.IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
-            System.Func<System.Collections.Generic.IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
+            System.Func<System.Collections.Generic.IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
+            System.Action<object>? decoratorApplier = null,
+            System.Action<object, object>? optionsRegistrar = null)
         {
         }
     }
@@ -1155,6 +1164,7 @@ namespace DomainOnly
         var bootstrap = files.FirstOrDefault(f => f.FilePath.EndsWith("NeedlrSourceGenBootstrap.g.cs"));
         Assert.NotNull(bootstrap);
         Assert.Contains("NeedlrSourceGenBootstrap.Register(", bootstrap!.Content);
+        Assert.Contains("typeof(global::DomainOnly.Generated.TypeRegistry),", bootstrap.Content);
         Assert.DoesNotContain("IServiceCollection", bootstrap.Content);
 
         // No ServiceCatalog is emitted for an assembly with nothing to catalog.

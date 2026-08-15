@@ -43,14 +43,20 @@ public static class SyringeBundleExtensions
     {
         ArgumentNullException.ThrowIfNull(syringe);
 
-        if (NeedlrSourceGenBootstrap.TryGetProviders(out var injectableTypeProvider, out var pluginTypeProvider))
+        if (NeedlrSourceGenBootstrap.TryGetProviders(
+            out var injectableTypeProvider,
+            out var pluginTypeProvider,
+            out var registryParticipantTypes))
         {
             var configured = new ConfiguredSyringe(syringe) with
             {
                 ServiceProviderBuilderFactory = (populator, assemblyProvider, additionalAssemblies) => 
                     new ServiceProviderBuilder(populator, assemblyProvider, additionalAssemblies)
             };
-            return configured.UsingGeneratedComponents(injectableTypeProvider, pluginTypeProvider);
+            return configured.UsingGeneratedComponents(
+                injectableTypeProvider,
+                pluginTypeProvider,
+                registryParticipantTypes);
         }
 
         // Fallback to reflection
@@ -76,14 +82,20 @@ public static class SyringeBundleExtensions
     {
         ArgumentNullException.ThrowIfNull(syringe);
 
-        if (NeedlrSourceGenBootstrap.TryGetProviders(out var injectableTypeProvider, out var pluginTypeProvider))
+        if (NeedlrSourceGenBootstrap.TryGetProviders(
+            out var injectableTypeProvider,
+            out var pluginTypeProvider,
+            out var registryParticipantTypes))
         {
             var configured = new ConfiguredSyringe(syringe) with
             {
                 ServiceProviderBuilderFactory = (populator, assemblyProvider, additionalAssemblies) => 
                     new ServiceProviderBuilder(populator, assemblyProvider, additionalAssemblies)
             };
-            return configured.UsingGeneratedComponents(injectableTypeProvider, pluginTypeProvider);
+            return configured.UsingGeneratedComponents(
+                injectableTypeProvider,
+                pluginTypeProvider,
+                registryParticipantTypes);
         }
 
         // Invoke fallback handler if provided

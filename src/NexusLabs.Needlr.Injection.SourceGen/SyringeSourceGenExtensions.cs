@@ -35,7 +35,8 @@ public static class SyringeSourceGenExtensions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This method uses the type providers registered via <see cref="NeedlrSourceGenBootstrap"/>.
+    /// This method uses the type providers and registry participant identities registered via
+    /// <see cref="NeedlrSourceGenBootstrap"/>.
     /// The bootstrap is automatically registered by the generated module initializer when you use
     /// <c>[assembly: GenerateTypeRegistry(...)]</c>.
     /// </para>
@@ -49,14 +50,20 @@ public static class SyringeSourceGenExtensions
     {
         ArgumentNullException.ThrowIfNull(syringe);
 
-        if (!NeedlrSourceGenBootstrap.TryGetProviders(out var injectableTypeProvider, out var pluginTypeProvider))
+        if (!NeedlrSourceGenBootstrap.TryGetProviders(
+            out var injectableTypeProvider,
+            out var pluginTypeProvider,
+            out var registryParticipantTypes))
         {
             throw new InvalidOperationException(
                 "No source-generated type providers found. Ensure your assembly has " +
                 "[assembly: GenerateTypeRegistry(...)] and references NexusLabs.Needlr.Generators.");
         }
 
-        return new ConfiguredSyringe(syringe).UsingGeneratedComponents(injectableTypeProvider, pluginTypeProvider);
+        return new ConfiguredSyringe(syringe).UsingGeneratedComponents(
+            injectableTypeProvider,
+            pluginTypeProvider,
+            registryParticipantTypes);
     }
 
     /// <summary>
@@ -65,6 +72,8 @@ public static class SyringeSourceGenExtensions
     /// <remarks>
     /// This is a strategy method that creates a ConfiguredSyringe. Use this when you have
     /// explicit type providers (e.g., from generated code) rather than using the bootstrap.
+    /// Assemblies are derived only from the supplied injectable and plugin metadata; use the
+    /// overload with registry participant types when empty registries must remain visible.
     /// </remarks>
     /// <param name="syringe">The base syringe to configure.</param>
     /// <param name="injectableTypeProvider">A function that returns the injectable types.</param>
@@ -75,16 +84,42 @@ public static class SyringeSourceGenExtensions
         Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
         Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
     {
+        return syringe.UsingGeneratedComponents(
+            injectableTypeProvider,
+            pluginTypeProvider,
+            Array.Empty<Type>());
+    }
+
+    /// <summary>
+    /// Configures the syringe with all generated components and registry participant identities.
+    /// </summary>
+    /// <param name="syringe">The base syringe to configure.</param>
+    /// <param name="injectableTypeProvider">A function that returns the injectable types.</param>
+    /// <param name="pluginTypeProvider">A function that returns the plugin types.</param>
+    /// <param name="registryParticipantTypes">
+    /// Generated types whose assemblies identify every TypeRegistry participant.
+    /// </param>
+    /// <returns>A configured syringe with all source-generated components.</returns>
+    public static ConfiguredSyringe UsingGeneratedComponents(
+        this Syringe syringe,
+        Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
+        IReadOnlyList<Type> registryParticipantTypes)
+    {
         ArgumentNullException.ThrowIfNull(syringe);
         ArgumentNullException.ThrowIfNull(injectableTypeProvider);
         ArgumentNullException.ThrowIfNull(pluginTypeProvider);
+        ArgumentNullException.ThrowIfNull(registryParticipantTypes);
 
         return new ConfiguredSyringe(syringe) with
         {
             TypeRegistrar = new GeneratedTypeRegistrar(injectableTypeProvider),
             TypeFilterer = new GeneratedTypeFilterer(injectableTypeProvider),
             PluginFactory = new GeneratedPluginFactory(pluginTypeProvider),
-            AssemblyProvider = new GeneratedAssemblyProvider(injectableTypeProvider, pluginTypeProvider),
+            AssemblyProvider = new GeneratedAssemblyProvider(
+                injectableTypeProvider,
+                pluginTypeProvider,
+                registryParticipantTypes),
             ServiceProviderBuilderFactory = (populator, assemblyProvider, _) => 
                 new GeneratedServiceProviderBuilder(populator, assemblyProvider, pluginTypeProvider)
         };
@@ -93,6 +128,10 @@ public static class SyringeSourceGenExtensions
     /// <summary>
     /// Configures the syringe with all generated components for zero-reflection operation.
     /// </summary>
+    /// <remarks>
+    /// Assemblies are derived only from the supplied injectable and plugin metadata; use the
+    /// overload with registry participant types when empty registries must remain visible.
+    /// </remarks>
     /// <param name="syringe">The configured syringe to update.</param>
     /// <param name="injectableTypeProvider">A function that returns the injectable types.</param>
     /// <param name="pluginTypeProvider">A function that returns the plugin types.</param>
@@ -102,16 +141,42 @@ public static class SyringeSourceGenExtensions
         Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
         Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
     {
+        return syringe.UsingGeneratedComponents(
+            injectableTypeProvider,
+            pluginTypeProvider,
+            Array.Empty<Type>());
+    }
+
+    /// <summary>
+    /// Configures the syringe with all generated components and registry participant identities.
+    /// </summary>
+    /// <param name="syringe">The configured syringe to update.</param>
+    /// <param name="injectableTypeProvider">A function that returns the injectable types.</param>
+    /// <param name="pluginTypeProvider">A function that returns the plugin types.</param>
+    /// <param name="registryParticipantTypes">
+    /// Generated types whose assemblies identify every TypeRegistry participant.
+    /// </param>
+    /// <returns>A configured syringe with all source-generated components.</returns>
+    public static ConfiguredSyringe UsingGeneratedComponents(
+        this ConfiguredSyringe syringe,
+        Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
+        IReadOnlyList<Type> registryParticipantTypes)
+    {
         ArgumentNullException.ThrowIfNull(syringe);
         ArgumentNullException.ThrowIfNull(injectableTypeProvider);
         ArgumentNullException.ThrowIfNull(pluginTypeProvider);
+        ArgumentNullException.ThrowIfNull(registryParticipantTypes);
 
         return syringe with
         {
             TypeRegistrar = new GeneratedTypeRegistrar(injectableTypeProvider),
             TypeFilterer = new GeneratedTypeFilterer(injectableTypeProvider),
             PluginFactory = new GeneratedPluginFactory(pluginTypeProvider),
-            AssemblyProvider = new GeneratedAssemblyProvider(injectableTypeProvider, pluginTypeProvider),
+            AssemblyProvider = new GeneratedAssemblyProvider(
+                injectableTypeProvider,
+                pluginTypeProvider,
+                registryParticipantTypes),
             ServiceProviderBuilderFactory = (populator, assemblyProvider, _) => 
                 new GeneratedServiceProviderBuilder(populator, assemblyProvider, pluginTypeProvider)
         };
@@ -165,6 +230,10 @@ public static class SyringeSourceGenExtensions
     /// <summary>
     /// Configures the syringe to use the generated assembly provider.
     /// </summary>
+    /// <remarks>
+    /// Assemblies are derived only from the supplied injectable and plugin metadata; use the
+    /// overload with registry participant types when empty registries must remain visible.
+    /// </remarks>
     /// <param name="syringe">The configured syringe to update.</param>
     /// <param name="injectableTypeProvider">A function that returns the injectable types.</param>
     /// <param name="pluginTypeProvider">A function that returns the plugin types.</param>
@@ -174,10 +243,36 @@ public static class SyringeSourceGenExtensions
         Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
         Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider)
     {
+        return syringe.UsingGeneratedAssemblyProvider(
+            injectableTypeProvider,
+            pluginTypeProvider,
+            Array.Empty<Type>());
+    }
+
+    /// <summary>
+    /// Configures the syringe to use the generated assembly provider with registry participant identities.
+    /// </summary>
+    /// <param name="syringe">The configured syringe to update.</param>
+    /// <param name="injectableTypeProvider">A function that returns the injectable types.</param>
+    /// <param name="pluginTypeProvider">A function that returns the plugin types.</param>
+    /// <param name="registryParticipantTypes">
+    /// Generated types whose assemblies identify every TypeRegistry participant.
+    /// </param>
+    /// <returns>A new configured syringe instance.</returns>
+    public static ConfiguredSyringe UsingGeneratedAssemblyProvider(
+        this ConfiguredSyringe syringe,
+        Func<IReadOnlyList<InjectableTypeInfo>> injectableTypeProvider,
+        Func<IReadOnlyList<PluginTypeInfo>> pluginTypeProvider,
+        IReadOnlyList<Type> registryParticipantTypes)
+    {
         ArgumentNullException.ThrowIfNull(syringe);
         ArgumentNullException.ThrowIfNull(injectableTypeProvider);
         ArgumentNullException.ThrowIfNull(pluginTypeProvider);
+        ArgumentNullException.ThrowIfNull(registryParticipantTypes);
         return syringe.UsingAssemblyProvider(
-            new GeneratedAssemblyProvider(injectableTypeProvider, pluginTypeProvider));
+            new GeneratedAssemblyProvider(
+                injectableTypeProvider,
+                pluginTypeProvider,
+                registryParticipantTypes));
     }
 }

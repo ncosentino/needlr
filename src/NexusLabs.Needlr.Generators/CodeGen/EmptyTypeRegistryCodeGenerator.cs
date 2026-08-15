@@ -67,7 +67,7 @@ internal static class EmptyTypeRegistryCodeGenerator
     /// <param name="breadcrumbs">The breadcrumb writer supplied by the orchestration method.</param>
     /// <returns>The generated C# source for the module-initializer bootstrap.</returns>
     /// <remarks>
-    /// Uses the two-argument <c>Register</c> overload (no decorator applier, no options registrar),
+    /// Uses the registry-identity <c>Register</c> overload (no decorator applier, no options registrar),
     /// which takes no <c>IServiceCollection</c>/<c>IConfiguration</c> parameters and therefore keeps
     /// the emitted code free of any Microsoft.Extensions.DependencyInjection dependency.
     /// </remarks>
@@ -87,6 +87,7 @@ internal static class EmptyTypeRegistryCodeGenerator
         builder.AppendLine("    internal static void Initialize()");
         builder.AppendLine("    {");
         builder.AppendLine("        global::NexusLabs.Needlr.Generators.NeedlrSourceGenBootstrap.Register(");
+        builder.AppendLine($"            typeof(global::{safeAssemblyName}.Generated.TypeRegistry),");
         builder.AppendLine($"            global::{safeAssemblyName}.Generated.TypeRegistry.GetInjectableTypes,");
         builder.AppendLine($"            global::{safeAssemblyName}.Generated.TypeRegistry.GetPluginTypes);");
         builder.AppendLine("    }");

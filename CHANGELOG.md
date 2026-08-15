@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixed
+
+- Source-generated plugin assembly options now include every generated `TypeRegistry` participant, including contract or abstractions assemblies whose registries contain no injectable types or plugins. Generated module initializers carry their registry identity through `NeedlrSourceGenBootstrap`, and `GeneratedAssemblyProvider` appends marker-only assemblies without synthetic registrations, `AppDomain` scanning, duplicates, or changes to existing metadata-derived ordering.
+
 ## [0.0.3-alpha.4] - 2026-07-30
 
 ### Changed

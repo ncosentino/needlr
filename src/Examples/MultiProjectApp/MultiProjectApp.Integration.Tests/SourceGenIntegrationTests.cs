@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using MultiProjectApp.Contracts;
 using MultiProjectApp.Features.Notifications;
 using MultiProjectApp.Features.Reporting;
 using NexusLabs.Needlr.Injection;
@@ -54,5 +55,21 @@ public sealed class SourceGenIntegrationTests
         Assert.Single(capture.Sent);
         Assert.Equal("alice@example.com", capture.Sent[0].Recipient);
         Assert.Equal("Hello from test", capture.Sent[0].Message);
+    }
+
+    [Fact]
+    public void PluginAssemblyOptions_IncludeEmptyAndNonEmptyRegistryParticipantsExactlyOnce()
+    {
+        var provider = new Syringe()
+            .UsingSourceGen()
+            .BuildServiceProvider();
+
+        var assemblies = provider.GetRequiredService<IReadOnlyList<System.Reflection.Assembly>>();
+        var contractAssembly = typeof(ReportRequest).Assembly;
+        var reportingAssembly = typeof(IReportService).Assembly;
+
+        Assert.Equal(1, assemblies.Count(assembly => assembly == contractAssembly));
+        Assert.Equal(1, assemblies.Count(assembly => assembly == reportingAssembly));
+        Assert.Equal(assemblies.Count, assemblies.Distinct().Count());
     }
 }
