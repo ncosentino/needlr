@@ -96,6 +96,13 @@ foreach ($entry in @(
     Assert-Condition `
         -Condition (@($config.mutate).Count -gt 0) `
         -Message "The $($entry.Name) scope must remain explicitly bounded."
+    if ($entry.Name -ceq 'generators') {
+        Assert-Condition `
+            -Condition (
+                (@($config.mutate) -join ',') -ceq
+                'GeneratorHelpers.cs,TypedConstantRenderer.cs,BreadcrumbWriter.cs') `
+            -Message 'The initial generator scope must remain on the measured helper set.'
+    }
 }
 
 Assert-PowerShellSyntax -Path $runnerPath
@@ -124,6 +131,11 @@ Assert-Condition `
     -Condition (
         ([regex]::Matches($workflow, 'fetch-depth:\s*0')).Count -eq 3) `
     -Message 'Every mutation workflow checkout must retain full NBGV/SourceLink history.'
+Assert-Condition `
+    -Condition (
+        $workflow -match '(?s)runtime:.*?timeout-minutes:\s*30' -and
+        $workflow -match '(?s)generators:.*?timeout-minutes:\s*45') `
+    -Message 'Mutation jobs must retain bounded runtime and generator timeouts.'
 
 $runner = Get-Content -LiteralPath $runnerPath -Raw
 Assert-Condition `

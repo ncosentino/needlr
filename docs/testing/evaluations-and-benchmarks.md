@@ -14,7 +14,8 @@ Needlr starts with two bounded scopes:
 
 - `runtime` mutates selected dependency-injection and verification logic in
   `NexusLabs.Needlr`;
-- `generators` mutates selected authored helpers and code emitters in
+- `generators` mutates selected authored identifier, constant-rendering, and breadcrumb
+  helpers in
   `NexusLabs.Needlr.Generators`.
 
 Roslyn-generated syntax trees are not direct mutation targets. Stryker mutates the

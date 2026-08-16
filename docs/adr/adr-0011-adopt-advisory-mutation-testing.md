@@ -51,12 +51,19 @@ explicit configurations.
 The `runtime` scope mutates selected dependency-injection, verification, and diagnostic
 logic in `NexusLabs.Needlr`, using `NexusLabs.Needlr.Tests`.
 
-The `generators` scope mutates selected authored helper and emitter files in
+The `generators` scope mutates selected authored identifier, constant-rendering, and
+breadcrumb helper files in
 `NexusLabs.Needlr.Generators`, using focused tests in
 `NexusLabs.Needlr.Generators.Tests` that invoke Roslyn generators at runtime. It does
 not attempt to mutate generated syntax trees. Analyzer projects and the full generator
 project remain outside the initial scope until their cost and signal are measured
 separately.
+
+An initial five-file candidate also included bootstrap emitters. Its first hosted run
+exceeded seventy minutes and was cancelled, while the runtime scope completed in under
+three minutes. The accepted generator scope therefore retains only the three directly
+tested deterministic helpers and has a forty-five-minute job timeout. Scope is reduced
+because of measured feedback latency, not to improve its score.
 
 Both scopes use Stryker's Microsoft Testing Platform runner, Standard mutation level,
 per-test coverage analysis, concurrency two, and explicit file lists. Needlr uses

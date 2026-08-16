@@ -9,11 +9,9 @@
     "mutate": [
       "GeneratorHelpers.cs",
       "TypedConstantRenderer.cs",
-      "BreadcrumbWriter.cs",
-      "CodeGen/BootstrapCodeGenerator.cs",
-      "CodeGen/EmptyTypeRegistryCodeGenerator.cs"
+      "BreadcrumbWriter.cs"
     ],
-    "test-case-filter": "FullyQualifiedName~GeneratorHelpersTests|FullyQualifiedName~TypedConstantRendererTests|FullyQualifiedName~BreadcrumbTests|FullyQualifiedName~BootstrapCodeGeneratorRuntimeTests|FullyQualifiedName~TypeRegistryGeneratorTests",
+    "test-case-filter": "FullyQualifiedName~GeneratorHelpersTests|FullyQualifiedName~TypedConstantRendererTests|FullyQualifiedName~BreadcrumbTests",
     "reporters": [
       "progress",
       "json",
