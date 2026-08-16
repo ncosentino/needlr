@@ -8,7 +8,7 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $toolManifestPath = Join-Path $repoRoot '.config\dotnet-tools.json'
 $runtimeConfigPath = Join-Path $PSScriptRoot 'mutation\stryker-runtime.json'
-$generatorConfigPath = Join-Path $PSScriptRoot 'mutation\stryker-generators.json'
+$sourceGenConfigPath = Join-Path $PSScriptRoot 'mutation\stryker-sourcegen.json'
 $runnerPath = Join-Path $PSScriptRoot 'run-mutation-tests.ps1'
 $classifierPath = Join-Path $PSScriptRoot 'get-mutation-scope.ps1'
 $workflowPath = Join-Path $repoRoot '.github\workflows\mutation-testing.yml'
@@ -42,7 +42,7 @@ function Assert-PowerShellSyntax {
 foreach ($path in @(
         $toolManifestPath,
         $runtimeConfigPath,
-        $generatorConfigPath,
+        $sourceGenConfigPath,
         $runnerPath,
         $classifierPath,
         $workflowPath,
@@ -68,9 +68,9 @@ foreach ($entry in @(
             Project = 'NexusLabs.Needlr.csproj'
         },
         [PSCustomObject]@{
-            Name = 'generators'
-            Path = $generatorConfigPath
-            Project = 'NexusLabs.Needlr.Generators.csproj'
+            Name = 'sourcegen'
+            Path = $sourceGenConfigPath
+            Project = 'NexusLabs.Needlr.Carter.csproj'
         })) {
     $config = (
         Get-Content -LiteralPath $entry.Path -Raw |
@@ -96,12 +96,12 @@ foreach ($entry in @(
     Assert-Condition `
         -Condition (@($config.mutate).Count -gt 0) `
         -Message "The $($entry.Name) scope must remain explicitly bounded."
-    if ($entry.Name -ceq 'generators') {
+    if ($entry.Name -ceq 'sourcegen') {
         Assert-Condition `
             -Condition (
                 (@($config.mutate) -join ',') -ceq
-                'GeneratorHelpers.cs,TypedConstantRenderer.cs,BreadcrumbWriter.cs') `
-            -Message 'The initial generator scope must remain on the measured helper set.'
+                'CarterWebApplicationBuilderPlugin.cs,CarterWebApplicationPlugin.cs') `
+            -Message 'The source-generated consumer scope must remain explicitly bounded.'
     }
 }
 
@@ -134,8 +134,8 @@ Assert-Condition `
 Assert-Condition `
     -Condition (
         $workflow -match '(?s)runtime:.*?timeout-minutes:\s*30' -and
-        $workflow -match '(?s)generators:.*?timeout-minutes:\s*45') `
-    -Message 'Mutation jobs must retain bounded runtime and generator timeouts.'
+        $workflow -match '(?s)sourcegen:.*?timeout-minutes:\s*30') `
+    -Message 'Mutation jobs must retain bounded runtime and sourcegen timeouts.'
 
 $runner = Get-Content -LiteralPath $runnerPath -Raw
 Assert-Condition `
@@ -150,19 +150,19 @@ $runtimeOnly = (
 Assert-Condition `
     -Condition (
         $runtimeOnly.runtime_required -and
-        -not $runtimeOnly.generators_required) `
+        -not $runtimeOnly.sourcegen_required) `
     -Message 'Runtime changes must select only runtime mutation testing.'
 
-$generatorsOnly = (
+$sourceGenOnly = (
     & $classifierPath `
         -ChangedPaths @('src/NexusLabs.Needlr.Generators/GeneratorHelpers.cs') `
         -NoCiOutput |
         ConvertFrom-Json)
 Assert-Condition `
     -Condition (
-        -not $generatorsOnly.runtime_required -and
-        $generatorsOnly.generators_required) `
-    -Message 'Generator changes must select only generator mutation testing.'
+        -not $sourceGenOnly.runtime_required -and
+        $sourceGenOnly.sourcegen_required) `
+    -Message 'Generator changes must select only source-generated consumer mutation testing.'
 
 $shared = (
     & $classifierPath `
@@ -170,7 +170,7 @@ $shared = (
         -NoCiOutput |
         ConvertFrom-Json)
 Assert-Condition `
-    -Condition ($shared.runtime_required -and $shared.generators_required) `
+    -Condition ($shared.runtime_required -and $shared.sourcegen_required) `
     -Message 'Shared mutation tooling changes must select both scopes.'
 
 $delivery = Get-Content -LiteralPath $deliveryPath -Raw | ConvertFrom-Json

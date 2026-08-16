@@ -32,7 +32,9 @@ $runtimePatterns = @(
     '^src/NexusLabs\.Needlr/',
     '^src/NexusLabs\.Needlr\.Tests/'
 )
-$generatorPatterns = @(
+$sourceGenPatterns = @(
+    '^src/NexusLabs\.Needlr\.Carter/',
+    '^src/NexusLabs\.Needlr\.Carter\.Tests/',
     '^src/NexusLabs\.Needlr\.Generators/',
     '^src/NexusLabs\.Needlr\.Generators\.Attributes/',
     '^src/NexusLabs\.Needlr\.Generators\.Tests/'
@@ -52,7 +54,7 @@ function Test-AnyPattern {
 
 if ($ForceAll -or $BaseSha -match '^0+$') {
     $runtimeRequired = $true
-    $generatorsRequired = $true
+    $sourceGenRequired = $true
     $paths = @()
 } else {
     if ($null -eq $ChangedPaths) {
@@ -79,15 +81,15 @@ if ($ForceAll -or $BaseSha -match '^0+$') {
         $normalizedPaths |
             Where-Object { Test-AnyPattern -Path $_ -Patterns $runtimePatterns } |
             Select-Object -First 1)
-    $generatorsRequired = $sharedChanged -or $null -ne (
+    $sourceGenRequired = $sharedChanged -or $null -ne (
         $normalizedPaths |
-            Where-Object { Test-AnyPattern -Path $_ -Patterns $generatorPatterns } |
+            Where-Object { Test-AnyPattern -Path $_ -Patterns $sourceGenPatterns } |
             Select-Object -First 1)
 }
 
 $result = [ordered]@{
     runtime_required = $runtimeRequired
-    generators_required = $generatorsRequired
+    sourcegen_required = $sourceGenRequired
     changed_count = $paths.Count
 }
 
@@ -98,7 +100,7 @@ if (-not $NoCiOutput -and
         -Value "runtime_required=$($runtimeRequired.ToString().ToLowerInvariant())"
     Add-Content `
         -Path $env:GITHUB_OUTPUT `
-        -Value "generators_required=$($generatorsRequired.ToString().ToLowerInvariant())"
+        -Value "sourcegen_required=$($sourceGenRequired.ToString().ToLowerInvariant())"
 }
 
 $result | ConvertTo-Json -Compress

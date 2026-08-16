@@ -14,9 +14,8 @@ Needlr starts with two bounded scopes:
 
 - `runtime` mutates selected dependency-injection and verification logic in
   `NexusLabs.Needlr`;
-- `generators` mutates selected authored identifier, constant-rendering, and breadcrumb
-  helpers in
-  `NexusLabs.Needlr.Generators`.
+- `sourcegen` mutates the Carter integration package while its tests compile and execute
+  through Needlr's generated registry.
 
 Roslyn-generated syntax trees are not direct mutation targets. Stryker mutates the
 generator's authored input syntax trees, reruns the source generators while compiling
@@ -29,6 +28,14 @@ The VSTest runner can discover the tests but does not reliably apply mutants to 
 v3 execution. MTP remains preview in Stryker.NET 4.16.0; suspicious mutation outcomes
 must be compared with coverage analysis disabled before they become policy.
 
+Direct mutation of the generator implementation is deferred. Stryker analyzes the full
+generator project before applying its mutate filter, creating more than ten thousand
+candidate mutants for even a three-file scope. MTP then failed coverage capture for the
+generator test project and left hundreds of mutants to run against the full test suite.
+The source-generated consumer scope keeps generated composition in the test path without
+pretending that this toolchain currently provides practical generator-implementation
+mutation testing.
+
 Run both scopes locally:
 
 ```powershell
@@ -36,7 +43,7 @@ dotnet tool restore
 pwsh scripts/run-mutation-tests.ps1
 ```
 
-Run one scope with `-Scope runtime` or `-Scope generators`. Reports are written under
+Run one scope with `-Scope runtime` or `-Scope sourcegen`. Reports are written under
 `artifacts/mutation/`, which is ignored by git.
 
 The mutation workflow is advisory and is not a required pull-request check. It runs

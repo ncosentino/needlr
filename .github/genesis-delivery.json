@@ -42,7 +42,7 @@
         "benchmarks/check-changes",
         "benchmarks/run-benchmarks",
         "mutation-testing/runtime",
-        "mutation-testing/generators",
+        "mutation-testing/sourcegen",
         "ide-extensions/build-vscode",
         "ide-extensions/release"
       ]
@@ -68,7 +68,7 @@
         "benchmarks/check-changes",
         "benchmarks/run-benchmarks",
         "mutation-testing/runtime",
-        "mutation-testing/generators",
+        "mutation-testing/sourcegen",
         "ide-extensions/build-vscode",
         "ide-extensions/release"
       ]

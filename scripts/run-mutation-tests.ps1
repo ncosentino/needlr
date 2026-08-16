@@ -3,13 +3,13 @@
     Runs one or both bounded Needlr mutation-testing scopes.
 
 .PARAMETER Scope
-    The runtime, generators, or all mutation scope.
+    The runtime, sourcegen, or all mutation scope.
 
 .PARAMETER OutputPath
     Report root. Defaults to artifacts/mutation under the repository.
 #>
 param(
-    [ValidateSet('runtime', 'generators', 'all')]
+    [ValidateSet('runtime', 'sourcegen', 'all')]
     [string]$Scope = 'all',
 
     [string]$OutputPath
@@ -30,9 +30,9 @@ $definitions = @(
         ConfigPath = Join-Path $PSScriptRoot 'mutation' 'stryker-runtime.json'
     },
     [PSCustomObject]@{
-        Name = 'generators'
-        WorkingDirectory = Join-Path $repoRoot 'src' 'NexusLabs.Needlr.Generators.Tests'
-        ConfigPath = Join-Path $PSScriptRoot 'mutation' 'stryker-generators.json'
+        Name = 'sourcegen'
+        WorkingDirectory = Join-Path $repoRoot 'src' 'NexusLabs.Needlr.Carter.Tests'
+        ConfigPath = Join-Path $PSScriptRoot 'mutation' 'stryker-sourcegen.json'
     }
 )
 if ($Scope -ne 'all') {

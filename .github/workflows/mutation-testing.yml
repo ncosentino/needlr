@@ -42,7 +42,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       runtime_required: ${{ steps.scope.outputs.runtime_required }}
-      generators_required: ${{ steps.scope.outputs.generators_required }}
+      sourcegen_required: ${{ steps.scope.outputs.sourcegen_required }}
 
     steps:
       - name: Checkout
@@ -94,14 +94,14 @@ jobs:
             -Scope runtime `
             -OutputPath (Join-Path $env:RUNNER_TEMP 'needlr-mutation')
 
-  generators:
-    name: Generator mutation analysis
+  sourcegen:
+    name: Source-generated consumer mutation analysis
     needs: changes
     if: >-
       (github.event_name != 'pull_request' || github.event.pull_request.draft == false) &&
-      needs.changes.outputs.generators_required == 'true'
+      needs.changes.outputs.sourcegen_required == 'true'
     runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
-    timeout-minutes: 45
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -115,9 +115,9 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Run generator mutation testing
+      - name: Run source-generated consumer mutation testing
         shell: pwsh
         run: |
           scripts/run-mutation-tests.ps1 `
-            -Scope generators `
+            -Scope sourcegen `
             -OutputPath (Join-Path $env:RUNNER_TEMP 'needlr-mutation')

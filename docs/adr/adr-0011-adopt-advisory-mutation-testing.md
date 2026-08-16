@@ -5,7 +5,7 @@ date: "2026-08-15"
 authors: ["Nick Cosentino"]
 tags: ["architecture", "decision", "testing", "mutation", "source-generation", "ci"]
 supersedes: ""
-superseded_by: ""
+superseded_by: "ADR-0012"
 ---
 
 ## Context and scope
@@ -51,26 +51,15 @@ explicit configurations.
 The `runtime` scope mutates selected dependency-injection, verification, and diagnostic
 logic in `NexusLabs.Needlr`, using `NexusLabs.Needlr.Tests`.
 
-The `generators` scope mutates selected authored identifier, constant-rendering, and
-breadcrumb helper files in
+The `generators` scope mutates selected authored helper and emitter files in
 `NexusLabs.Needlr.Generators`, using focused tests in
 `NexusLabs.Needlr.Generators.Tests` that invoke Roslyn generators at runtime. It does
 not attempt to mutate generated syntax trees. Analyzer projects and the full generator
 project remain outside the initial scope until their cost and signal are measured
 separately.
 
-An initial five-file candidate also included bootstrap emitters. Its first hosted run
-exceeded seventy minutes and was cancelled, while the runtime scope completed in under
-three minutes. The accepted generator scope therefore retains only the three directly
-tested deterministic helpers and has a forty-five-minute job timeout. Scope is reduced
-because of measured feedback latency, not to improve its score.
-
-Both scopes use Stryker's Microsoft Testing Platform runner, Standard mutation level,
-per-test coverage analysis, concurrency two, and explicit file lists. Needlr uses
-xUnit v3; a VSTest probe discovered tests but reported every tested mutant as surviving,
-which is consistent with Stryker's tracked xUnit v3 limitation. MTP is preview, so
-suspicious outcomes must be compared with coverage analysis disabled before they become
-policy. Each scope uses `thresholds.break = 0`.
+Both scopes use the stable VSTest runner, Standard mutation level, per-test coverage
+analysis, concurrency two, and explicit file lists. Each uses `thresholds.break = 0`.
 A low score is therefore advisory; Stryker setup failures, compilation failures, and
 initial test failures still return failure.
 
@@ -81,8 +70,6 @@ The mutation workflow:
 - is declared non-required in the delivery contract;
 - routes trusted runs through Needlr's configured CI runner and external forks through
   GitHub-hosted runners;
-- checks out full history because the selected projects use NBGV and SourceLink during
-  Stryker's initial build;
 - writes Markdown results to the GitHub job summary and leaves JSON/Markdown reports
   ephemeral on the runner;
 - does not upload artifacts and does not enable the Stryker dashboard.
@@ -106,13 +93,12 @@ generators during mutant compilation, and Needlr already has tests that invoke g
 drivers directly. A bounded authored-generator scope provides useful evidence without
 claiming that generated output itself is mutated.
 
-### Use the VSTest runner
+### Use the preview Microsoft Testing Platform runner
 
-VSTest is Stryker's stable default and Needlr carries the xUnit VSTest adapter. It was
-rejected after a direct probe discovered and ran the xUnit v3 tests but killed none of
-the selected mutants. Stryker tracks xUnit v3 handling as an incompatibility and added
-MTP specifically for modern test frameworks. The preview MTP runner is therefore the
-only useful initial path, with its limitations kept outside required policy.
+Needlr targets modern .NET and xUnit v3, so MTP is plausible and may eventually improve
+performance. It was rejected for the first integration because Stryker's MTP runner is
+still documented as preview with incomplete per-test filtering. Needlr already carries
+the VSTest adapter, making VSTest the lower-risk baseline.
 
 ### Add a mutation threshold immediately
 
@@ -155,7 +141,7 @@ boundary, and disk baselines have no value on ephemeral runners without persiste
 
 ## Confirmation
 
-`scripts/test-mutation.ps1` validates the pinned tool, explicit scopes, MTP selection,
+`scripts/test-mutation.ps1` validates the pinned tool, explicit scopes, VSTest selection,
 Standard mutation level, zero break thresholds, local reporters, workflow cadence,
 non-required delivery declaration, fork routing, and prohibition on artifact/dashboard
 publication.
@@ -175,5 +161,3 @@ for survivor triage and any future scope-specific threshold.
   <https://stryker-mutator.io/docs/stryker-net/reporters/>.
 - Stryker.NET 4.16.0 is the pinned mutation tool:
   <https://github.com/stryker-mutator/stryker-net/releases/tag/dotnet-stryker%404.16.0>.
-- Stryker tracks xUnit v3 behavior under the VSTest runner:
-  <https://github.com/stryker-mutator/stryker-net/issues/3117>.
