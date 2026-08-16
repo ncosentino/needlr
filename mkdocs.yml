@@ -203,6 +203,7 @@ nav:
     - ADR-0008 Own a Version-Aware Agent Marketplace: adr/adr-0008-own-version-aware-agent-marketplace.md
     - ADR-0009 Stage Release Publication: adr/adr-0009-stage-release-publication.md
     - ADR-0010 Own a Repository Runner Image: adr/adr-0010-own-repository-runner-image.md
+    - ADR-0011 Adopt Advisory Mutation Testing: adr/adr-0011-adopt-advisory-mutation-testing.md
 
 plugins:
   - search

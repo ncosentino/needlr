@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Added
+
+- Added advisory Stryker.NET mutation testing for bounded runtime-core and source-generator implementation scopes. Pull requests run only affected scopes, scheduled and manual runs cover both, mutation scores are reported without a break threshold, and reports remain ephemeral in job summaries and logs rather than GitHub artifacts or an external dashboard.
+
 ## [0.0.3-alpha.5] - 2026-08-14
 
 ### Fixed

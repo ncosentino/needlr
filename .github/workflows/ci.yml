@@ -185,6 +185,11 @@ jobs:
       shell: pwsh
       run: scripts/test-runner-profile.ps1
 
+    - name: Validate mutation testing contract
+      if: needs.changes.outputs.source_required == 'true'
+      shell: pwsh
+      run: scripts/test-mutation.ps1
+
     - name: Restore
       if: needs.changes.outputs.source_required == 'true'
       run: dotnet restore src/NexusLabs.Needlr.slnx
