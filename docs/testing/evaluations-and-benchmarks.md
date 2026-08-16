@@ -23,6 +23,11 @@ the mutant, and then executes tests. The generator scope therefore uses tests th
 invoke Roslyn generators at runtime; consumer projects that only compiled generated
 output before the mutation run would not provide equivalent evidence.
 
+Needlr uses xUnit v3, so Stryker runs through its Microsoft Testing Platform runner.
+The VSTest runner can discover the tests but does not reliably apply mutants to xUnit
+v3 execution. MTP remains preview in Stryker.NET 4.16.0; suspicious mutation outcomes
+must be compared with coverage analysis disabled before they become policy.
+
 Run both scopes locally:
 
 ```powershell

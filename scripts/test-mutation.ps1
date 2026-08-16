@@ -79,8 +79,8 @@ foreach ($entry in @(
         -Condition ([string]$config.project -ceq $entry.Project) `
         -Message "The $($entry.Name) scope targets the wrong project."
     Assert-Condition `
-        -Condition ([string]$config.'test-runner' -ceq 'vstest') `
-        -Message "The $($entry.Name) scope must use the stable VSTest runner."
+        -Condition ([string]$config.'test-runner' -ceq 'mtp') `
+        -Message "The $($entry.Name) scope must use MTP for xUnit v3."
     Assert-Condition `
         -Condition ([string]$config.'mutation-level' -ceq 'Standard') `
         -Message "The $($entry.Name) scope must use Standard mutation level."
@@ -120,6 +120,15 @@ Assert-Condition `
 Assert-Condition `
     -Condition ($workflow -match 'head\.repo\.full_name != github\.repository') `
     -Message 'External fork mutation runs must use GitHub-hosted infrastructure.'
+Assert-Condition `
+    -Condition (
+        ([regex]::Matches($workflow, 'fetch-depth:\s*0')).Count -eq 3) `
+    -Message 'Every mutation workflow checkout must retain full NBGV/SourceLink history.'
+
+$runner = Get-Content -LiteralPath $runnerPath -Raw
+Assert-Condition `
+    -Condition ($runner -match '2>&1\s*\|\s*[\r\n\s]*Out-Host') `
+    -Message 'Stryker output must remain visible when the native command fails.'
 
 $runtimeOnly = (
     & $classifierPath `

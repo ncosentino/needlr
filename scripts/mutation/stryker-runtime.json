@@ -1,7 +1,7 @@
 {
   "stryker-config": {
     "project": "NexusLabs.Needlr.csproj",
-    "test-runner": "vstest",
+    "test-runner": "mtp",
     "configuration": "Release",
     "mutation-level": "Standard",
     "coverage-analysis": "perTest",

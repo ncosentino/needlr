@@ -66,7 +66,8 @@ $summaries = foreach ($definition in $definitions) {
         & dotnet stryker `
             --config-file $relativeConfigPath `
             --output $scopeOutput `
-            --skip-version-check
+            --skip-version-check 2>&1 |
+            Out-Host
         if ($LASTEXITCODE -ne 0) {
             throw "Stryker.NET scope '$($definition.Name)' failed with exit code $LASTEXITCODE."
         }
