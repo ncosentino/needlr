@@ -1,7 +1,7 @@
 ```
 
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-12th Gen Intel Core i7-12700H, 1 CPU, 20 logical and 10 physical cores
+Intel Core 7 150U, 1 CPU, 12 logical and 6 physical cores
 .NET SDK 10.0.302
   [Host]   : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
   ShortRun : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
@@ -12,6 +12,6 @@ WarmupCount=3
 ```
 | Method                               | Mean     | Error    | StdDev   | Ratio | RatioSD | Rank | Gen0   | Allocated | Alloc Ratio |
 |------------------------------------- |---------:|---------:|---------:|------:|--------:|-----:|-------:|----------:|------------:|
-| ManualDI_ResolveOpenGeneric          | 16.80 ns | 0.993 ns | 0.258 ns |  1.00 |    0.02 |    1 | 0.0019 |      24 B |        1.00 |
-| Needlr_Reflection_ResolveOpenGeneric | 18.41 ns | 4.951 ns | 1.286 ns |  1.10 |    0.07 |    1 | 0.0019 |      24 B |        1.00 |
-| Needlr_SourceGen_ResolveOpenGeneric  | 15.20 ns | 2.460 ns | 0.381 ns |  0.90 |    0.02 |    1 | 0.0019 |      24 B |        1.00 |
+| ManualDI_ResolveOpenGeneric          | 15.75 ns | 6.430 ns | 1.670 ns |  1.01 |    0.13 |    1 | 0.0038 |      24 B |        1.00 |
+| Needlr_Reflection_ResolveOpenGeneric | 14.46 ns | 5.911 ns | 0.915 ns |  0.93 |    0.10 |    1 | 0.0038 |      24 B |        1.00 |
+| Needlr_SourceGen_ResolveOpenGeneric  | 14.59 ns | 7.149 ns | 1.106 ns |  0.93 |    0.11 |    1 | 0.0038 |      24 B |        1.00 |

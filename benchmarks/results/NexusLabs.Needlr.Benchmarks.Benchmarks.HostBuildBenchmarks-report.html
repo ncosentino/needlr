@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.HostBuildBenchmarks-20260802-041514</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.HostBuildBenchmarks-20260816-032521</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,7 +14,7 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-12th Gen Intel Core i7-12700H, 1 CPU, 20 logical and 10 physical cores
+Intel Core 7 150U, 1 CPU, 12 logical and 6 physical cores
 .NET SDK 10.0.302
   [Host]   : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
   ShortRun : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
@@ -26,10 +26,10 @@ LaunchCount=1  UnrollFactor=1  WarmupCount=3
 <table>
 <thead><tr><th>Method                      </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_BuildHost</td><td>2.987 ms</td><td>1.4750 ms</td><td>0.3831 ms</td><td>1.01</td><td>0.17</td><td>1</td><td>326.84 KB</td><td>1.00</td>
-</tr><tr><td>Needlr_Reflection_BuildHost</td><td>7.020 ms</td><td>1.6489 ms</td><td>0.4282 ms</td><td>2.38</td><td>0.33</td><td>2</td><td>1549.44 KB</td><td>4.74</td>
-</tr><tr><td>Needlr_SourceGen_BuildHost</td><td>2.697 ms</td><td>0.4915 ms</td><td>0.1276 ms</td><td>0.92</td><td>0.12</td><td>1</td><td>589.11 KB</td><td>1.80</td>
-</tr><tr><td>Needlr_SourceGenExplicit_BuildHost</td><td>2.954 ms</td><td>0.5636 ms</td><td>0.1464 ms</td><td>1.00</td><td>0.13</td><td>1</td><td>500.7 KB</td><td>1.53</td>
+</thead><tbody><tr><td>ManualDI_BuildHost</td><td>3.527 ms</td><td>2.1519 ms</td><td>0.3330 ms</td><td>1.01</td><td>0.13</td><td>2</td><td>312.01 KB</td><td>1.00</td>
+</tr><tr><td>Needlr_Reflection_BuildHost</td><td>7.334 ms</td><td>0.6994 ms</td><td>0.1816 ms</td><td>2.09</td><td>0.20</td><td>3</td><td>1541.95 KB</td><td>4.94</td>
+</tr><tr><td>Needlr_SourceGen_BuildHost</td><td>2.470 ms</td><td>0.4010 ms</td><td>0.1041 ms</td><td>0.71</td><td>0.07</td><td>1</td><td>581.8 KB</td><td>1.86</td>
+</tr><tr><td>Needlr_SourceGenExplicit_BuildHost</td><td>2.583 ms</td><td>1.5956 ms</td><td>0.2469 ms</td><td>0.74</td><td>0.09</td><td>1</td><td>483.88 KB</td><td>1.55</td>
 </tr></tbody></table>
 </body>
 </html>

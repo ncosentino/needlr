@@ -1,7 +1,7 @@
 ```
 
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-12th Gen Intel Core i7-12700H, 1 CPU, 20 logical and 10 physical cores
+Intel Core 7 150U, 1 CPU, 12 logical and 6 physical cores
 .NET SDK 10.0.302
   [Host]   : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
   ShortRun : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
@@ -10,9 +10,9 @@ Job=ShortRun  IterationCount=5  LaunchCount=1
 WarmupCount=3  
 
 ```
-| Method                                        | Mean         | Error         | StdDev      | Ratio    | RatioSD | Rank | Gen0    | Gen1   | Allocated | Alloc Ratio |
-|---------------------------------------------- |-------------:|--------------:|------------:|---------:|--------:|-----:|--------:|-------:|----------:|------------:|
-| ManualDI_BuildServiceProvider                 |     1.679 μs |     0.2388 μs |   0.0620 μs |     1.00 |    0.05 |    1 |  0.5550 | 0.0916 |   6.81 KB |        1.00 |
-| Needlr_Reflection_BuildServiceProvider        | 2,186.554 μs | 1,443.3742 μs | 223.3638 μs | 1,303.70 |  126.49 |    3 | 70.3125 | 7.8125 | 931.86 KB |      136.79 |
-| Needlr_SourceGenExplicit_BuildServiceProvider |    76.581 μs |    43.2630 μs |   6.6950 μs |    45.66 |    3.88 |    2 |  8.7891 | 0.9766 | 109.57 KB |       16.08 |
-| Needlr_SourceGenImplicit_BuildServiceProvider |    91.116 μs |    17.0287 μs |   2.6352 μs |    54.33 |    2.32 |    2 | 15.1367 | 1.9531 | 189.89 KB |       27.87 |
+| Method                                        | Mean         | Error         | StdDev      | Ratio    | RatioSD | Rank | Gen0     | Gen1    | Allocated | Alloc Ratio |
+|---------------------------------------------- |-------------:|--------------:|------------:|---------:|--------:|-----:|---------:|--------:|----------:|------------:|
+| ManualDI_BuildServiceProvider                 |     1.263 μs |     0.2172 μs |   0.0336 μs |     1.00 |    0.03 |    1 |   0.9270 |  0.1011 |   5.69 KB |        1.00 |
+| Needlr_Reflection_BuildServiceProvider        | 4,313.598 μs | 1,570.3054 μs | 407.8033 μs | 3,417.33 |  307.53 |    4 | 156.2500 | 15.6250 | 964.27 KB |      169.54 |
+| Needlr_SourceGenExplicit_BuildServiceProvider |    63.863 μs |     8.0285 μs |   2.0850 μs |    50.59 |    1.94 |    2 |  17.5781 |  1.9531 | 108.67 KB |       19.11 |
+| Needlr_SourceGenImplicit_BuildServiceProvider |    85.571 μs |    27.5077 μs |   7.1437 μs |    67.79 |    5.44 |    3 |  30.2734 |  3.9063 | 185.89 KB |       32.68 |

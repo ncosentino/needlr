@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.DependentServiceResolutionBenchmarks-20260802-041431</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.DependentServiceResolutionBenchmarks-20260816-032436</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,7 +14,7 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-12th Gen Intel Core i7-12700H, 1 CPU, 20 logical and 10 physical cores
+Intel Core 7 150U, 1 CPU, 12 logical and 6 physical cores
 .NET SDK 10.0.302
   [Host]   : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
   ShortRun : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
@@ -26,9 +26,9 @@ WarmupCount=3
 <table>
 <thead><tr><th>Method                      </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_ResolveDependent</td><td>11.75 ns</td><td>4.326 ns</td><td>0.670 ns</td><td>1.00</td><td>0.07</td><td>1</td><td>-</td><td>NA</td>
-</tr><tr><td>Needlr_Reflection_ResolveDependent</td><td>11.03 ns</td><td>0.823 ns</td><td>0.127 ns</td><td>0.94</td><td>0.05</td><td>1</td><td>-</td><td>NA</td>
-</tr><tr><td>Needlr_SourceGen_ResolveDependent</td><td>11.17 ns</td><td>2.441 ns</td><td>0.634 ns</td><td>0.95</td><td>0.07</td><td>1</td><td>-</td><td>NA</td>
+</thead><tbody><tr><td>ManualDI_ResolveDependent</td><td>10.454 ns</td><td>0.9352 ns</td><td>0.1447 ns</td><td>1.00</td><td>0.02</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_Reflection_ResolveDependent</td><td>12.239 ns</td><td>4.6719 ns</td><td>1.2133 ns</td><td>1.17</td><td>0.11</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_SourceGen_ResolveDependent</td><td>9.899 ns</td><td>0.8661 ns</td><td>0.1340 ns</td><td>0.95</td><td>0.02</td><td>1</td><td>-</td><td>NA</td>
 </tr></tbody></table>
 </body>
 </html>
