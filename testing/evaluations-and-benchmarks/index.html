@@ -2041,6 +2041,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#mutation-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mutation testing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#benchmark-harnesses" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5239,6 +5250,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/adr-0011-adopt-advisory-mutation-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0011 Adopt Advisory Mutation Testing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5270,6 +5316,38 @@
 <p>Needlr uses deterministic tests to protect behavior and BenchmarkDotNet measurements
 to evaluate performance. Tests remain the correctness authority; benchmarks compare
 equivalent production paths after correctness is established.</p>
+<h2 id="mutation-testing">Mutation testing<a class="headerlink" href="#mutation-testing" title="Permanent link">&para;</a></h2>
+<p>Stryker.NET measures whether focused tests detect meaningful changes to authored
+production code. It supplements normal tests; it does not replace them or prove that
+behavior is correct.</p>
+<p>Needlr starts with two bounded scopes:</p>
+<ul>
+<li><code>runtime</code> mutates selected dependency-injection and verification logic in
+  <code>NexusLabs.Needlr</code>;</li>
+<li><code>generators</code> mutates selected authored helpers and code emitters in
+  <code>NexusLabs.Needlr.Generators</code>.</li>
+</ul>
+<p>Roslyn-generated syntax trees are not direct mutation targets. Stryker mutates the
+generator's authored input syntax trees, reruns the source generators while compiling
+the mutant, and then executes tests. The generator scope therefore uses tests that
+invoke Roslyn generators at runtime; consumer projects that only compiled generated
+output before the mutation run would not provide equivalent evidence.</p>
+<p>Run both scopes locally:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">dotnet</span> <span class="n">tool</span> <span class="n">restore</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">pwsh</span> <span class="n">scripts</span><span class="p">/</span><span class="n">run-mutation-tests</span><span class="p">.</span><span class="n">ps1</span>
+</span></code></pre></div>
+<p>Run one scope with <code>-Scope runtime</code> or <code>-Scope generators</code>. Reports are written under
+<code>artifacts/mutation/</code>, which is ignored by git.</p>
+<p>The mutation workflow is advisory and is not a required pull-request check. It runs
+affected scopes on ready pull requests, both scopes on a weekly schedule, and both
+scopes when dispatched manually. Each configuration uses <code>thresholds.break = 0</code>, so a
+low mutation score is reported but does not fail the workflow. Tool failures, build
+failures, and initial test failures still fail loudly.</p>
+<p>Mutation JSON and Markdown reports are ephemeral runner files. The workflow copies the
+Markdown summary into the GitHub job summary and does not upload GitHub artifacts or
+send results to the Stryker dashboard. A future threshold must be based on a reviewed,
+post-triage baseline for that exact scope rather than an arbitrary repository-wide
+percentage.</p>
 <h2 id="benchmark-harnesses">Benchmark harnesses<a class="headerlink" href="#benchmark-harnesses" title="Permanent link">&para;</a></h2>
 <p>Benchmark methods contain only the production call under test. Setup, data generation,
 validation, logging, and assertions live outside timed code.</p>
