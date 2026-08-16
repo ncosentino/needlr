@@ -45,6 +45,8 @@ ScaffoldingReadMe.txt
 *~
 CodeCoverage/
 coverage/
+.stryker-tmp/
+StrykerOutput/
 
 # MSBuild Binary and Structured Log
 *.binlog

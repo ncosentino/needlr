@@ -1,0 +1,121 @@
+name: Mutation testing
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
+    paths:
+      - '.config/dotnet-tools.json'
+      - '.github/workflows/mutation-testing.yml'
+      - 'global.json'
+      - 'scripts/get-mutation-scope.ps1'
+      - 'scripts/run-mutation-tests.ps1'
+      - 'scripts/test-mutation.ps1'
+      - 'scripts/mutation/**'
+      - 'src/Directory.Build.props'
+      - 'src/Directory.Packages.props'
+      - 'src/NexusLabs.Needlr/**'
+      - 'src/NexusLabs.Needlr.Tests/**'
+      - 'src/NexusLabs.Needlr.Generators/**'
+      - 'src/NexusLabs.Needlr.Generators.Attributes/**'
+      - 'src/NexusLabs.Needlr.Generators.Tests/**'
+  workflow_dispatch:
+  schedule:
+    - cron: '30 4 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mutation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+jobs:
+  changes:
+    name: Mutation scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      runtime_required: ${{ steps.scope.outputs.runtime_required }}
+      generators_required: ${{ steps.scope.outputs.generators_required }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve mutation scope
+        id: scope
+        shell: pwsh
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          FORCE_ALL: ${{ github.event_name != 'pull_request' }}
+        run: |
+          $arguments = @{
+            BaseSha = $env:BASE_SHA
+            HeadSha = $env:HEAD_SHA
+            ForceAll = $env:FORCE_ALL -eq 'true'
+          }
+          scripts/get-mutation-scope.ps1 @arguments
+
+  runtime:
+    name: Runtime mutation analysis
+    needs: changes
+    if: >-
+      (github.event_name != 'pull_request' || github.event.pull_request.draft == false) &&
+      needs.changes.outputs.runtime_required == 'true'
+    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: ./.github/actions/setup-dotnet
+        with:
+          global-json-file: global.json
+
+      - name: Run runtime mutation testing
+        shell: pwsh
+        run: |
+          scripts/run-mutation-tests.ps1 `
+            -Scope runtime `
+            -OutputPath (Join-Path $env:RUNNER_TEMP 'needlr-mutation')
+
+  generators:
+    name: Generator mutation analysis
+    needs: changes
+    if: >-
+      (github.event_name != 'pull_request' || github.event.pull_request.draft == false) &&
+      needs.changes.outputs.generators_required == 'true'
+    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: ./.github/actions/setup-dotnet
+        with:
+          global-json-file: global.json
+
+      - name: Run generator mutation testing
+        shell: pwsh
+        run: |
+          scripts/run-mutation-tests.ps1 `
+            -Scope generators `
+            -OutputPath (Join-Path $env:RUNNER_TEMP 'needlr-mutation')

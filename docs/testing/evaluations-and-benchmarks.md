@@ -4,6 +4,47 @@ Needlr uses deterministic tests to protect behavior and BenchmarkDotNet measurem
 to evaluate performance. Tests remain the correctness authority; benchmarks compare
 equivalent production paths after correctness is established.
 
+## Mutation testing
+
+Stryker.NET measures whether focused tests detect meaningful changes to authored
+production code. It supplements normal tests; it does not replace them or prove that
+behavior is correct.
+
+Needlr starts with two bounded scopes:
+
+- `runtime` mutates selected dependency-injection and verification logic in
+  `NexusLabs.Needlr`;
+- `generators` mutates selected authored helpers and code emitters in
+  `NexusLabs.Needlr.Generators`.
+
+Roslyn-generated syntax trees are not direct mutation targets. Stryker mutates the
+generator's authored input syntax trees, reruns the source generators while compiling
+the mutant, and then executes tests. The generator scope therefore uses tests that
+invoke Roslyn generators at runtime; consumer projects that only compiled generated
+output before the mutation run would not provide equivalent evidence.
+
+Run both scopes locally:
+
+```powershell
+dotnet tool restore
+pwsh scripts/run-mutation-tests.ps1
+```
+
+Run one scope with `-Scope runtime` or `-Scope generators`. Reports are written under
+`artifacts/mutation/`, which is ignored by git.
+
+The mutation workflow is advisory and is not a required pull-request check. It runs
+affected scopes on ready pull requests, both scopes on a weekly schedule, and both
+scopes when dispatched manually. Each configuration uses `thresholds.break = 0`, so a
+low mutation score is reported but does not fail the workflow. Tool failures, build
+failures, and initial test failures still fail loudly.
+
+Mutation JSON and Markdown reports are ephemeral runner files. The workflow copies the
+Markdown summary into the GitHub job summary and does not upload GitHub artifacts or
+send results to the Stryker dashboard. A future threshold must be based on a reviewed,
+post-triage baseline for that exact scope rather than an arbitrary repository-wide
+percentage.
+
 ## Benchmark harnesses
 
 Benchmark methods contain only the production call under test. Setup, data generation,
