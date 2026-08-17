@@ -45,10 +45,10 @@
       "name": "injection",
       "priority": 20,
       "project": "NexusLabs.Needlr.Injection.csproj",
-      "workingDirectory": "src/NexusLabs.Needlr.Tests",
+      "workingDirectory": "src/NexusLabs.Needlr.Injection.Tests",
       "sourceRoot": "src/NexusLabs.Needlr.Injection",
       "testRoots": [
-        "src/NexusLabs.Needlr.Tests"
+        "src/NexusLabs.Needlr.Injection.Tests"
       ],
       "fullTriggerRoots": [],
       "priorityFiles": [
