@@ -11,6 +11,7 @@ param(
     [string]$BaseSha,
     [string]$HeadSha,
     [string[]]$ChangedPaths,
+    [string]$ChangedFilesPath,
     [switch]$NoCiOutput
 )
 
@@ -46,6 +47,30 @@ function Test-UnderRoot {
 }
 
 function Get-ChangedRecords {
+    if (-not [string]::IsNullOrWhiteSpace($ChangedFilesPath)) {
+        if (-not (Test-Path -LiteralPath $ChangedFilesPath -PathType Leaf)) {
+            throw "Changed-files metadata was not found at '$ChangedFilesPath'."
+        }
+
+        $records = @(
+            Get-Content -LiteralPath $ChangedFilesPath -Raw |
+                ConvertFrom-Json)
+        return @(
+            foreach ($record in $records) {
+                [PSCustomObject]@{
+                    Path = ([string]$record.filename).Replace('\', '/')
+                    ChangedLines = [int]$record.additions + [int]$record.deletions
+                }
+                if (-not [string]::IsNullOrWhiteSpace(
+                    [string]$record.previous_filename)) {
+                    [PSCustomObject]@{
+                        Path = ([string]$record.previous_filename).Replace('\', '/')
+                        ChangedLines = 0
+                    }
+                }
+            })
+    }
+
     if ($null -ne $ChangedPaths) {
         return @(
             $ChangedPaths |

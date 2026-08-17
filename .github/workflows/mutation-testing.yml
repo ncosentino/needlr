@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   group: mutation-${{ github.event.pull_request.number }}
@@ -42,19 +43,41 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           persist-credentials: false
+
+      - name: Read pull request file metadata
+        uses: actions/github-script@v8
+        env:
+          CHANGED_FILES_PATH: ${{ runner.temp }}/mutation-changed-files.json
+        with:
+          script: |
+            const fs = require('node:fs');
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                per_page: 100
+              }
+            );
+            fs.writeFileSync(
+              process.env.CHANGED_FILES_PATH,
+              JSON.stringify(files.map(file => ({
+                filename: file.filename,
+                previous_filename: file.previous_filename ?? null,
+                additions: file.additions,
+                deletions: file.deletions
+              }))));
 
       - name: Resolve bounded mutation scope
         id: scope
         shell: pwsh
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          CHANGED_FILES_PATH: ${{ runner.temp }}/mutation-changed-files.json
         run: |
           scripts/get-mutation-scope.ps1 `
-            -BaseSha $env:BASE_SHA `
-            -HeadSha $env:HEAD_SHA
+            -ChangedFilesPath $env:CHANGED_FILES_PATH
 
   mutation:
     name: Mutation analysis (${{ matrix.scope }})

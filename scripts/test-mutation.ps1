@@ -164,8 +164,13 @@ Assert-Condition `
     -Message 'Mutation workflow execution bounds have drifted.'
 Assert-Condition `
     -Condition (
-        ([regex]::Matches($workflow, 'fetch-depth:\s*0')).Count -eq 2) `
-    -Message 'Every mutation workflow checkout must retain full NBGV/SourceLink history.'
+        ([regex]::Matches($workflow, 'fetch-depth:\s*0')).Count -eq 1) `
+    -Message 'Only Stryker jobs should pay for full NBGV/SourceLink history.'
+Assert-Condition `
+    -Condition (
+        $workflow -match 'github\.rest\.pulls\.listFiles' -and
+        $workflow -match 'mutation-changed-files\.json') `
+    -Message 'Scope selection must use pull-request file metadata without full history.'
 
 $runner = Get-Content -LiteralPath $runnerPath -Raw
 Assert-Condition `
@@ -190,6 +195,27 @@ Assert-Condition `
         (@($coreOnly.selected_scopes) -join ',') -ceq 'core' -and
         $coreOnly.matrix.include[0].mutateFiles[0] -ceq 'TypeExtensions.cs') `
     -Message 'Core source changes must select their exact changed file.'
+
+$metadataPath = [IO.Path]::GetTempFileName()
+try {
+    [IO.File]::WriteAllText(
+        $metadataPath,
+        '[{"filename":"src/NexusLabs.Needlr/TypeExtensions.cs","previous_filename":null,"additions":4,"deletions":2}]',
+        [Text.UTF8Encoding]::new($false))
+    $metadataSelection = (
+        & $classifierPath `
+            -ChangedFilesPath $metadataPath `
+            -NoCiOutput |
+            ConvertFrom-Json)
+    Assert-Condition `
+        -Condition (
+            (@($metadataSelection.selected_scopes) -join ',') -ceq 'core' -and
+            $metadataSelection.matrix.include[0].mutateFiles[0] -ceq
+                'TypeExtensions.cs') `
+        -Message 'Pull-request file metadata must select the changed source file.'
+} finally {
+    Remove-Item -LiteralPath $metadataPath -Force
+}
 
 $priorityTrim = (
     & $classifierPath `

@@ -67,6 +67,10 @@ configs use MTP, Standard mutation level, per-test coverage analysis, concurrenc
 does not persist baselines or reports, does not run on a schedule, does not upload
 artifacts, and does not use the Stryker dashboard.
 
+The lightweight selector reads changed-file metadata through GitHub's pull-request API
+instead of fetching full history. Only selected Stryker jobs fetch full history for NBGV,
+SourceLink, and `since: origin/main`.
+
 Each scope's test project directly references the project under mutation. Stryker uses
 that direct edge to select the mutation target; a merely transitive reference can produce
 a fast but meaningless run whose tests never observe the mutant assembly.
