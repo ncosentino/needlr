@@ -44,11 +44,9 @@ consumer as the bounded compatibility proof.
 
 ## Decision
 
-Needlr retains two advisory mutation scopes:
-
-- `runtime` mutates selected core dependency-injection and verification logic;
-- `sourcegen` mutates the small Carter integration package while Carter tests compile
-  and execute through Needlr's source-generated registry.
+Needlr defines fourteen advisory runtime-package scopes in one committed manifest.
+Every scope declares its project, direct test project, source/test trigger roots,
+numeric priority, and at most five representative files.
 
 The direct `NexusLabs.Needlr.Generators` mutation configuration is removed. Generator
 and generator-test changes select the `sourcegen` consumer scope so those changes still
@@ -57,13 +55,32 @@ implementation mutation remains deferred until Stryker can avoid whole-project m
 construction and provide reliable MTP coverage/test filtering for this test project, or
 Needlr introduces a separately justified smaller production boundary.
 
-Both accepted scopes use MTP, Standard mutation level, per-test coverage analysis,
-concurrency two, explicit authored source files, `thresholds.break = 0`, local
-JSON/Markdown reporters, full-history checkout, and thirty-minute job limits. Neither
-scope is a required branch check, uploads GitHub artifacts, or uses the Stryker
-dashboard.
+Mutation testing is pull-request-only. The classifier selects affected scopes and uses
+Stryker changed-code analysis against `origin/main`. It selects no more than two scopes
+per pull request and no more than five changed source files per scope. Scope selection
+uses committed numeric priority; file selection uses changed-line count followed by
+path. Every omitted scope and file is reported.
+
+Selected jobs run with maximum parallelism two and a ten-minute timeout. Generated
+configs use MTP, Standard mutation level, per-test coverage analysis, concurrency two,
+`thresholds.break = 0`, and local JSON/Markdown reporters. The workflow is not required,
+does not persist baselines or reports, does not run on a schedule, does not upload
+artifacts, and does not use the Stryker dashboard.
 
 ## Alternatives considered
+
+### Run complete project scopes on every pull request
+
+This maximizes each run's breadth. It was rejected because mutation testing would add
+unbounded feedback time and repeat work unrelated to the pull request. Changed-code
+selection provides direct feedback on the code currently being reviewed.
+
+### Add scheduled complete runs
+
+Scheduled rotation would eventually inspect untouched code and support trend analysis.
+It was rejected for the current integration because the repository does not need
+historical reports or baseline persistence, and the immediate goal is bounded PR
+feedback.
 
 ### Allow the generator job ninety minutes
 
@@ -96,7 +113,8 @@ registries and module initialization without taking on direct generator-project 
 
 ### Positive
 
-- Both mutation jobs have explicit thirty-minute ceilings.
+- Every mutation job has an explicit ten-minute ceiling.
+- Fourteen directly tested runtime packages are eligible when their code or tests change.
 - Source-generated composition remains in the mutation test path.
 - The workflow no longer spends an hour on a generator run that cannot use its intended
   test or coverage filters.
@@ -118,10 +136,10 @@ registries and module initialization without taking on direct generator-project 
 
 ## Confirmation
 
-`scripts/test-mutation.ps1` validates the runtime and source-generated consumer projects,
-their explicit mutate lists, MTP selection, zero break thresholds, local reporters,
-thirty-minute timeouts, full-history checkout, path classification, fork routing, and
-non-required delivery declaration.
+`scripts/test-mutation.ps1` validates all scope mappings and priority files, the two-scope
+and five-file limits, deterministic trimming, MTP selection, zero break thresholds,
+ephemeral local reporters, ten-minute timeout, full-history checkout, changed-code
+selection, fork routing, and non-required delivery declaration.
 
 The corrective pull request must complete both scopes on PitCrew and expose readable job
 summaries without artifact uploads. The source-generated consumer run must produce

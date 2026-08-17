@@ -1,24 +1,30 @@
 <#
 .SYNOPSIS
-    Classifies changed files for Needlr mutation testing.
+    Selects bounded mutation scopes and files for one pull request.
 
 .DESCRIPTION
-    Mutation tooling and shared build changes run both scopes. Runtime and generator
-    source or test changes run only their corresponding scope. Manual and scheduled
-    workflows force both scopes.
+    Uses the committed scope manifest, changed paths, and changed-line counts to select
+    at most the configured number of scopes and source files. Omitted work is reported
+    explicitly so a bounded run is never mistaken for complete mutation coverage.
 #>
 param(
     [string]$BaseSha,
     [string]$HeadSha,
     [string[]]$ChangedPaths,
-    [switch]$ForceAll,
     [switch]$NoCiOutput
 )
 
 $ErrorActionPreference = 'Stop'
 
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$manifestPath = Join-Path $PSScriptRoot 'mutation' 'scopes.json'
+$manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+$maxScopes = [int]$manifest.limits.maxScopesPerPullRequest
+$maxFiles = [int]$manifest.limits.maxFilesPerScope
+
 $sharedPatterns = @(
     '^\.config/dotnet-tools\.json$',
+    '^\.github/genesis-delivery\.json$',
     '^\.github/workflows/mutation-testing\.yml$',
     '^global\.json$',
     '^scripts/get-mutation-scope\.ps1$',
@@ -28,79 +34,220 @@ $sharedPatterns = @(
     '^src/Directory\.Build\.props$',
     '^src/Directory\.Packages\.props$'
 )
-$runtimePatterns = @(
-    '^src/NexusLabs\.Needlr/',
-    '^src/NexusLabs\.Needlr\.Tests/'
-)
-$sourceGenPatterns = @(
-    '^src/NexusLabs\.Needlr\.Carter/',
-    '^src/NexusLabs\.Needlr\.Carter\.Tests/',
-    '^src/NexusLabs\.Needlr\.Generators/',
-    '^src/NexusLabs\.Needlr\.Generators\.Attributes/',
-    '^src/NexusLabs\.Needlr\.Generators\.Tests/'
-)
 
-function Test-AnyPattern {
+function Test-UnderRoot {
     param(
         [Parameter(Mandatory)][string]$Path,
-        [Parameter(Mandatory)][string[]]$Patterns
+        [Parameter(Mandatory)][string]$Root
     )
 
-    return $null -ne (
-        $Patterns |
-            Where-Object { $Path -match $_ } |
-            Select-Object -First 1)
+    return $Path -ceq $Root -or
+        $Path.StartsWith("$Root/", [StringComparison]::Ordinal)
 }
 
-if ($ForceAll -or $BaseSha -match '^0+$') {
-    $runtimeRequired = $true
-    $sourceGenRequired = $true
-    $paths = @()
-} else {
-    if ($null -eq $ChangedPaths) {
-        if ([string]::IsNullOrWhiteSpace($BaseSha) -or
-            [string]::IsNullOrWhiteSpace($HeadSha)) {
-            throw 'BaseSha and HeadSha are required when ChangedPaths is not supplied.'
-        }
-
-        $diffOutput = & git diff --name-only "$BaseSha...$HeadSha" 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            throw "Could not determine changed files.`n$($diffOutput | Out-String)"
-        }
-        $paths = @($diffOutput | Where-Object { $_ })
-    } else {
-        $paths = @($ChangedPaths | Where-Object { $_ })
+function Get-ChangedRecords {
+    if ($null -ne $ChangedPaths) {
+        return @(
+            $ChangedPaths |
+                Where-Object { $_ } |
+                ForEach-Object {
+                    [PSCustomObject]@{
+                        Path = $_.Replace('\', '/')
+                        ChangedLines = 0
+                    }
+                })
     }
 
-    $normalizedPaths = @($paths | ForEach-Object { $_.Replace('\', '/') })
-    $sharedChanged = $null -ne (
-        $normalizedPaths |
-            Where-Object { Test-AnyPattern -Path $_ -Patterns $sharedPatterns } |
-            Select-Object -First 1)
-    $runtimeRequired = $sharedChanged -or $null -ne (
-        $normalizedPaths |
-            Where-Object { Test-AnyPattern -Path $_ -Patterns $runtimePatterns } |
-            Select-Object -First 1)
-    $sourceGenRequired = $sharedChanged -or $null -ne (
-        $normalizedPaths |
-            Where-Object { Test-AnyPattern -Path $_ -Patterns $sourceGenPatterns } |
-            Select-Object -First 1)
+    if ([string]::IsNullOrWhiteSpace($BaseSha) -or
+        [string]::IsNullOrWhiteSpace($HeadSha)) {
+        throw 'BaseSha and HeadSha are required when ChangedPaths is not supplied.'
+    }
+
+    $diffOutput = & git diff --numstat --no-renames "$BaseSha...$HeadSha" 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not determine changed files.`n$($diffOutput | Out-String)"
+    }
+
+    return @(
+        foreach ($line in $diffOutput) {
+            if ($line -notmatch '^(?<added>-|\d+)\t(?<deleted>-|\d+)\t(?<path>.+)$') {
+                throw "Unexpected git numstat line: $line"
+            }
+
+            $added = if ($Matches.added -ceq '-') { 0 } else { [int]$Matches.added }
+            $deleted = if ($Matches.deleted -ceq '-') { 0 } else { [int]$Matches.deleted }
+            [PSCustomObject]@{
+                Path = $Matches.path.Replace('\', '/')
+                ChangedLines = $added + $deleted
+            }
+        })
+}
+
+$changed = @(Get-ChangedRecords)
+$sharedChanged = $null -ne (
+    $changed |
+        Where-Object {
+            $path = $_.Path
+            $null -ne (
+                $sharedPatterns |
+                    Where-Object { $path -match $_ } |
+                    Select-Object -First 1)
+        } |
+        Select-Object -First 1)
+
+$candidates = @(
+    foreach ($scope in $manifest.scopes) {
+        $sourceRoot = [string]$scope.sourceRoot
+        $sourceChanges = @(
+            $changed |
+                Where-Object { Test-UnderRoot -Path $_.Path -Root $sourceRoot })
+        $testChanges = @(
+            $changed |
+                Where-Object {
+                    $path = $_.Path
+                    $null -ne (
+                        @($scope.testRoots) |
+                            Where-Object {
+                                Test-UnderRoot -Path $path -Root ([string]$_)
+                            } |
+                            Select-Object -First 1)
+                })
+        $fullTriggerChanges = @(
+            $changed |
+                Where-Object {
+                    $path = $_.Path
+                    $null -ne (
+                        @($scope.fullTriggerRoots) |
+                            Where-Object {
+                                Test-UnderRoot -Path $path -Root ([string]$_)
+                            } |
+                            Select-Object -First 1)
+                })
+
+        if (-not $sharedChanged -and
+            $sourceChanges.Count -eq 0 -and
+            $testChanges.Count -eq 0 -and
+            $fullTriggerChanges.Count -eq 0) {
+            continue
+        }
+
+        $mode = if ($sharedChanged -or $fullTriggerChanges.Count -gt 0) {
+            'full'
+        } else {
+            'diff'
+        }
+
+        $mutableSourceChanges = @(
+            $sourceChanges |
+                Where-Object {
+                    Test-Path `
+                        -LiteralPath (Join-Path $repoRoot $_.Path) `
+                        -PathType Leaf
+                })
+        $unavailableSourceChanges = @(
+            $sourceChanges |
+                Where-Object {
+                    -not (Test-Path `
+                        -LiteralPath (Join-Path $repoRoot $_.Path) `
+                        -PathType Leaf)
+                })
+        $orderedSourceChanges = @(
+            $mutableSourceChanges |
+                Sort-Object `
+                    @{ Expression = 'ChangedLines'; Descending = $true },
+                    @{ Expression = 'Path'; Descending = $false })
+        $selectedSourceChanges = @($orderedSourceChanges | Select-Object -First $maxFiles)
+        $omittedSourceChanges = @($orderedSourceChanges | Select-Object -Skip $maxFiles)
+
+        $mutateFiles = if ($selectedSourceChanges.Count -gt 0) {
+            @(
+                $selectedSourceChanges |
+                    ForEach-Object {
+                        $_.Path.Substring($sourceRoot.Length).TrimStart('/')
+                    })
+        } else {
+            @($scope.priorityFiles | Select-Object -First $maxFiles)
+        }
+
+        [PSCustomObject]@{
+            Scope = [string]$scope.name
+            Priority = [int]$scope.priority
+            Mode = $mode
+            MutateFiles = $mutateFiles
+            OmittedFiles = @(
+                @($omittedSourceChanges | ForEach-Object Path) +
+                @($unavailableSourceChanges | ForEach-Object Path))
+        }
+    })
+
+$orderedCandidates = @(
+    $candidates |
+        Sort-Object `
+            @{ Expression = 'Priority'; Descending = $false },
+            @{ Expression = 'Scope'; Descending = $false })
+$selected = @($orderedCandidates | Select-Object -First $maxScopes)
+$omittedScopes = @(
+    $orderedCandidates |
+        Select-Object -Skip $maxScopes |
+        ForEach-Object Scope)
+$omittedFiles = @(
+    $selected |
+        ForEach-Object {
+            $scopeName = $_.Scope
+            @($_.OmittedFiles) |
+                ForEach-Object { "${scopeName}::$_" }
+        })
+
+$matrixEntries = @(
+    $selected |
+        ForEach-Object {
+            [ordered]@{
+                scope = $_.Scope
+                mode = $_.Mode
+                mutateFiles = @($_.MutateFiles)
+            }
+        })
+$matrix = if ($matrixEntries.Count -gt 0) {
+    [ordered]@{ include = $matrixEntries }
+} else {
+    [ordered]@{
+        include = @(
+            [ordered]@{
+                scope = 'none'
+                mode = 'diff'
+                mutateFiles = @()
+            })
+    }
 }
 
 $result = [ordered]@{
-    runtime_required = $runtimeRequired
-    sourcegen_required = $sourceGenRequired
-    changed_count = $paths.Count
+    run_required = $selected.Count -gt 0
+    matrix = $matrix
+    selected_scopes = @($selected | ForEach-Object Scope)
+    omitted_scopes = $omittedScopes
+    omitted_files = $omittedFiles
+    changed_count = $changed.Count
 }
+$matrixJson = ConvertTo-Json $matrix -Depth 8 -Compress
 
 if (-not $NoCiOutput -and
     -not [string]::IsNullOrWhiteSpace($env:GITHUB_OUTPUT)) {
     Add-Content `
         -Path $env:GITHUB_OUTPUT `
-        -Value "runtime_required=$($runtimeRequired.ToString().ToLowerInvariant())"
-    Add-Content `
-        -Path $env:GITHUB_OUTPUT `
-        -Value "sourcegen_required=$($sourceGenRequired.ToString().ToLowerInvariant())"
+        -Value "run_required=$($result.run_required.ToString().ToLowerInvariant())"
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "matrix=$matrixJson"
 }
 
-$result | ConvertTo-Json -Compress
+if (-not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP_SUMMARY)) {
+    Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value @"
+## Mutation selection
+
+- Scope limit: $maxScopes
+- File limit per scope: $maxFiles
+- Selected scopes: $((@($result.selected_scopes) -join ', ') -replace '^$', 'none')
+- Omitted scopes: $((@($result.omitted_scopes) -join ', ') -replace '^$', 'none')
+- Omitted files: $((@($result.omitted_files) -join ', ') -replace '^$', 'none')
+"@
+}
+
+$result | ConvertTo-Json -Depth 10 -Compress

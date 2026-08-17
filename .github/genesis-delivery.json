@@ -41,8 +41,7 @@
         "release/create-release",
         "benchmarks/check-changes",
         "benchmarks/run-benchmarks",
-        "mutation-testing/runtime",
-        "mutation-testing/sourcegen",
+        "mutation-testing/mutation",
         "ide-extensions/build-vscode",
         "ide-extensions/release"
       ]
@@ -67,8 +66,7 @@
         "release/create-release",
         "benchmarks/check-changes",
         "benchmarks/run-benchmarks",
-        "mutation-testing/runtime",
-        "mutation-testing/sourcegen",
+        "mutation-testing/mutation",
         "ide-extensions/build-vscode",
         "ide-extensions/release"
       ]
@@ -108,8 +106,7 @@
       "source": "needlr",
       "path": ".github/workflows/mutation-testing.yml",
       "roles": [
-        "draft-optional",
-        "post-merge"
+        "draft-optional"
       ],
       "draftBehavior": "ready-only",
       "requiredChecks": []
