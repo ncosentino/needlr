@@ -5,7 +5,7 @@ date: "2026-08-15"
 authors: ["Nick Cosentino"]
 tags: ["architecture", "decision", "testing", "mutation", "source-generation", "ci"]
 supersedes: ""
-superseded_by: ""
+superseded_by: "ADR-0012"
 ---
 
 ## Context and scope

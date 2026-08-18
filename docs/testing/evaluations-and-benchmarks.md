@@ -10,12 +10,10 @@ Stryker.NET measures whether focused tests detect meaningful changes to authored
 production code. It supplements normal tests; it does not replace them or prove that
 behavior is correct.
 
-Needlr starts with two bounded scopes:
-
-- `runtime` mutates selected dependency-injection and verification logic in
-  `NexusLabs.Needlr`;
-- `generators` mutates selected authored helpers and code emitters in
-  `NexusLabs.Needlr.Generators`.
+Needlr maps fourteen directly tested runtime packages in
+`scripts/mutation/scopes.json`. Each scope declares its production project, direct test
+project, deterministic priority, and at most five representative files for test-only or
+tooling changes.
 
 Roslyn-generated syntax trees are not direct mutation targets. Stryker mutates the
 generator's authored input syntax trees, reruns the source generators while compiling
@@ -23,27 +21,53 @@ the mutant, and then executes tests. The generator scope therefore uses tests th
 invoke Roslyn generators at runtime; consumer projects that only compiled generated
 output before the mutation run would not provide equivalent evidence.
 
-Run both scopes locally:
+Needlr uses xUnit v3, so Stryker runs through its Microsoft Testing Platform runner.
+The VSTest runner can discover the tests but does not reliably apply mutants to xUnit
+v3 execution. MTP remains preview in Stryker.NET 4.16.0; suspicious mutation outcomes
+must be compared with coverage analysis disabled before they become policy.
+
+Direct mutation of the generator implementation is deferred. Stryker analyzes the full
+generator project before applying its mutate filter, creating more than ten thousand
+candidate mutants for even a three-file scope. MTP then failed coverage capture for the
+generator test project and left hundreds of mutants to run against the full test suite.
+The source-generated consumer scope keeps generated composition in the test path without
+pretending that this toolchain currently provides practical generator-implementation
+mutation testing.
+
+Run one scope locally:
 
 ```powershell
 dotnet tool restore
-pwsh scripts/run-mutation-tests.ps1
+pwsh scripts/run-mutation-tests.ps1 `
+  -Scope core `
+  -MutateFiles ServiceProviderExtensions.cs `
+  -SinceTarget origin/main
 ```
 
-Run one scope with `-Scope runtime` or `-Scope generators`. Reports are written under
-`artifacts/mutation/`, which is ignored by git.
+Reports are written under `artifacts/mutation/`, which is ignored by git.
 
-The mutation workflow is advisory and is not a required pull-request check. It runs
-affected scopes on ready pull requests, both scopes on a weekly schedule, and both
-scopes when dispatched manually. Each configuration uses `thresholds.break = 0`, so a
-low mutation score is reported but does not fail the workflow. Tool failures, build
-failures, and initial test failures still fail loudly.
+The mutation workflow is pull-request-only, advisory, and not a required check. It:
+
+- uses Stryker changed-code analysis against `origin/main`;
+- selects at most two scopes by committed numeric priority;
+- selects at most five changed source files per scope, ordered by changed-line count
+  then path;
+- runs at most two jobs concurrently;
+- caps every job at ten minutes;
+- reports every omitted scope and file explicitly.
+
+Each generated configuration uses `thresholds.break = 0`, so a low mutation score is
+reported but does not fail the workflow. Tool failures, build failures, and initial test
+failures still fail loudly.
 
 Mutation JSON and Markdown reports are ephemeral runner files. The workflow copies the
-Markdown summary into the GitHub job summary and does not upload GitHub artifacts or
-send results to the Stryker dashboard. A future threshold must be based on a reviewed,
-post-triage baseline for that exact scope rather than an arbitrary repository-wide
-percentage.
+summary plus every surviving or uncovered mutant into the GitHub job summary. Internal
+pull requests receive one neutral Check per selected scope containing the same details,
+plus one concise upserted PR comment with the scope table and links to those Checks. The
+comment is intentionally summary-only so detailed mutants do not overwhelm the PR
+conversation. These PR surfaces replace their prior current-head result; they are not
+baselines or report archives. The workflow does not upload GitHub artifacts, cache
+baselines, schedule full runs, or send results to the Stryker dashboard.
 
 ## Benchmark harnesses
 

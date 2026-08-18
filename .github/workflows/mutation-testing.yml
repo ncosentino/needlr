@@ -6,29 +6,26 @@ on:
     types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
     paths:
       - '.config/dotnet-tools.json'
+      - '.github/genesis-delivery.json'
       - '.github/workflows/mutation-testing.yml'
       - 'global.json'
       - 'scripts/get-mutation-scope.ps1'
+      - 'scripts/publish-mutation-result.ps1'
       - 'scripts/run-mutation-tests.ps1'
       - 'scripts/test-mutation.ps1'
       - 'scripts/mutation/**'
       - 'src/Directory.Build.props'
       - 'src/Directory.Packages.props'
-      - 'src/NexusLabs.Needlr/**'
-      - 'src/NexusLabs.Needlr.Tests/**'
-      - 'src/NexusLabs.Needlr.Generators/**'
-      - 'src/NexusLabs.Needlr.Generators.Attributes/**'
-      - 'src/NexusLabs.Needlr.Generators.Tests/**'
-  workflow_dispatch:
-  schedule:
-    - cron: '30 4 * * 1'
+      - 'src/NexusLabs.Needlr*/**'
 
 permissions:
+  checks: write
   contents: read
+  pull-requests: write
 
 concurrency:
-  group: mutation-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: mutation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
@@ -41,8 +38,65 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      runtime_required: ${{ steps.scope.outputs.runtime_required }}
-      generators_required: ${{ steps.scope.outputs.generators_required }}
+      run_required: ${{ steps.scope.outputs.run_required }}
+      matrix: ${{ steps.scope.outputs.matrix }}
+      selected_scope_count: ${{ steps.scope.outputs.selected_scope_count }}
+      omitted_scope_count: ${{ steps.scope.outputs.omitted_scope_count }}
+      max_scopes: ${{ steps.scope.outputs.max_scopes }}
+      max_files_per_scope: ${{ steps.scope.outputs.max_files_per_scope }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Read pull request file metadata
+        uses: actions/github-script@v8
+        env:
+          CHANGED_FILES_PATH: ${{ runner.temp }}/mutation-changed-files.json
+        with:
+          script: |
+            const fs = require('node:fs');
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                per_page: 100
+              }
+            );
+            fs.writeFileSync(
+              process.env.CHANGED_FILES_PATH,
+              JSON.stringify(files.map(file => ({
+                filename: file.filename,
+                previous_filename: file.previous_filename ?? null,
+                additions: file.additions,
+                deletions: file.deletions
+              }))));
+
+      - name: Resolve bounded mutation scope
+        id: scope
+        shell: pwsh
+        env:
+          CHANGED_FILES_PATH: ${{ runner.temp }}/mutation-changed-files.json
+        run: |
+          scripts/get-mutation-scope.ps1 `
+            -ChangedFilesPath $env:CHANGED_FILES_PATH
+
+  mutation:
+    name: Mutation analysis (${{ matrix.scope }})
+    needs: changes
+    if: >-
+      github.event.pull_request.draft == false &&
+      needs.changes.outputs.run_required == 'true'
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.changes.outputs.matrix) }}
+    runs-on: ${{ github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-24.04' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
@@ -51,71 +105,164 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Resolve mutation scope
-        id: scope
+      - name: Setup .NET
+        uses: ./.github/actions/setup-dotnet
+        with:
+          global-json-file: global.json
+
+      - name: Run targeted mutation testing
+        id: mutation
         shell: pwsh
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-          FORCE_ALL: ${{ github.event_name != 'pull_request' }}
+          MUTATION_MODE: ${{ matrix.mode }}
+          MUTATE_FILES_JSON: ${{ toJSON(matrix.mutateFiles) }}
+          MUTATION_SCOPE: ${{ matrix.scope }}
         run: |
+          $mutateFiles = @($env:MUTATE_FILES_JSON | ConvertFrom-Json)
           $arguments = @{
-            BaseSha = $env:BASE_SHA
-            HeadSha = $env:HEAD_SHA
-            ForceAll = $env:FORCE_ALL -eq 'true'
+            Scope = $env:MUTATION_SCOPE
+            MutateFiles = $mutateFiles
+            OutputPath = Join-Path $env:RUNNER_TEMP 'needlr-mutation'
           }
-          scripts/get-mutation-scope.ps1 @arguments
+          if ($env:MUTATION_MODE -ceq 'diff') {
+            $arguments.SinceTarget = 'origin/main'
+          }
+          scripts/run-mutation-tests.ps1 @arguments
 
-  runtime:
-    name: Runtime mutation analysis
-    needs: changes
+      - name: Publish mutation evidence
+        if: >-
+          success() &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MUTATION_SCOPE: ${{ matrix.scope }}
+        run: |
+          scripts/publish-mutation-result.ps1 `
+            -SummaryPath (Join-Path $env:RUNNER_TEMP "needlr-mutation/$env:MUTATION_SCOPE/mutation-summary.json") `
+            -Repository '${{ github.repository }}' `
+            -HeadSha '${{ github.event.pull_request.head.sha }}' `
+            -RunUrl '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+
+  comment:
+    name: Mutation evidence
+    needs: [changes, mutation]
     if: >-
-      (github.event_name != 'pull_request' || github.event.pull_request.draft == false) &&
-      needs.changes.outputs.runtime_required == 'true'
-    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
-    timeout-minutes: 90
+      always() &&
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.changes.outputs.run_required == 'true' &&
+      needs.mutation.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Upsert concise mutation comment
+        uses: actions/github-script@v8
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          MAX_FILES_PER_SCOPE: ${{ needs.changes.outputs.max_files_per_scope }}
+          MAX_SCOPES: ${{ needs.changes.outputs.max_scopes }}
+          OMITTED_SCOPE_COUNT: ${{ needs.changes.outputs.omitted_scope_count }}
+          RUN_ID: ${{ github.run_id }}
+          SELECTED_SCOPE_COUNT: ${{ needs.changes.outputs.selected_scope_count }}
         with:
-          persist-credentials: false
+          script: |
+            const marker = '<!-- needlr-mutation-summary -->';
+            const checks = await github.paginate(
+              github.rest.checks.listForRef,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: process.env.HEAD_SHA,
+                per_page: 100
+              }
+            );
+            const evidence = checks
+              .filter(check => check.external_id?.startsWith('needlr-mutation:'))
+              .map(check => {
+                const encoded = check.external_id.substring('needlr-mutation:'.length);
+                const result = JSON.parse(
+                  Buffer.from(encoded, 'base64').toString('utf8'));
+                return {
+                  ...result,
+                  detailsUrl: check.details_url
+                };
+              })
+              .sort((left, right) => left.scope.localeCompare(right.scope));
+            if (evidence.length !== Number(process.env.SELECTED_SCOPE_COUNT)) {
+              core.setFailed(
+                `Expected ${process.env.SELECTED_SCOPE_COUNT} mutation checks, found ${evidence.length}.`);
+              return;
+            }
 
-      - name: Setup .NET
-        uses: ./.github/actions/setup-dotnet
-        with:
-          global-json-file: global.json
+            const jobs = await github.paginate(
+              github.rest.actions.listJobsForWorkflowRun,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: Number(process.env.RUN_ID),
+                per_page: 100
+              }
+            );
+            const selector = jobs.find(job => job.name === 'Mutation scope');
+            if (!selector) {
+              core.setFailed('Mutation selector job was not found.');
+              return;
+            }
 
-      - name: Run runtime mutation testing
-        shell: pwsh
-        run: |
-          scripts/run-mutation-tests.ps1 `
-            -Scope runtime `
-            -OutputPath (Join-Path $env:RUNNER_TEMP 'needlr-mutation')
+            const formatDuration = seconds => {
+              if (seconds < 60) return `${Math.round(seconds)}s`;
+              return `${Math.floor(seconds / 60)}m${String(Math.round(seconds % 60)).padStart(2, '0')}s`;
+            };
+            const rows = evidence.map(result => {
+              const score = result.score == null ? 'N/A' : `${result.score}%`;
+              return `| ${result.scope} | ${formatDuration(result.durationSeconds)} | ` +
+                `${result.killed} | ${result.survived} | ${result.noCoverage} | ` +
+                `${result.compileErrors} | ${score} | ` +
+                `[View details](${result.detailsUrl}) |`;
+            });
+            const omitted = Number(process.env.OMITTED_SCOPE_COUNT);
+            const body = [
+              marker,
+              '## Mutation evidence for current head',
+              '',
+              `Completed for \`${process.env.HEAD_SHA}\`.`,
+              '',
+              '| Scope | Duration | Killed | Survived | No coverage | Compile errors | Score | Details |',
+              '| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |',
+              ...rows,
+              '',
+              `The selector chose ${evidence.length} scope(s), capped at ` +
+                `${process.env.MAX_FILES_PER_SCOPE} files each, and omitted ${omitted} ` +
+                `scope(s) under the PR budget: [view selector](${selector.html_url}).`,
+              '',
+              'These results are advisory (`break: 0`). Raw reports were not uploaded, ' +
+                'and no baseline was persisted.'
+            ].join('\n');
 
-  generators:
-    name: Generator mutation analysis
-    needs: changes
-    if: >-
-      (github.event_name != 'pull_request' || github.event.pull_request.draft == false) &&
-      needs.changes.outputs.generators_required == 'true'
-    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
-    timeout-minutes: 90
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Setup .NET
-        uses: ./.github/actions/setup-dotnet
-        with:
-          global-json-file: global.json
-
-      - name: Run generator mutation testing
-        shell: pwsh
-        run: |
-          scripts/run-mutation-tests.ps1 `
-            -Scope generators `
-            -OutputPath (Join-Path $env:RUNNER_TEMP 'needlr-mutation')
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                per_page: 100
+              }
+            );
+            const existing = comments.find(comment => comment.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              });
+            }

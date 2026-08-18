@@ -1,0 +1,268 @@
+{
+  "limits": {
+    "maxScopesPerPullRequest": 2,
+    "maxFilesPerScope": 5,
+    "timeoutMinutes": 10,
+    "maxParallel": 2
+  },
+  "defaults": {
+    "testRunner": "mtp",
+    "configuration": "Release",
+    "mutationLevel": "Standard",
+    "coverageAnalysis": "perTest",
+    "concurrency": 2,
+    "reporters": [
+      "progress",
+      "json",
+      "markdown"
+    ],
+    "thresholds": {
+      "high": 80,
+      "low": 60,
+      "break": 0
+    }
+  },
+  "scopes": [
+    {
+      "name": "core",
+      "priority": 10,
+      "project": "NexusLabs.Needlr.csproj",
+      "workingDirectory": "src/NexusLabs.Needlr.Tests",
+      "sourceRoot": "src/NexusLabs.Needlr",
+      "testRoots": [
+        "src/NexusLabs.Needlr.Tests"
+      ],
+      "fullTriggerRoots": [],
+      "priorityFiles": [
+        "ServiceCollectionExtensions.cs",
+        "ServiceProviderExtensions.cs",
+        "ServiceCollectionVerificationExtensions.cs",
+        "LifetimeMismatchExtensions.cs",
+        "InterceptAttribute.cs"
+      ]
+    },
+    {
+      "name": "injection",
+      "priority": 20,
+      "project": "NexusLabs.Needlr.Injection.csproj",
+      "workingDirectory": "src/NexusLabs.Needlr.Injection.Tests",
+      "sourceRoot": "src/NexusLabs.Needlr.Injection",
+      "testRoots": [
+        "src/NexusLabs.Needlr.Injection.Tests"
+      ],
+      "fullTriggerRoots": [],
+      "priorityFiles": [
+        "SyringeExtensions.cs",
+        "ConfiguredSyringe.cs",
+        "ITypeFiltererExtensionMethods.cs",
+        "AssemblyOrdering/AssemblyOrderBuilder.cs",
+        "ServiceCollectionPopulator.cs"
+      ]
+    },
+    {
+      "name": "injection-bundle",
+      "priority": 30,
+      "project": "NexusLabs.Needlr.Injection.Bundle.csproj",
+      "workingDirectory": "src/NexusLabs.Needlr.Injection.Bundle.Tests",
+      "sourceRoot": "src/NexusLabs.Needlr.Injection.Bundle",
+      "testRoots": [
+        "src/NexusLabs.Needlr.Injection.Bundle.Tests"
+      ],
+      "fullTriggerRoots": [],
+      "priorityFiles": [
+        "ServiceProviderBuilder.cs",
+        "SyringeBundleExtensions.cs"
+      ]
+    },
+    {
+      "name": "hosting",
+      "priority": 40,
+      "project": "NexusLabs.Needlr.Hosting.csproj",
+      "workingDirectory": "src/NexusLabs.Needlr.Hosting.Tests",
+      "sourceRoot": "src/NexusLabs.Needlr.Hosting",
+      "testRoots": [
+        "src/NexusLabs.Needlr.Hosting.Tests"
+      ],
+      "fullTriggerRoots": [],
+      "priorityFiles": [
+        "CreateHostOptionsExtensions.cs",
+        "HostApplicationBuilderNeedlrExtensions.cs",
+        "CreateHostOptions.cs",
+        "HostSyringeExtensions.cs",
+        "HostFactory.cs"
+      ]
+    },
+    {
+      "name": "aspnet",
+      "priority": 50,
+      "project": "NexusLabs.Needlr.AspNet.csproj",
+      "workingDirectory": "src/NexusLabs.Needlr.AspNet.Tests",
+      "sourceRoot": "src/NexusLabs.Needlr.AspNet",
+      "testRoots": [
+        "src/NexusLabs.Needlr.AspNet.Tests"
+      ],
+      "fullTriggerRoots": [],
+      "priorityFiles": [
+        "CreateWebApplicationOptionsExtensions.cs",
+        "WebApplicationSyringe.cs",
+        "WebApplicationFactory.cs",
+        "CreateWebApplicationOptions.cs",
+        "WebApplicationSyringeExtensions.cs"
+      ]
+    },
+    {
+      "name": "carter",
+      "priority": 60,
+      "project": "NexusLabs.Needlr.Carter.csproj",
+      "workingDirectory": "src/NexusLabs.Needlr.Carter.Tests",
+      "sourceRoot": "src/NexusLabs.Needlr.Carter",
+      "testRoots": [
+        "src/NexusLabs.Needlr.Carter.Tests"
+      ],
+      "fullTriggerRoots": [
+        "src/NexusLabs.Needlr.Generators",
+        "src/NexusLabs.Needlr.Generators.Attributes"
+      ],
+      "priorityFiles": [
+        "CarterWebApplicationBuilderPlugin.cs",
+        "CarterWebApplicationPlugin.cs"
+      ]
+    },
+    {
+      "name": "signalr",
+      "priority": 70,
+      "project": "NexusLabs.Needlr.SignalR.csproj",
+      "workingDirectory": "src/NexusLabs.Needlr.SignalR.Tests",
+      "sourceRoot": "src/NexusLabs.Needlr.SignalR",
+      "testRoots": [
+        "src/NexusLabs.Needlr.SignalR.Tests"
+      ],
+      "fullTriggerRoots": [
+        "src/NexusLabs.Needlr.SignalR.Generators"
+      ],
+      "priorityFiles": [
+        "SignalRExtensions.cs",
+        "SignalRHubReflectionMapper.cs",
+        "GeneratedSignalRHubRegistration.cs",
+        "IHubRegistrationPlugin.cs",
+        "SignalRWebApplicationBuilderPlugin.cs"
+      ]
+    },
+    {
+      "name": "fluent-validation",
+      "priority": 80,
+      "project": "NexusLabs.Needlr.FluentValidation.csproj",
+      "workingDirectory": "src/NexusLabs.Needlr.FluentValidation.Tests",
+      "sourceRoot": "src/NexusLabs.Needlr.FluentValidation",
+      "testRoots": [
+        "src/NexusLabs.Needlr.FluentValidation.Tests"
+      ],
+      "fullTriggerRoots": [
+        "src/NexusLabs.Needlr.FluentValidation.Generators"
+      ],
+      "priorityFiles": [
+        "FluentValidatorWrapper.cs",
+        "FluentValidationOptionsAdapter.cs",
+        "FluentValidationServiceCollectionExtensions.cs",
+        "ValidationFailureConverter.cs"
+      ]
+    },
+    {
+      "name": "logging",
+      "priority": 90,
+      "project": "NexusLabs.Needlr.Logging.csproj",
+      "workingDirectory": "src/NexusLabs.Needlr.Logging.Tests",
+      "sourceRoot": "src/NexusLabs.Needlr.Logging",
+      "testRoots": [
+        "src/NexusLabs.Needlr.Logging.Tests"
+      ],
+      "fullTriggerRoots": [
+        "src/NexusLabs.Needlr.Logging.Generators"
+      ],
+      "priorityFiles": [
+        "NeedlrCancellationLogging.cs",
+        "NeedlrLoggerMessageAttribute.cs",
+        "CancellationLoggingBehavior.cs"
+      ]
+    },
+    {
+      "name": "serilog",
+      "priority": 100,
+      "project": "NexusLabs.Needlr.Serilog.csproj",
+      "workingDirectory": "src/NexusLabs.Needlr.Serilog.Tests",
+      "sourceRoot": "src/NexusLabs.Needlr.Serilog",
+      "testRoots": [
+        "src/NexusLabs.Needlr.Serilog.Tests"
+      ],
+      "fullTriggerRoots": [],
+      "priorityFiles": [
+        "NeedlrSerilogBootstrapper.cs",
+        "NeedlrSerilogBootstrapperExtensions.cs",
+        "SerilogPlugin.cs"
+      ]
+    },
+    {
+      "name": "scrutor",
+      "priority": 110,
+      "project": "NexusLabs.Needlr.Injection.Scrutor.csproj",
+      "workingDirectory": "src/NexusLabs.Needlr.Injection.Scrutor.Tests",
+      "sourceRoot": "src/NexusLabs.Needlr.Injection.Scrutor",
+      "testRoots": [
+        "src/NexusLabs.Needlr.Injection.Scrutor.Tests"
+      ],
+      "fullTriggerRoots": [],
+      "priorityFiles": [
+        "ScrutorTypeRegistrar.cs",
+        "SyringeScrutorExtensions.cs"
+      ]
+    },
+    {
+      "name": "avalonia",
+      "priority": 120,
+      "project": "NexusLabs.Needlr.Avalonia.csproj",
+      "workingDirectory": "src/NexusLabs.Needlr.Avalonia.Tests",
+      "sourceRoot": "src/NexusLabs.Needlr.Avalonia",
+      "testRoots": [
+        "src/NexusLabs.Needlr.Avalonia.Tests"
+      ],
+      "fullTriggerRoots": [
+        "src/NexusLabs.Needlr.Avalonia.Attributes"
+      ],
+      "priorityFiles": [
+        "AvaloniaDesignTimeConstructorGenerator.cs",
+        "Diagnostics/AvaloniaDiagnosticDescriptors.cs",
+        "Diagnostics/AvaloniaDiagnosticIds.cs"
+      ]
+    },
+    {
+      "name": "maui",
+      "priority": 130,
+      "project": "NexusLabs.Needlr.Maui.csproj",
+      "workingDirectory": "src/NexusLabs.Needlr.Maui.Tests",
+      "sourceRoot": "src/NexusLabs.Needlr.Maui",
+      "testRoots": [
+        "src/NexusLabs.Needlr.Maui.Tests"
+      ],
+      "fullTriggerRoots": [],
+      "priorityFiles": [
+        "MauiSyringe.cs",
+        "MauiAppBuilderNeedlrExtensions.cs",
+        "SyringeMauiExtensions.cs"
+      ]
+    },
+    {
+      "name": "extensions-logging",
+      "priority": 140,
+      "project": "NexusLabs.Needlr.Extensions.Logging.csproj",
+      "workingDirectory": "src/NexusLabs.Needlr.Extensions.Logging.Tests",
+      "sourceRoot": "src/NexusLabs.Needlr.Extensions.Logging",
+      "testRoots": [
+        "src/NexusLabs.Needlr.Extensions.Logging.Tests"
+      ],
+      "fullTriggerRoots": [],
+      "priorityFiles": [
+        "PostBuildServiceCollectionPluginOptionsExtensions.cs"
+      ]
+    }
+  ]
+}
