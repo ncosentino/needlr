@@ -110,6 +110,7 @@ Write-Host (
 $relativeConfigPath = [IO.Path]::GetRelativePath(
     $workingDirectory,
     $configPath)
+$timer = [Diagnostics.Stopwatch]::StartNew()
 Push-Location $workingDirectory
 try {
     & dotnet stryker `
@@ -122,6 +123,7 @@ try {
     }
 } finally {
     Pop-Location
+    $timer.Stop()
 }
 
 $reportDirectory = Join-Path $scopeOutput 'reports'
@@ -183,6 +185,7 @@ $summary = [ordered]@{
     scope = $Scope
     mutateFiles = $selectedFiles
     sinceTarget = $SinceTarget
+    durationSeconds = [Math]::Round($timer.Elapsed.TotalSeconds, 3)
     totalMutants = $mutants.Count
     mutationScore = $score
     counts = $counts

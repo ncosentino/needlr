@@ -8,6 +8,7 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $toolManifestPath = Join-Path $repoRoot '.config\dotnet-tools.json'
 $manifestPath = Join-Path $PSScriptRoot 'mutation\scopes.json'
+$publisherPath = Join-Path $PSScriptRoot 'publish-mutation-result.ps1'
 $runnerPath = Join-Path $PSScriptRoot 'run-mutation-tests.ps1'
 $classifierPath = Join-Path $PSScriptRoot 'get-mutation-scope.ps1'
 $workflowPath = Join-Path $repoRoot '.github\workflows\mutation-testing.yml'
@@ -41,6 +42,7 @@ function Assert-PowerShellSyntax {
 foreach ($path in @(
         $toolManifestPath,
         $manifestPath,
+        $publisherPath,
         $runnerPath,
         $classifierPath,
         $workflowPath,
@@ -137,6 +139,7 @@ foreach ($scope in $manifest.scopes) {
 
 Assert-PowerShellSyntax -Path $runnerPath
 Assert-PowerShellSyntax -Path $classifierPath
+Assert-PowerShellSyntax -Path $publisherPath
 
 $workflow = Get-Content -LiteralPath $workflowPath -Raw
 Assert-Condition `
@@ -159,6 +162,11 @@ Assert-Condition `
     -Message 'External fork mutation runs must use GitHub-hosted infrastructure.'
 Assert-Condition `
     -Condition (
+        $workflow -match '(?m)^  checks:\s*write\r?$' -and
+        $workflow -match '(?m)^  issues:\s*write\r?$') `
+    -Message 'Internal mutation runs must publish first-class PR evidence.'
+Assert-Condition `
+    -Condition (
         $workflow -match 'max-parallel:\s*2' -and
         $workflow -match 'timeout-minutes:\s*10') `
     -Message 'Mutation workflow execution bounds have drifted.'
@@ -171,6 +179,11 @@ Assert-Condition `
         $workflow -match 'github\.rest\.pulls\.listFiles' -and
         $workflow -match 'mutation-changed-files\.json') `
     -Message 'Scope selection must use pull-request file metadata without full history.'
+Assert-Condition `
+    -Condition (
+        $workflow -match 'publish-mutation-result\.ps1' -and
+        $workflow -match 'github\.event\.pull_request\.head\.repo\.full_name == github\.repository') `
+    -Message 'Mutation evidence publishing must be internal-PR-only.'
 
 $runner = Get-Content -LiteralPath $runnerPath -Raw
 Assert-Condition `
@@ -183,6 +196,91 @@ Assert-Condition `
 Assert-Condition `
     -Condition ($runner -match 'Actionable mutants') `
     -Message 'Mutation summaries must expose survivors and uncovered mutants.'
+
+$publisher = Get-Content -LiteralPath $publisherPath -Raw
+Assert-Condition `
+    -Condition (
+        $publisher -match 'needlr-mutation:\$scope' -and
+        $publisher -match '\$maxPublishedMutants = 100' -and
+        $publisher -match 'issues/comments' -and
+        $publisher -match 'check-runs' -and
+        $publisher -match "conclusion = 'neutral'") `
+    -Message 'Mutation evidence must upsert PR comments and neutral check runs.'
+
+$publisherFixture = Join-Path (
+    [IO.Path]::GetTempPath()) (
+    'needlr-mutation-publisher-' + [guid]::NewGuid().ToString('N'))
+try {
+    $reportDirectory = Join-Path $publisherFixture 'reports'
+    New-Item -ItemType Directory -Path $reportDirectory -Force | Out-Null
+    $summaryPath = Join-Path $publisherFixture 'mutation-summary.json'
+    [IO.File]::WriteAllText(
+        $summaryPath,
+        (ConvertTo-Json ([ordered]@{
+                    scope = 'fixture'
+                    mutateFiles = @('Example.cs')
+                    sinceTarget = 'origin/main'
+                    durationSeconds = 225
+                    totalMutants = 2
+                    mutationScore = 50
+                    counts = [ordered]@{
+                        Killed = 1
+                        Survived = 1
+                        NoCoverage = 0
+                        Timeout = 0
+                        CompileError = 0
+                        RuntimeError = 0
+                        Ignored = 0
+                    }
+                    reportDirectory = $reportDirectory
+                }) -Depth 8) + "`n",
+        [Text.UTF8Encoding]::new($false))
+    [IO.File]::WriteAllText(
+        (Join-Path $reportDirectory 'mutation-report.json'),
+        (ConvertTo-Json ([ordered]@{
+                    files = [ordered]@{
+                        'Example.cs' = [ordered]@{
+                            mutants = @(
+                                [ordered]@{
+                                    status = 'Killed'
+                                    mutatorName = 'Boolean'
+                                    replacement = 'false'
+                                    location = [ordered]@{
+                                        start = [ordered]@{ line = 10 }
+                                    }
+                                },
+                                [ordered]@{
+                                    status = 'Survived'
+                                    mutatorName = 'String'
+                                    replacement = 'changed'
+                                    location = [ordered]@{
+                                        start = [ordered]@{ line = 20 }
+                                    }
+                                })
+                        }
+                    }
+                }) -Depth 10) + "`n",
+        [Text.UTF8Encoding]::new($false))
+
+    $published = & $publisherPath `
+        -SummaryPath $summaryPath `
+        -Repository 'example/repository' `
+        -PullRequestNumber 1 `
+        -HeadSha ('a' * 40) `
+        -RunUrl 'https://example.com/run' `
+        -DryRun
+    Assert-Condition `
+        -Condition (
+            $published.ActionableCount -eq 1 -and
+            $published.CommentBody -match '3m 45s' -and
+            $published.CommentBody -match 'Actionable mutants \(1\)' -and
+            $published.CheckTitle -match '1 killed') `
+        -Message 'Mutation evidence rendering did not expose duration and actionable results.'
+} finally {
+    if (Test-Path -LiteralPath $publisherFixture -PathType Container) {
+        Remove-Item -LiteralPath $publisherFixture -Recurse -Force
+    }
+}
 
 $coreOnly = (
     & $classifierPath `

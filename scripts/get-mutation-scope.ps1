@@ -29,6 +29,7 @@ $sharedPatterns = @(
     '^\.github/workflows/mutation-testing\.yml$',
     '^global\.json$',
     '^scripts/get-mutation-scope\.ps1$',
+    '^scripts/publish-mutation-result\.ps1$',
     '^scripts/run-mutation-tests\.ps1$',
     '^scripts/test-mutation\.ps1$',
     '^scripts/mutation/',

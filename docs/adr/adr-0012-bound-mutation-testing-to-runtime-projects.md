@@ -71,6 +71,12 @@ The lightweight selector reads changed-file metadata through GitHub's pull-reque
 instead of fetching full history. Only selected Stryker jobs fetch full history for NBGV,
 SourceLink, and `since: origin/main`.
 
+Each internal scope run upserts one current PR comment and one neutral GitHub Check with
+duration, counts, mutated files, actionable survivors/uncovered mutants, and a workflow
+link. This is delivery evidence, not report persistence: reruns replace the scope comment,
+raw JSON/Markdown stays on the runner, and no cross-run baseline is retained. Forks keep
+the job summary but cannot publish comments or checks with their read-only token.
+
 Each scope's test project directly references the project under mutation. Stryker uses
 that direct edge to select the mutation target; a merely transitive reference can produce
 a fast but meaningless run whose tests never observe the mutant assembly.
