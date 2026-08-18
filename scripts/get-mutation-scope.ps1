@@ -252,6 +252,8 @@ $result = [ordered]@{
     selected_scopes = @($selected | ForEach-Object Scope)
     omitted_scopes = $omittedScopes
     omitted_files = $omittedFiles
+    max_scopes = $maxScopes
+    max_files_per_scope = $maxFiles
     changed_count = $changed.Count
 }
 $matrixJson = ConvertTo-Json $matrix -Depth 8 -Compress
@@ -262,6 +264,10 @@ if (-not $NoCiOutput -and
         -Path $env:GITHUB_OUTPUT `
         -Value "run_required=$($result.run_required.ToString().ToLowerInvariant())"
     Add-Content -Path $env:GITHUB_OUTPUT -Value "matrix=$matrixJson"
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "selected_scope_count=$($selected.Count)"
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "omitted_scope_count=$($omittedScopes.Count)"
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "max_scopes=$maxScopes"
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "max_files_per_scope=$maxFiles"
 }
 
 if (-not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP_SUMMARY)) {

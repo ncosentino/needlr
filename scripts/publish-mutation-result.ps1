@@ -1,10 +1,11 @@
 <#
 .SYNOPSIS
-    Publishes one mutation scope as current pull-request evidence.
+    Publishes one mutation scope as a neutral GitHub Check.
 
 .DESCRIPTION
-    Upserts one scope-specific PR comment and one neutral check run. Raw reports remain
-    on the ephemeral runner and are never uploaded or used as a baseline.
+    Publishes duration, counts, mutated files, and actionable mutants to a scope-specific
+    Check. A later workflow job reads compact check metadata and upserts one concise PR
+    comment. Raw reports remain on the ephemeral runner.
 #>
 param(
     [Parameter(Mandatory)]
@@ -14,10 +15,6 @@ param(
     [Parameter(Mandatory)]
     [ValidatePattern('^[^/]+/[^/]+$')]
     [string]$Repository,
-
-    [Parameter(Mandatory)]
-    [ValidateRange(1, [int]::MaxValue)]
-    [int]$PullRequestNumber,
 
     [Parameter(Mandatory)]
     [ValidatePattern('^[0-9a-fA-F]{40}$')]
@@ -103,56 +100,7 @@ $scoreText = if ($null -eq $summary.mutationScore) {
 } else {
     "$($summary.mutationScore)%"
 }
-$marker = "<!-- needlr-mutation:$scope -->"
-$shortSha = $HeadSha.Substring(0, 10)
 
-$comment = [Text.StringBuilder]::new()
-[void]$comment.AppendLine($marker)
-[void]$comment.AppendLine("## Mutation evidence: ``$scope``")
-[void]$comment.AppendLine()
-[void]$comment.AppendLine(
-    "Current head: ``$shortSha`` · [workflow run]($RunUrl)")
-[void]$comment.AppendLine()
-[void]$comment.AppendLine('| Duration | Score | Killed | Survived | No coverage | Compile errors |')
-[void]$comment.AppendLine('| ---: | ---: | ---: | ---: | ---: | ---: |')
-[void]$comment.AppendLine(
-    "| $durationText | $scoreText | $($summary.counts.Killed) | " +
-    "$($summary.counts.Survived) | $($summary.counts.NoCoverage) | " +
-    "$($summary.counts.CompileError) |")
-[void]$comment.AppendLine()
-$mutatedFileList = (
-    @($summary.mutateFiles) |
-        ForEach-Object { "``$_``" }) -join ', '
-[void]$comment.AppendLine(
-    "**Mutated files:** $mutatedFileList")
-[void]$comment.AppendLine()
-[void]$comment.AppendLine(
-    "_Advisory and ephemeral: no score gate, baseline, report artifact, or dashboard upload._")
-
-if ($actionable.Count -gt 0) {
-    [void]$comment.AppendLine()
-    [void]$comment.AppendLine("### Actionable mutants ($($actionable.Count))")
-    [void]$comment.AppendLine()
-    [void]$comment.AppendLine('| Status | File | Line | Mutator | Replacement |')
-    [void]$comment.AppendLine('| --- | --- | ---: | --- | --- |')
-    foreach ($mutant in $publishedActionable) {
-        $replacement = $mutant.Replacement.Replace('|', '\|')
-        $replacement = $replacement.Replace("`r", ' ')
-        $replacement = $replacement.Replace("`n", ' ')
-        $replacement = $replacement.Replace('`', "'")
-        [void]$comment.AppendLine(
-            "| $($mutant.Status) | ``$($mutant.FileName)`` | $($mutant.Line) | " +
-            "$($mutant.Mutator) | ``$replacement`` |")
-    }
-    if ($omittedActionableCount -gt 0) {
-        [void]$comment.AppendLine()
-        [void]$comment.AppendLine(
-            "_Omitted $omittedActionableCount additional actionable mutants from the comment size budget. " +
-            "Open the linked job summary for the complete current-run list._")
-    }
-}
-
-$commentBody = $comment.ToString().TrimEnd()
 $checkName = "Mutation evidence ($scope)"
 $checkTitle = "$scoreText · $($summary.counts.Killed) killed · $($actionable.Count) actionable · $durationText"
 $checkSummary = @"
@@ -167,52 +115,42 @@ Advisory result only. Raw reports remain ephemeral.
 $checkText = if ($actionable.Count -eq 0) {
     'No surviving or uncovered mutants.'
 } else {
-    ($publishedActionable |
-        ForEach-Object {
-            "- $($_.Status): $($_.FileName):$($_.Line) — $($_.Mutator) → $($_.Replacement)"
-        }) -join "`n"
+    $lines = @(
+        $publishedActionable |
+            ForEach-Object {
+                "- $($_.Status): $($_.FileName):$($_.Line) — $($_.Mutator) → $($_.Replacement)"
+            })
+    if ($omittedActionableCount -gt 0) {
+        $lines += "- Omitted $omittedActionableCount additional mutants from the Check text size budget."
+    }
+    $lines -join "`n"
 }
+
+$evidence = [ordered]@{
+    schemaVersion = 1
+    scope = $scope
+    durationSeconds = [double]$summary.durationSeconds
+    score = $summary.mutationScore
+    killed = [int]$summary.counts.Killed
+    survived = [int]$summary.counts.Survived
+    noCoverage = [int]$summary.counts.NoCoverage
+    compileErrors = [int]$summary.counts.CompileError
+    actionable = $actionable.Count
+}
+$evidenceJson = ConvertTo-Json $evidence -Compress
+$externalId = 'needlr-mutation:' + [Convert]::ToBase64String(
+    [Text.Encoding]::UTF8.GetBytes($evidenceJson))
 
 if ($DryRun) {
     return [PSCustomObject]@{
         Scope = $scope
-        CommentBody = $commentBody
         CheckName = $checkName
         CheckTitle = $checkTitle
         CheckSummary = $checkSummary
         CheckText = $checkText
+        ExternalId = $externalId
         ActionableCount = $actionable.Count
     }
-}
-
-$commentsOutput = & gh api `
-    --paginate `
-    --slurp `
-    "repos/$Repository/issues/$PullRequestNumber/comments?per_page=100" 2>&1
-if ($LASTEXITCODE -ne 0) {
-    throw "Could not list pull-request comments.`n$($commentsOutput | Out-String)"
-}
-$commentPages = ($commentsOutput | Out-String) | ConvertFrom-Json
-$comments = @(
-    foreach ($page in @($commentPages)) {
-        foreach ($pageComment in @($page)) {
-            $pageComment
-        }
-    })
-$existingComment = @(
-    $comments |
-        Where-Object { [string]$_.body -like "*$marker*" } |
-        Select-Object -First 1)
-if ($existingComment.Count -eq 1) {
-    [void](Invoke-GhApi `
-        -Method PATCH `
-        -Endpoint "repos/$Repository/issues/comments/$($existingComment[0].id)" `
-        -Payload ([ordered]@{ body = $commentBody }))
-} else {
-    [void](Invoke-GhApi `
-        -Method POST `
-        -Endpoint "repos/$Repository/issues/$PullRequestNumber/comments" `
-        -Payload ([ordered]@{ body = $commentBody }))
 }
 
 $encodedCheckName = [Uri]::EscapeDataString($checkName)
@@ -226,6 +164,7 @@ $checks = ($checksOutput | Out-String) | ConvertFrom-Json
 $existingCheck = @($checks.check_runs | Select-Object -First 1)
 $checkPayload = [ordered]@{
     name = $checkName
+    external_id = $externalId
     status = 'completed'
     conclusion = 'neutral'
     details_url = $RunUrl
@@ -248,4 +187,4 @@ if ($existingCheck.Count -eq 1) {
         -Payload $checkPayload)
 }
 
-Write-Host "Published mutation evidence for '$scope' to PR #$PullRequestNumber."
+Write-Host "Published mutation Check for '$scope'."

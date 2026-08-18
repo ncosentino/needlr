@@ -149,7 +149,9 @@ Assert-Condition `
             '(?m)^  (?:push|schedule|workflow_dispatch|workflow_run|repository_dispatch):') `
     -Message 'Mutation testing must remain pull-request-only.'
 Assert-Condition `
-    -Condition ($workflow -notmatch 'actions/upload-artifact|dashboard|baseline|cache') `
+    -Condition (
+        $workflow -notmatch
+            'actions/upload-artifact|dashboard|actions/cache|with-baseline|baseline:\s') `
     -Message 'Mutation testing must not persist reports or baselines.'
 Assert-Condition `
     -Condition ($workflow -notmatch 'continue-on-error') `
@@ -201,12 +203,19 @@ Assert-Condition `
 $publisher = Get-Content -LiteralPath $publisherPath -Raw
 Assert-Condition `
     -Condition (
-        $publisher -match 'needlr-mutation:\$scope' -and
+        $publisher -match "'needlr-mutation:'" -and
         $publisher -match '\$maxPublishedMutants = 100' -and
-        $publisher -match 'issues/comments' -and
+        $publisher -match 'external_id' -and
         $publisher -match 'check-runs' -and
         $publisher -match "conclusion = 'neutral'") `
-    -Message 'Mutation evidence must upsert PR comments and neutral check runs.'
+    -Message 'Mutation evidence must upsert neutral scope Checks with compact metadata.'
+Assert-Condition `
+    -Condition (
+        $workflow -match 'needlr-mutation-summary' -and
+        $workflow -match 'listJobsForWorkflowRun' -and
+        $workflow -match 'issues\.updateComment' -and
+        $workflow -match 'issues\.createComment') `
+    -Message 'Mutation workflow must upsert one concise aggregate PR comment.'
 
 $publisherFixture = Join-Path (
     [IO.Path]::GetTempPath()) (
@@ -266,17 +275,17 @@ try {
     $published = & $publisherPath `
         -SummaryPath $summaryPath `
         -Repository 'example/repository' `
-        -PullRequestNumber 1 `
         -HeadSha ('a' * 40) `
         -RunUrl 'https://example.com/run' `
         -DryRun
     Assert-Condition `
         -Condition (
             $published.ActionableCount -eq 1 -and
-            $published.CommentBody -match '3m 45s' -and
-            $published.CommentBody -match 'Actionable mutants \(1\)' -and
-            $published.CheckTitle -match '1 killed') `
-        -Message 'Mutation evidence rendering did not expose duration and actionable results.'
+            $published.CheckTitle -match '1 killed' -and
+            $published.CheckTitle -match '3m 45s' -and
+            $published.CheckText -match 'Survived' -and
+            $published.ExternalId -match '^needlr-mutation:') `
+        -Message 'Mutation Check rendering did not expose duration and actionable results.'
 } finally {
     if (Test-Path -LiteralPath $publisherFixture -PathType Container) {
         Remove-Item -LiteralPath $publisherFixture -Recurse -Force

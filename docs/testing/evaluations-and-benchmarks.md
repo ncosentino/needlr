@@ -62,11 +62,12 @@ failures still fail loudly.
 
 Mutation JSON and Markdown reports are ephemeral runner files. The workflow copies the
 summary plus every surviving or uncovered mutant into the GitHub job summary. Internal
-pull requests also receive one upserted comment and one neutral check per selected scope,
-so reviewers can see current-head evidence without opening Actions. Those PR surfaces
-replace their prior scope result; they are not baselines or report archives. The
-workflow does not upload GitHub artifacts, cache baselines, schedule full runs, or send
-results to the Stryker dashboard.
+pull requests receive one neutral Check per selected scope containing the same details,
+plus one concise upserted PR comment with the scope table and links to those Checks. The
+comment is intentionally summary-only so detailed mutants do not overwhelm the PR
+conversation. These PR surfaces replace their prior current-head result; they are not
+baselines or report archives. The workflow does not upload GitHub artifacts, cache
+baselines, schedule full runs, or send results to the Stryker dashboard.
 
 ## Benchmark harnesses
 
