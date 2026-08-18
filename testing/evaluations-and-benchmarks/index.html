@@ -5285,6 +5285,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/adr-0012-bound-mutation-testing-to-runtime-projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0012 Bound Mutation Testing to Runtime Projects
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5320,34 +5355,55 @@ equivalent production paths after correctness is established.</p>
 <p>Stryker.NET measures whether focused tests detect meaningful changes to authored
 production code. It supplements normal tests; it does not replace them or prove that
 behavior is correct.</p>
-<p>Needlr starts with two bounded scopes:</p>
-<ul>
-<li><code>runtime</code> mutates selected dependency-injection and verification logic in
-  <code>NexusLabs.Needlr</code>;</li>
-<li><code>generators</code> mutates selected authored helpers and code emitters in
-  <code>NexusLabs.Needlr.Generators</code>.</li>
-</ul>
+<p>Needlr maps fourteen directly tested runtime packages in
+<code>scripts/mutation/scopes.json</code>. Each scope declares its production project, direct test
+project, deterministic priority, and at most five representative files for test-only or
+tooling changes.</p>
 <p>Roslyn-generated syntax trees are not direct mutation targets. Stryker mutates the
 generator's authored input syntax trees, reruns the source generators while compiling
 the mutant, and then executes tests. The generator scope therefore uses tests that
 invoke Roslyn generators at runtime; consumer projects that only compiled generated
 output before the mutation run would not provide equivalent evidence.</p>
-<p>Run both scopes locally:</p>
+<p>Needlr uses xUnit v3, so Stryker runs through its Microsoft Testing Platform runner.
+The VSTest runner can discover the tests but does not reliably apply mutants to xUnit
+v3 execution. MTP remains preview in Stryker.NET 4.16.0; suspicious mutation outcomes
+must be compared with coverage analysis disabled before they become policy.</p>
+<p>Direct mutation of the generator implementation is deferred. Stryker analyzes the full
+generator project before applying its mutate filter, creating more than ten thousand
+candidate mutants for even a three-file scope. MTP then failed coverage capture for the
+generator test project and left hundreds of mutants to run against the full test suite.
+The source-generated consumer scope keeps generated composition in the test path without
+pretending that this toolchain currently provides practical generator-implementation
+mutation testing.</p>
+<p>Run one scope locally:</p>
 <div class="language-powershell highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">dotnet</span> <span class="n">tool</span> <span class="n">restore</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">pwsh</span> <span class="n">scripts</span><span class="p">/</span><span class="n">run-mutation-tests</span><span class="p">.</span><span class="n">ps1</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">pwsh</span> <span class="n">scripts</span><span class="p">/</span><span class="n">run-mutation-tests</span><span class="p">.</span><span class="n">ps1</span> <span class="p">`</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  <span class="n">-Scope</span> <span class="n">core</span> <span class="p">`</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  <span class="n">-MutateFiles</span> <span class="n">ServiceProviderExtensions</span><span class="p">.</span><span class="n">cs</span> <span class="p">`</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  <span class="n">-SinceTarget</span> <span class="n">origin</span><span class="p">/</span><span class="n">main</span>
 </span></code></pre></div>
-<p>Run one scope with <code>-Scope runtime</code> or <code>-Scope generators</code>. Reports are written under
-<code>artifacts/mutation/</code>, which is ignored by git.</p>
-<p>The mutation workflow is advisory and is not a required pull-request check. It runs
-affected scopes on ready pull requests, both scopes on a weekly schedule, and both
-scopes when dispatched manually. Each configuration uses <code>thresholds.break = 0</code>, so a
-low mutation score is reported but does not fail the workflow. Tool failures, build
-failures, and initial test failures still fail loudly.</p>
+<p>Reports are written under <code>artifacts/mutation/</code>, which is ignored by git.</p>
+<p>The mutation workflow is pull-request-only, advisory, and not a required check. It:</p>
+<ul>
+<li>uses Stryker changed-code analysis against <code>origin/main</code>;</li>
+<li>selects at most two scopes by committed numeric priority;</li>
+<li>selects at most five changed source files per scope, ordered by changed-line count
+  then path;</li>
+<li>runs at most two jobs concurrently;</li>
+<li>caps every job at ten minutes;</li>
+<li>reports every omitted scope and file explicitly.</li>
+</ul>
+<p>Each generated configuration uses <code>thresholds.break = 0</code>, so a low mutation score is
+reported but does not fail the workflow. Tool failures, build failures, and initial test
+failures still fail loudly.</p>
 <p>Mutation JSON and Markdown reports are ephemeral runner files. The workflow copies the
-Markdown summary into the GitHub job summary and does not upload GitHub artifacts or
-send results to the Stryker dashboard. A future threshold must be based on a reviewed,
-post-triage baseline for that exact scope rather than an arbitrary repository-wide
-percentage.</p>
+summary plus every surviving or uncovered mutant into the GitHub job summary. Internal
+pull requests receive one neutral Check per selected scope containing the same details,
+plus one concise upserted PR comment with the scope table and links to those Checks. The
+comment is intentionally summary-only so detailed mutants do not overwhelm the PR
+conversation. These PR surfaces replace their prior current-head result; they are not
+baselines or report archives. The workflow does not upload GitHub artifacts, cache
+baselines, schedule full runs, or send results to the Stryker dashboard.</p>
 <h2 id="benchmark-harnesses">Benchmark harnesses<a class="headerlink" href="#benchmark-harnesses" title="Permanent link">&para;</a></h2>
 <p>Benchmark methods contain only the production call under test. Setup, data generation,
 validation, logging, and assertions live outside timed code.</p>

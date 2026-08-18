@@ -5305,6 +5305,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/adr-0012-bound-mutation-testing-to-runtime-projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0012 Bound Mutation Testing to Runtime Projects
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5341,21 +5376,21 @@
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="kt">string</span><span class="w"> </span><span class="n">Name</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">}</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="na">[Keyed(&quot;redis&quot;)]</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="na">[Keyed("redis")]</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">RedisCacheProvider</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">ICacheProvider</span>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">{</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;redis&quot;</span><span class="p">;</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">"redis"</span><span class="p">;</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">}</span>
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="na">[Keyed(&quot;memory&quot;)]</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="na">[Keyed("memory")]</span>
 </span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">MemoryCacheProvider</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">ICacheProvider</span>
 </span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="p">{</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;memory&quot;</span><span class="p">;</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">"memory"</span><span class="p">;</span>
 </span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>This generates registrations equivalent to:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">services</span><span class="p">.</span><span class="n">AddKeyedSingleton</span><span class="o">&lt;</span><span class="n">ICacheProvider</span><span class="p">,</span><span class="w"> </span><span class="n">RedisCacheProvider</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;redis&quot;</span><span class="p">);</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">services</span><span class="p">.</span><span class="n">AddKeyedSingleton</span><span class="o">&lt;</span><span class="n">ICacheProvider</span><span class="p">,</span><span class="w"> </span><span class="n">MemoryCacheProvider</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;memory&quot;</span><span class="p">);</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">services</span><span class="p">.</span><span class="n">AddKeyedSingleton</span><span class="o">&lt;</span><span class="n">ICacheProvider</span><span class="p">,</span><span class="w"> </span><span class="n">RedisCacheProvider</span><span class="o">&gt;</span><span class="p">(</span><span class="s">"redis"</span><span class="p">);</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">services</span><span class="p">.</span><span class="n">AddKeyedSingleton</span><span class="o">&lt;</span><span class="n">ICacheProvider</span><span class="p">,</span><span class="w"> </span><span class="n">MemoryCacheProvider</span><span class="o">&gt;</span><span class="p">(</span><span class="s">"memory"</span><span class="p">);</span>
 </span></code></pre></div>
 <h2 id="consuming-keyed-services">Consuming Keyed Services<a class="headerlink" href="#consuming-keyed-services" title="Permanent link">&para;</a></h2>
 <p>Use the <code>[FromKeyedServices]</code> attribute (from <code>Microsoft.Extensions.DependencyInjection</code>) on constructor parameters to resolve keyed services:</p>
@@ -5365,8 +5400,8 @@
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="k">private</span><span class="w"> </span><span class="k">readonly</span><span class="w"> </span><span class="n">ICacheProvider</span><span class="w"> </span><span class="n">_fallbackCache</span><span class="p">;</span>
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="nf">CacheManager</span><span class="p">(</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="na">[FromKeyedServices(&quot;redis&quot;)]</span><span class="w"> </span><span class="n">ICacheProvider</span><span class="w"> </span><span class="n">primaryCache</span><span class="p">,</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">        </span><span class="na">[FromKeyedServices(&quot;memory&quot;)]</span><span class="w"> </span><span class="n">ICacheProvider</span><span class="w"> </span><span class="n">fallbackCache</span><span class="p">)</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="na">[FromKeyedServices("redis")]</span><span class="w"> </span><span class="n">ICacheProvider</span><span class="w"> </span><span class="n">primaryCache</span><span class="p">,</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">        </span><span class="na">[FromKeyedServices("memory")]</span><span class="w"> </span><span class="n">ICacheProvider</span><span class="w"> </span><span class="n">fallbackCache</span><span class="p">)</span>
 </span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="p">{</span>
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">        </span><span class="n">_primaryCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">primaryCache</span><span class="p">;</span>
 </span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">        </span><span class="n">_fallbackCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fallbackCache</span><span class="p">;</span>
@@ -5378,7 +5413,7 @@
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">OrderService</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="p">{</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="nf">OrderService</span><span class="p">(</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">        </span><span class="na">[FromKeyedServices(&quot;primary&quot;)]</span><span class="w"> </span><span class="n">IPaymentProcessor</span><span class="w"> </span><span class="n">processor</span><span class="p">,</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">        </span><span class="na">[FromKeyedServices("primary")]</span><span class="w"> </span><span class="n">IPaymentProcessor</span><span class="w"> </span><span class="n">processor</span><span class="p">,</span>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">        </span><span class="n">ILogger</span><span class="o">&lt;</span><span class="n">OrderService</span><span class="o">&gt;</span><span class="w"> </span><span class="n">logger</span><span class="p">)</span><span class="w">  </span><span class="c1">// Regular dependency</span>
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="p">{</span>
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">        </span><span class="c1">// ...</span>
@@ -5391,8 +5426,8 @@
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="p">{</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">Configure</span><span class="p">(</span><span class="n">ServiceCollectionPluginOptions</span><span class="w"> </span><span class="n">options</span><span class="p">)</span>
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="n">options</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddKeyedSingleton</span><span class="o">&lt;</span><span class="n">IPaymentProcessor</span><span class="p">,</span><span class="w"> </span><span class="n">StripeProcessor</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;stripe&quot;</span><span class="p">);</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="n">options</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddKeyedSingleton</span><span class="o">&lt;</span><span class="n">IPaymentProcessor</span><span class="p">,</span><span class="w"> </span><span class="n">PayPalProcessor</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;paypal&quot;</span><span class="p">);</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="n">options</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddKeyedSingleton</span><span class="o">&lt;</span><span class="n">IPaymentProcessor</span><span class="p">,</span><span class="w"> </span><span class="n">StripeProcessor</span><span class="o">&gt;</span><span class="p">(</span><span class="s">"stripe"</span><span class="p">);</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="n">options</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddKeyedSingleton</span><span class="o">&lt;</span><span class="n">IPaymentProcessor</span><span class="p">,</span><span class="w"> </span><span class="n">PayPalProcessor</span><span class="o">&gt;</span><span class="p">(</span><span class="s">"paypal"</span><span class="p">);</span>
 </span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="p">}</span>
 </span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">}</span>
 </span></code></pre></div>

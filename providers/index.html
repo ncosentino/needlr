@@ -5421,6 +5421,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/adr-0012-bound-mutation-testing-to-runtime-projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0012 Bound Mutation Testing to Runtime Projects
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5547,7 +5582,7 @@
 </span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
 </span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="c1">// Usage</span>
 </span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="kt">var</span><span class="w"> </span><span class="n">reporting</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serviceProvider</span><span class="p">.</span><span class="n">GetRequiredService</span><span class="o">&lt;</span><span class="n">IReportingProvider</span><span class="o">&gt;</span><span class="p">();</span>
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="kt">var</span><span class="w"> </span><span class="n">report</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reporting</span><span class="p">.</span><span class="n">ReportGeneratorFactory</span><span class="p">.</span><span class="n">Create</span><span class="p">(</span><span class="s">&quot;Monthly Sales Report&quot;</span><span class="p">);</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="kt">var</span><span class="w"> </span><span class="n">report</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reporting</span><span class="p">.</span><span class="n">ReportGeneratorFactory</span><span class="p">.</span><span class="n">Create</span><span class="p">(</span><span class="s">"Monthly Sales Report"</span><span class="p">);</span>
 </span></code></pre></div>
 <h2 id="nested-providers">Nested Providers<a class="headerlink" href="#nested-providers" title="Permanent link">&para;</a></h2>
 <p>Providers can reference other providers for modular service organization:</p>
@@ -5692,10 +5727,10 @@
 </span><span id="__span-13-29"><a id="__codelineno-13-29" name="__codelineno-13-29" href="#__codelineno-13-29"></a><span class="w">    </span><span class="p">{</span>
 </span><span id="__span-13-30"><a id="__codelineno-13-30" name="__codelineno-13-30" href="#__codelineno-13-30"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_services</span><span class="p">.</span><span class="n">Repository</span><span class="p">.</span><span class="n">GetById</span><span class="p">(</span><span class="n">userId</span><span class="p">);</span>
 </span><span id="__span-13-31"><a id="__codelineno-13-31" name="__codelineno-13-31" href="#__codelineno-13-31"></a>
-</span><span id="__span-13-32"><a id="__codelineno-13-32" name="__codelineno-13-32" href="#__codelineno-13-32"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">_services</span><span class="p">.</span><span class="n">Email</span><span class="p">.</span><span class="n">SendAsync</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="n">Email</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Notification&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">message</span><span class="p">);</span>
+</span><span id="__span-13-32"><a id="__codelineno-13-32" name="__codelineno-13-32" href="#__codelineno-13-32"></a><span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">_services</span><span class="p">.</span><span class="n">Email</span><span class="p">.</span><span class="n">SendAsync</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="n">Email</span><span class="p">,</span><span class="w"> </span><span class="s">"Notification"</span><span class="p">,</span><span class="w"> </span><span class="n">message</span><span class="p">);</span>
 </span><span id="__span-13-33"><a id="__codelineno-13-33" name="__codelineno-13-33" href="#__codelineno-13-33"></a>
 </span><span id="__span-13-34"><a id="__codelineno-13-34" name="__codelineno-13-34" href="#__codelineno-13-34"></a><span class="w">        </span><span class="c1">// Audit is optional - check for null</span>
-</span><span id="__span-13-35"><a id="__codelineno-13-35" name="__codelineno-13-35" href="#__codelineno-13-35"></a><span class="w">        </span><span class="n">_services</span><span class="p">.</span><span class="n">Audit</span><span class="o">?.</span><span class="n">Log</span><span class="p">(</span><span class="s">$&quot;Notified user {userId}&quot;</span><span class="p">);</span>
+</span><span id="__span-13-35"><a id="__codelineno-13-35" name="__codelineno-13-35" href="#__codelineno-13-35"></a><span class="w">        </span><span class="n">_services</span><span class="p">.</span><span class="n">Audit</span><span class="o">?.</span><span class="n">Log</span><span class="p">(</span><span class="s">$"Notified user {userId}"</span><span class="p">);</span>
 </span><span id="__span-13-36"><a id="__codelineno-13-36" name="__codelineno-13-36" href="#__codelineno-13-36"></a>
 </span><span id="__span-13-37"><a id="__codelineno-13-37" name="__codelineno-13-37" href="#__codelineno-13-37"></a><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nf">Ok</span><span class="p">();</span>
 </span><span id="__span-13-38"><a id="__codelineno-13-38" name="__codelineno-13-38" href="#__codelineno-13-38"></a><span class="w">    </span><span class="p">}</span>

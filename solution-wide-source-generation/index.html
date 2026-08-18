@@ -5355,6 +5355,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/adr-0012-bound-mutation-testing-to-runtime-projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0012 Bound Mutation Testing to Runtime Projects
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5395,7 +5430,7 @@
 <p>Add one package reference to your solution-level <code>Directory.Build.props</code>:</p>
 <div class="language-xml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">&lt;Project&gt;</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&lt;ItemGroup&gt;</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">&lt;PackageReference</span><span class="w"> </span><span class="na">Include=</span><span class="s">&quot;NexusLabs.Needlr.Build&quot;</span><span class="w"> </span><span class="na">Version=</span><span class="s">&quot;x.x.x&quot;</span><span class="w"> </span><span class="na">PrivateAssets=</span><span class="s">&quot;all&quot;</span><span class="w"> </span><span class="nt">/&gt;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">&lt;PackageReference</span><span class="w"> </span><span class="na">Include=</span><span class="s">"NexusLabs.Needlr.Build"</span><span class="w"> </span><span class="na">Version=</span><span class="s">"x.x.x"</span><span class="w"> </span><span class="na">PrivateAssets=</span><span class="s">"all"</span><span class="w"> </span><span class="nt">/&gt;</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&lt;/ItemGroup&gt;</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">&lt;PropertyGroup&gt;</span>
@@ -5422,15 +5457,15 @@
 <p>Some test projects need their <em>own</em> plugin types discovered — for example, a test project that registers test fakes or overrides via a plugin class. Leave <code>NeedlrAutoGenerate</code> at its default (<code>true</code>) for those projects.</p>
 <blockquote>
 <p><strong>Important — generator references are not transitively propagated as Analyzer items.</strong> A project that enables source generation must explicitly add the generator references, even if a referenced project already uses them:</p>
-<div class="language-xml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">&lt;ProjectReference</span><span class="w"> </span><span class="na">Include=</span><span class="s">&quot;NexusLabs.Needlr.Generators.Attributes&quot;</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="nt">/&gt;</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nt">&lt;ProjectReference</span><span class="w"> </span><span class="na">Include=</span><span class="s">&quot;NexusLabs.Needlr.Generators&quot;</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">                  </span><span class="na">OutputItemType=</span><span class="s">&quot;Analyzer&quot;</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">                  </span><span class="na">ReferenceOutputAssembly=</span><span class="s">&quot;false&quot;</span><span class="w"> </span><span class="nt">/&gt;</span>
+<div class="language-xml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">&lt;ProjectReference</span><span class="w"> </span><span class="na">Include=</span><span class="s">"NexusLabs.Needlr.Generators.Attributes"</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="nt">/&gt;</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nt">&lt;ProjectReference</span><span class="w"> </span><span class="na">Include=</span><span class="s">"NexusLabs.Needlr.Generators"</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">                  </span><span class="na">OutputItemType=</span><span class="s">"Analyzer"</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">                  </span><span class="na">ReferenceOutputAssembly=</span><span class="s">"false"</span><span class="w"> </span><span class="nt">/&gt;</span>
 </span></code></pre></div>
 <p>Without these, the generator silently doesn't run and no <code>TypeRegistry</code> is produced for the project.</p>
 </blockquote>
 <p>Use <code>IncludeNamespacePrefixes</code> to scope type discovery to the test assembly only:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="na">[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = [&quot;MyFeature.Tests&quot;]</span><span class="p">)]</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="na">[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = ["MyFeature.Tests"]</span><span class="p">)]</span>
 </span></code></pre></div>
 <h2 id="why-the-generator-can-appear-twice-and-how-we-handle-it">Why the Generator Can Appear Twice (and How We Handle It)<a class="headerlink" href="#why-the-generator-can-appear-twice-and-how-we-handle-it" title="Permanent link">&para;</a></h2>
 <p>If your project references both <code>NexusLabs.Needlr.Build</code> and an external integration package

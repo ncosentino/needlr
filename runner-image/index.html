@@ -5338,6 +5338,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/adr-0012-bound-mutation-testing-to-runtime-projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0012 Bound Mutation Testing to Runtime Projects
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5424,7 +5459,7 @@ checkout:</p>
 general-purpose profile or unrelated repository capacity.</p>
 <p>Confirm the specialized runner is online before changing repository routing:</p>
 <div class="language-powershell highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">gh</span> <span class="n">api</span> <span class="n">repos</span><span class="p">/</span><span class="n">ncosentino</span><span class="p">/</span><span class="n">needlr</span><span class="p">/</span><span class="n">actions</span><span class="p">/</span><span class="n">runners</span> <span class="p">`</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="p">-</span><span class="n">-jq</span> <span class="s1">&#39;.runners[] | select(.labels[].name == &quot;needlr-ci&quot;)&#39;</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="p">-</span><span class="n">-jq</span> <span class="s1">'.runners[] | select(.labels[].name == "needlr-ci")'</span>
 </span></code></pre></div>
 <p>Then route trusted Linux jobs:</p>
 <div class="language-powershell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">gh</span> <span class="n">variable</span> <span class="nb">set </span><span class="n">CI_RUNNER</span> <span class="p">`</span>

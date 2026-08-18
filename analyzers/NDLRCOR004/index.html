@@ -5399,6 +5399,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/adr-0012-bound-mutation-testing-to-runtime-projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0012 Bound Mutation Testing to Runtime Projects
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5449,9 +5484,9 @@
 <li>Would be excluded by the current <code>IncludeNamespacePrefixes</code> configuration</li>
 </ul>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// ⚠️ This triggers the warning</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="na">[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;MyCompany&quot;</span><span class="w"> </span><span class="p">})]</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="na">[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">"MyCompany"</span><span class="w"> </span><span class="p">})]</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">AmplitudeConfiguration</span><span class="w">  </span><span class="c1">// No namespace! Won&#39;t be discovered!</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">AmplitudeConfiguration</span><span class="w">  </span><span class="c1">// No namespace! Won't be discovered!</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">{</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">ApiKey</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">}</span>
@@ -5469,7 +5504,7 @@
 </span></code></pre></div>
 <h3 id="option-2-include-global-namespace-in-prefixes">Option 2: Include Global Namespace in Prefixes<a class="headerlink" href="#option-2-include-global-namespace-in-prefixes" title="Permanent link">&para;</a></h3>
 <p>Add an empty string <code>""</code> to your <code>IncludeNamespacePrefixes</code> to explicitly include global namespace types:</p>
-<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="na">[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;MyCompany&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"> </span><span class="p">})]</span>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="na">[assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">"MyCompany"</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="w"> </span><span class="p">})]</span>
 </span></code></pre></div>
 <p>This tells Needlr: "Include types in <code>MyCompany.*</code> namespaces AND types in the global namespace."</p>
 <h3 id="option-3-mark-as-not-injectable">Option 3: Mark as Not Injectable<a class="headerlink" href="#option-3-mark-as-not-injectable" title="Permanent link">&para;</a></h3>
@@ -5482,7 +5517,7 @@
 <ol>
 <li>
 <p><strong>Runtime exception</strong>: Services depending on the undiscovered type will throw <code>InvalidOperationException</code>:
-   <div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>System.InvalidOperationException: No service for type &#39;AmplitudeConfiguration&#39; has been registered.
+   <div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>System.InvalidOperationException: No service for type 'AmplitudeConfiguration' has been registered.
 </span></code></pre></div></p>
 </li>
 <li>

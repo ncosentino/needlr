@@ -181,3 +181,4 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [ADR-0009 Stage Release Publication](https://www.devleader.ca/projects/needlr/adr/adr-0009-stage-release-publication/) -- Opinionated fluent dependency injection for .NET with source generation
 - [ADR-0010 Own a Repository Runner Image](https://www.devleader.ca/projects/needlr/adr/adr-0010-own-repository-runner-image/) -- Opinionated fluent dependency injection for .NET with source generation
 - [ADR-0011 Adopt Advisory Mutation Testing](https://www.devleader.ca/projects/needlr/adr/adr-0011-adopt-advisory-mutation-testing/) -- Opinionated fluent dependency injection for .NET with source generation
+- [ADR-0012 Bound Mutation Testing to Runtime Projects](https://www.devleader.ca/projects/needlr/adr/adr-0012-bound-mutation-testing-to-runtime-projects/) -- Opinionated fluent dependency injection for .NET with source generation

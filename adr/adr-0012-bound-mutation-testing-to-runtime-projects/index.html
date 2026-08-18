@@ -10,31 +10,29 @@
       
       
       
-        <link rel="canonical" href="https://www.devleader.ca/projects/needlr/benchmarks/">
+        <link rel="canonical" href="https://www.devleader.ca/projects/needlr/adr/adr-0012-bound-mutation-testing-to-runtime-projects/">
       
       
-        <link rel="prev" href="../ui/blazor-extensibility/">
+        <link rel="prev" href="../adr-0011-adopt-advisory-mutation-testing/">
       
-      
-        <link rel="next" href="../analyzers/">
       
       
         
       
       
-      <link rel="icon" href="../assets/needlr.webp">
+      <link rel="icon" href="../../assets/needlr.webp">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>Benchmarks - Needlr</title>
+        <title>ADR-0012: Bound mutation testing to runtime projects - Needlr</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,7 +51,7 @@
       
     
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
   
@@ -72,15 +70,38 @@
   
   
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Benchmarks – Needlr" />
+  <meta property="og:title" content="ADR-0012 Bound Mutation Testing to Runtime Projects – Needlr" />
   <meta property="og:description" content="Opinionated fluent dependency injection for .NET with source generation" />
   <meta property="og:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
-  <meta property="og:url" content="https://www.devleader.ca/projects/needlr/benchmarks/" />
+  <meta property="og:url" content="https://www.devleader.ca/projects/needlr/adr/adr-0012-bound-mutation-testing-to-runtime-projects/" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Benchmarks – Needlr" />
+  <meta name="twitter:title" content="ADR-0012 Bound Mutation Testing to Runtime Projects – Needlr" />
   <meta name="twitter:description" content="Opinionated fluent dependency injection for .NET with source generation" />
   <meta name="twitter:image" content="https://github.devleader.ca/needlr/assets/needlr.webp" />
   
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Architecture Decisions",
+        "item": "https://www.devleader.ca/projects/needlr/"
+      },
+      
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "ADR-0012 Bound Mutation Testing to Runtime Projects",
+        "item": "https://www.devleader.ca/projects/needlr/adr/adr-0012-bound-mutation-testing-to-runtime-projects/"
+      }
+    ]
+  }
+  </script>
   
   
   
@@ -104,7 +125,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#benchmarks" class="md-skip">
+        <a href="#context-and-scope" class="md-skip">
           Skip to content
         </a>
       
@@ -118,9 +139,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="Needlr" class="md-header__button md-logo" aria-label="Needlr" data-md-component="logo">
+    <a href="../.." title="Needlr" class="md-header__button md-logo" aria-label="Needlr" data-md-component="logo">
       
-  <img src="../assets/needlr.webp" alt="logo">
+  <img src="../../assets/needlr.webp" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -137,7 +158,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Benchmarks
+              ADR-0012: Bound mutation testing to runtime projects
             
           </span>
         </div>
@@ -250,7 +271,7 @@
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -269,7 +290,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../getting-started/" class="md-tabs__link">
+      <a href="../../getting-started/" class="md-tabs__link">
         
   
   
@@ -288,7 +309,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../core-concepts/" class="md-tabs__link">
+      <a href="../../core-concepts/" class="md-tabs__link">
         
   
   
@@ -309,7 +330,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../register-as/" class="md-tabs__link">
+        <a href="../../register-as/" class="md-tabs__link">
           
   
   
@@ -329,7 +350,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../advanced-usage/" class="md-tabs__link">
+        <a href="../../advanced-usage/" class="md-tabs__link">
           
   
   
@@ -349,7 +370,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../guides/" class="md-tabs__link">
+        <a href="../../guides/" class="md-tabs__link">
           
   
   
@@ -365,11 +386,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../../benchmarks/" class="md-tabs__link">
         
   
   
@@ -390,7 +409,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../analyzers/" class="md-tabs__link">
+        <a href="../../analyzers/" class="md-tabs__link">
           
   
   
@@ -410,7 +429,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../api/" class="md-tabs__link">
+        <a href="../../api/" class="md-tabs__link">
           
   
   
@@ -428,7 +447,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../coverage/" class="md-tabs__link">
+      <a href="../../coverage/" class="md-tabs__link">
         
   
   
@@ -447,7 +466,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../video-tutorials/" class="md-tabs__link">
+      <a href="../../video-tutorials/" class="md-tabs__link">
         
   
   
@@ -464,11 +483,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../adr/adr-0004-extract-ai-platform-to-foundry/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../adr-0004-extract-ai-platform-to-foundry/" class="md-tabs__link">
           
   
   
@@ -504,9 +525,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="Needlr" class="md-nav__button md-logo" aria-label="Needlr" data-md-component="logo">
+    <a href="../.." title="Needlr" class="md-nav__button md-logo" aria-label="Needlr" data-md-component="logo">
       
-  <img src="../assets/needlr.webp" alt="logo">
+  <img src="../../assets/needlr.webp" alt="logo">
 
     </a>
     Needlr
@@ -533,7 +554,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -560,7 +581,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
+      <a href="../../getting-started/" class="md-nav__link">
         
   
   
@@ -587,7 +608,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../core-concepts/" class="md-nav__link">
+      <a href="../../core-concepts/" class="md-nav__link">
         
   
   
@@ -668,7 +689,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../register-as/" class="md-nav__link">
+      <a href="../../register-as/" class="md-nav__link">
         
   
   
@@ -696,7 +717,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../hosted-services/" class="md-nav__link">
+      <a href="../../hosted-services/" class="md-nav__link">
         
   
   
@@ -724,7 +745,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../keyed-services/" class="md-nav__link">
+      <a href="../../keyed-services/" class="md-nav__link">
         
   
   
@@ -752,7 +773,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../options/" class="md-nav__link">
+      <a href="../../options/" class="md-nav__link">
         
   
   
@@ -780,7 +801,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../http-clients/" class="md-nav__link">
+      <a href="../../http-clients/" class="md-nav__link">
         
   
   
@@ -808,7 +829,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../factories/" class="md-nav__link">
+      <a href="../../factories/" class="md-nav__link">
         
   
   
@@ -836,7 +857,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../providers/" class="md-nav__link">
+      <a href="../../providers/" class="md-nav__link">
         
   
   
@@ -864,7 +885,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../interceptors/" class="md-nav__link">
+      <a href="../../interceptors/" class="md-nav__link">
         
   
   
@@ -892,7 +913,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../open-generic-decorators/" class="md-nav__link">
+      <a href="../../open-generic-decorators/" class="md-nav__link">
         
   
   
@@ -920,7 +941,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../composed-closed-generics/" class="md-nav__link">
+      <a href="../../composed-closed-generics/" class="md-nav__link">
         
   
   
@@ -948,7 +969,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cancellation-aware-logging/" class="md-nav__link">
+      <a href="../../cancellation-aware-logging/" class="md-nav__link">
         
   
   
@@ -976,7 +997,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../generated-constructors/" class="md-nav__link">
+      <a href="../../generated-constructors/" class="md-nav__link">
         
   
   
@@ -1004,7 +1025,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../generated-record-constructor-overloads/" class="md-nav__link">
+      <a href="../../generated-record-constructor-overloads/" class="md-nav__link">
         
   
   
@@ -1032,7 +1053,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../service-catalog/" class="md-nav__link">
+      <a href="../../service-catalog/" class="md-nav__link">
         
   
   
@@ -1060,7 +1081,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../breadcrumbs/" class="md-nav__link">
+      <a href="../../breadcrumbs/" class="md-nav__link">
         
   
   
@@ -1088,7 +1109,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../signalr/" class="md-nav__link">
+      <a href="../../signalr/" class="md-nav__link">
         
   
   
@@ -1116,7 +1137,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../maui/" class="md-nav__link">
+      <a href="../../maui/" class="md-nav__link">
         
   
   
@@ -1205,7 +1226,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../advanced-usage/" class="md-nav__link">
+      <a href="../../advanced-usage/" class="md-nav__link">
         
   
   
@@ -1233,7 +1254,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../serilog/" class="md-nav__link">
+      <a href="../../serilog/" class="md-nav__link">
         
   
   
@@ -1261,7 +1282,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../plugin-development/" class="md-nav__link">
+      <a href="../../plugin-development/" class="md-nav__link">
         
   
   
@@ -1289,7 +1310,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../solution-wide-source-generation/" class="md-nav__link">
+      <a href="../../solution-wide-source-generation/" class="md-nav__link">
         
   
   
@@ -1317,7 +1338,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cross-generator-plugins/" class="md-nav__link">
+      <a href="../../cross-generator-plugins/" class="md-nav__link">
         
   
   
@@ -1345,7 +1366,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ide-extensions/" class="md-nav__link">
+      <a href="../../ide-extensions/" class="md-nav__link">
         
   
   
@@ -1373,7 +1394,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../local-runners/" class="md-nav__link">
+      <a href="../../local-runners/" class="md-nav__link">
         
   
   
@@ -1401,7 +1422,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../runner-image/" class="md-nav__link">
+      <a href="../../runner-image/" class="md-nav__link">
         
   
   
@@ -1429,7 +1450,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../releasing/" class="md-nav__link">
+      <a href="../../releasing/" class="md-nav__link">
         
   
   
@@ -1518,7 +1539,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/" class="md-nav__link">
+      <a href="../../guides/" class="md-nav__link">
         
   
   
@@ -1546,7 +1567,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../building/" class="md-nav__link">
+      <a href="../../building/" class="md-nav__link">
         
   
   
@@ -1574,7 +1595,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/" class="md-nav__link">
+      <a href="../../configuration/" class="md-nav__link">
         
   
   
@@ -1656,7 +1677,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/decisions/" class="md-nav__link">
+      <a href="../../architecture/decisions/" class="md-nav__link">
         
   
   
@@ -1684,7 +1705,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/project-structure/" class="md-nav__link">
+      <a href="../../architecture/project-structure/" class="md-nav__link">
         
   
   
@@ -1712,7 +1733,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/data-access/" class="md-nav__link">
+      <a href="../../architecture/data-access/" class="md-nav__link">
         
   
   
@@ -1740,7 +1761,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/http-clients-and-options/" class="md-nav__link">
+      <a href="../../architecture/http-clients-and-options/" class="md-nav__link">
         
   
   
@@ -1830,7 +1851,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/dotnet-engineering/" class="md-nav__link">
+      <a href="../../development/dotnet-engineering/" class="md-nav__link">
         
   
   
@@ -1858,7 +1879,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/roslyn-analyzers/" class="md-nav__link">
+      <a href="../../development/roslyn-analyzers/" class="md-nav__link">
         
   
   
@@ -1886,7 +1907,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/request-validation-and-jobs/" class="md-nav__link">
+      <a href="../../development/request-validation-and-jobs/" class="md-nav__link">
         
   
   
@@ -1914,7 +1935,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../performance/dotnet-performance/" class="md-nav__link">
+      <a href="../../performance/dotnet-performance/" class="md-nav__link">
         
   
   
@@ -1942,7 +1963,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../testing/evaluations-and-benchmarks/" class="md-nav__link">
+      <a href="../../testing/evaluations-and-benchmarks/" class="md-nav__link">
         
   
   
@@ -1970,7 +1991,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/blazor-extensibility/" class="md-nav__link">
+      <a href="../../ui/blazor-extensibility/" class="md-nav__link">
         
   
   
@@ -2010,37 +2031,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Benchmarks
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../benchmarks/" class="md-nav__link">
         
   
   
@@ -2056,70 +2050,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Summary
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#running-benchmarks-locally" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Running Benchmarks Locally
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ci-integration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CI Integration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#methodology" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Methodology
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2185,7 +2115,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/" class="md-nav__link">
+      <a href="../../analyzers/" class="md-nav__link">
         
   
   
@@ -2267,7 +2197,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRCOR001/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR001/" class="md-nav__link">
         
   
   
@@ -2295,7 +2225,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRCOR002/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR002/" class="md-nav__link">
         
   
   
@@ -2323,7 +2253,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRCOR003/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR003/" class="md-nav__link">
         
   
   
@@ -2351,7 +2281,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRCOR004/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR004/" class="md-nav__link">
         
   
   
@@ -2379,7 +2309,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRCOR005/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR005/" class="md-nav__link">
         
   
   
@@ -2407,7 +2337,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRCOR006/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR006/" class="md-nav__link">
         
   
   
@@ -2435,7 +2365,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRCOR007/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR007/" class="md-nav__link">
         
   
   
@@ -2463,7 +2393,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRCOR008/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR008/" class="md-nav__link">
         
   
   
@@ -2491,7 +2421,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRCOR009/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR009/" class="md-nav__link">
         
   
   
@@ -2519,7 +2449,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRCOR010/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR010/" class="md-nav__link">
         
   
   
@@ -2547,7 +2477,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRCOR011/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR011/" class="md-nav__link">
         
   
   
@@ -2575,7 +2505,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRCOR012/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR012/" class="md-nav__link">
         
   
   
@@ -2603,7 +2533,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRCOR015/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR015/" class="md-nav__link">
         
   
   
@@ -2631,7 +2561,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRCOR016/" class="md-nav__link">
+      <a href="../../analyzers/NDLRCOR016/" class="md-nav__link">
         
   
   
@@ -2721,7 +2651,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN001/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN001/" class="md-nav__link">
         
   
   
@@ -2749,7 +2679,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN002/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN002/" class="md-nav__link">
         
   
   
@@ -2777,7 +2707,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN003/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN003/" class="md-nav__link">
         
   
   
@@ -2805,7 +2735,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN004/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN004/" class="md-nav__link">
         
   
   
@@ -2833,7 +2763,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN005/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN005/" class="md-nav__link">
         
   
   
@@ -2861,7 +2791,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN006/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN006/" class="md-nav__link">
         
   
   
@@ -2889,7 +2819,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN007/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN007/" class="md-nav__link">
         
   
   
@@ -2917,7 +2847,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN008/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN008/" class="md-nav__link">
         
   
   
@@ -2945,7 +2875,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN014/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN014/" class="md-nav__link">
         
   
   
@@ -2973,7 +2903,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN015/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN015/" class="md-nav__link">
         
   
   
@@ -3001,7 +2931,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN016/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN016/" class="md-nav__link">
         
   
   
@@ -3029,7 +2959,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN017/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN017/" class="md-nav__link">
         
   
   
@@ -3057,7 +2987,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN018/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN018/" class="md-nav__link">
         
   
   
@@ -3085,7 +3015,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN019/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN019/" class="md-nav__link">
         
   
   
@@ -3113,7 +3043,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN020/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN020/" class="md-nav__link">
         
   
   
@@ -3141,7 +3071,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN021/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN021/" class="md-nav__link">
         
   
   
@@ -3169,7 +3099,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN022/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN022/" class="md-nav__link">
         
   
   
@@ -3197,7 +3127,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN031/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN031/" class="md-nav__link">
         
   
   
@@ -3225,7 +3155,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN032/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN032/" class="md-nav__link">
         
   
   
@@ -3253,7 +3183,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN033/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN033/" class="md-nav__link">
         
   
   
@@ -3281,7 +3211,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN034/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN034/" class="md-nav__link">
         
   
   
@@ -3309,7 +3239,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN035/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN035/" class="md-nav__link">
         
   
   
@@ -3337,7 +3267,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN036/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN036/" class="md-nav__link">
         
   
   
@@ -3365,7 +3295,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN037/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN037/" class="md-nav__link">
         
   
   
@@ -3393,7 +3323,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN038/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN038/" class="md-nav__link">
         
   
   
@@ -3421,7 +3351,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN039/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN039/" class="md-nav__link">
         
   
   
@@ -3449,7 +3379,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN040/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN040/" class="md-nav__link">
         
   
   
@@ -3477,7 +3407,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN041/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN041/" class="md-nav__link">
         
   
   
@@ -3505,7 +3435,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN042/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN042/" class="md-nav__link">
         
   
   
@@ -3533,7 +3463,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN043/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN043/" class="md-nav__link">
         
   
   
@@ -3561,7 +3491,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN044/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN044/" class="md-nav__link">
         
   
   
@@ -3589,7 +3519,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN045/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN045/" class="md-nav__link">
         
   
   
@@ -3617,7 +3547,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN046/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN046/" class="md-nav__link">
         
   
   
@@ -3645,7 +3575,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN047/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN047/" class="md-nav__link">
         
   
   
@@ -3673,7 +3603,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN048/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN048/" class="md-nav__link">
         
   
   
@@ -3701,7 +3631,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN049/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN049/" class="md-nav__link">
         
   
   
@@ -3729,7 +3659,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN050/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN050/" class="md-nav__link">
         
   
   
@@ -3757,7 +3687,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN051/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN051/" class="md-nav__link">
         
   
   
@@ -3785,7 +3715,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN052/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN052/" class="md-nav__link">
         
   
   
@@ -3813,7 +3743,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN053/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN053/" class="md-nav__link">
         
   
   
@@ -3841,7 +3771,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN054/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN054/" class="md-nav__link">
         
   
   
@@ -3869,7 +3799,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN055/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN055/" class="md-nav__link">
         
   
   
@@ -3897,7 +3827,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN056/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN056/" class="md-nav__link">
         
   
   
@@ -3925,7 +3855,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN057/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN057/" class="md-nav__link">
         
   
   
@@ -3953,7 +3883,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN058/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN058/" class="md-nav__link">
         
   
   
@@ -3981,7 +3911,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN059/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN059/" class="md-nav__link">
         
   
   
@@ -4009,7 +3939,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN060/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN060/" class="md-nav__link">
         
   
   
@@ -4037,7 +3967,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN061/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN061/" class="md-nav__link">
         
   
   
@@ -4065,7 +3995,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN062/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN062/" class="md-nav__link">
         
   
   
@@ -4093,7 +4023,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRGEN063/" class="md-nav__link">
+      <a href="../../analyzers/NDLRGEN063/" class="md-nav__link">
         
   
   
@@ -4183,7 +4113,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRSIG001/" class="md-nav__link">
+      <a href="../../analyzers/NDLRSIG001/" class="md-nav__link">
         
   
   
@@ -4211,7 +4141,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRSIG002/" class="md-nav__link">
+      <a href="../../analyzers/NDLRSIG002/" class="md-nav__link">
         
   
   
@@ -4239,7 +4169,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRSIG003/" class="md-nav__link">
+      <a href="../../analyzers/NDLRSIG003/" class="md-nav__link">
         
   
   
@@ -4329,7 +4259,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRLOG001/" class="md-nav__link">
+      <a href="../../analyzers/NDLRLOG001/" class="md-nav__link">
         
   
   
@@ -4357,7 +4287,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRLOG002/" class="md-nav__link">
+      <a href="../../analyzers/NDLRLOG002/" class="md-nav__link">
         
   
   
@@ -4385,7 +4315,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRLOG003/" class="md-nav__link">
+      <a href="../../analyzers/NDLRLOG003/" class="md-nav__link">
         
   
   
@@ -4413,7 +4343,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRLOG004/" class="md-nav__link">
+      <a href="../../analyzers/NDLRLOG004/" class="md-nav__link">
         
   
   
@@ -4441,7 +4371,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRLOG005/" class="md-nav__link">
+      <a href="../../analyzers/NDLRLOG005/" class="md-nav__link">
         
   
   
@@ -4469,7 +4399,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRLOG006/" class="md-nav__link">
+      <a href="../../analyzers/NDLRLOG006/" class="md-nav__link">
         
   
   
@@ -4559,7 +4489,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRHTTP001/" class="md-nav__link">
+      <a href="../../analyzers/NDLRHTTP001/" class="md-nav__link">
         
   
   
@@ -4587,7 +4517,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRHTTP002/" class="md-nav__link">
+      <a href="../../analyzers/NDLRHTTP002/" class="md-nav__link">
         
   
   
@@ -4615,7 +4545,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRHTTP003/" class="md-nav__link">
+      <a href="../../analyzers/NDLRHTTP003/" class="md-nav__link">
         
   
   
@@ -4643,7 +4573,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRHTTP004/" class="md-nav__link">
+      <a href="../../analyzers/NDLRHTTP004/" class="md-nav__link">
         
   
   
@@ -4671,7 +4601,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRHTTP005/" class="md-nav__link">
+      <a href="../../analyzers/NDLRHTTP005/" class="md-nav__link">
         
   
   
@@ -4699,7 +4629,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analyzers/NDLRHTTP006/" class="md-nav__link">
+      <a href="../../analyzers/NDLRHTTP006/" class="md-nav__link">
         
   
   
@@ -4796,7 +4726,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/" class="md-nav__link">
+      <a href="../../api/" class="md-nav__link">
         
   
   
@@ -4824,7 +4754,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/dev/" class="md-nav__link">
+      <a href="../../api/dev/" class="md-nav__link">
         
   
   
@@ -4852,7 +4782,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/stable/" class="md-nav__link">
+      <a href="../../api/stable/" class="md-nav__link">
         
   
   
@@ -4887,7 +4817,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../coverage/" class="md-nav__link">
+      <a href="../../coverage/" class="md-nav__link">
         
   
   
@@ -4914,7 +4844,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../video-tutorials/" class="md-nav__link">
+      <a href="../../video-tutorials/" class="md-nav__link">
         
   
   
@@ -4938,28 +4868,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
-        
-          
-          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="">
             
   
   
@@ -4977,7 +4910,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_12">
             <span class="md-nav__icon md-icon"></span>
             
@@ -4995,7 +4928,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr/adr-0004-extract-ai-platform-to-foundry/" class="md-nav__link">
+      <a href="../adr-0004-extract-ai-platform-to-foundry/" class="md-nav__link">
         
   
   
@@ -5030,7 +4963,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr/adr-0005-generate-guarded-constructors/" class="md-nav__link">
+      <a href="../adr-0005-generate-guarded-constructors/" class="md-nav__link">
         
   
   
@@ -5065,7 +4998,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr/adr-0006-generate-record-constructor-overloads/" class="md-nav__link">
+      <a href="../adr-0006-generate-record-constructor-overloads/" class="md-nav__link">
         
   
   
@@ -5100,7 +5033,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr/adr-0007-own-graph-source-locations-per-project/" class="md-nav__link">
+      <a href="../adr-0007-own-graph-source-locations-per-project/" class="md-nav__link">
         
   
   
@@ -5135,7 +5068,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr/adr-0008-own-version-aware-agent-marketplace/" class="md-nav__link">
+      <a href="../adr-0008-own-version-aware-agent-marketplace/" class="md-nav__link">
         
   
   
@@ -5170,7 +5103,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr/adr-0009-stage-release-publication/" class="md-nav__link">
+      <a href="../adr-0009-stage-release-publication/" class="md-nav__link">
         
   
   
@@ -5205,7 +5138,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr/adr-0010-own-repository-runner-image/" class="md-nav__link">
+      <a href="../adr-0010-own-repository-runner-image/" class="md-nav__link">
         
   
   
@@ -5240,7 +5173,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr/adr-0011-adopt-advisory-mutation-testing/" class="md-nav__link">
+      <a href="../adr-0011-adopt-advisory-mutation-testing/" class="md-nav__link">
         
   
   
@@ -5272,10 +5205,42 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../adr/adr-0012-bound-mutation-testing-to-runtime-projects/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0012 Bound Mutation Testing to Runtime Projects
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -5298,6 +5263,212 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context-and-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context and scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision drivers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternatives considered
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Alternatives considered">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#run-complete-project-scopes-on-every-pull-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run complete project scopes on every pull request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-scheduled-complete-runs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add scheduled complete runs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allow-the-generator-job-ninety-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allow the generator job ninety minutes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-mutation-level-basic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use mutation level Basic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-a-mutation-only-project-that-links-production-generator-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build a mutation-only project that links production generator files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove-source-generation-from-mutation-testing-entirely" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remove source generation from mutation testing entirely
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consequences
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Consequences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#positive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Positive
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#negative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Negative
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neutral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Neutral
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#confirmation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Confirmation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -5330,461 +5501,149 @@
   
 
 
-<h1 id="benchmarks">Benchmarks<a class="headerlink" href="#benchmarks" title="Permanent link">&para;</a></h1>
-<p>Performance comparison between source-generated and reflection-based dependency injection.</p>
-<div id="key-takeaway" class="admonition tip">
-    <p class="admonition-title">Key Takeaway</p>
-    <p id="takeaway-text">Source generation provides faster container build times compared to reflection. Service resolution performance is identical once the container is built.</p>
-</div>
+  <h1>ADR-0012 Bound Mutation Testing to Runtime Projects</h1>
 
-<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
-<div id="benchmark-summary">
-    <p><em>Loading benchmark results...</em></p>
-</div>
-
-<div id="benchmark-nav"></div>
-
-<div id="benchmark-sections"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', async function() {
-    const summaryDiv = document.getElementById('benchmark-summary');
-    const navDiv = document.getElementById('benchmark-nav');
-    const sectionsDiv = document.getElementById('benchmark-sections');
-    const takeawayText = document.getElementById('takeaway-text');
-
-    try {
-        // Load both results and descriptions
-        const [resultsRes, descRes] = await Promise.all([
-            fetch('../benchmarks/results/results.json'),
-            fetch('../benchmarks/results/descriptions.json').catch(() => null)
-        ]);
-
-        if (!resultsRes.ok) {
-            throw new Error('No benchmark data available yet');
-        }
-
-        const data = await resultsRes.json();
-        const descriptions = descRes?.ok ? await descRes.json() : {};
-
-        renderSummary(data, summaryDiv);
-        renderNavigation(data, descriptions, navDiv);
-        renderBenchmarkSections(data, descriptions, sectionsDiv);
-        updateKeyTakeaway(data, takeawayText);
-    } catch (error) {
-        summaryDiv.innerHTML = `
-            <div class="admonition info">
-                <p class="admonition-title">Benchmarks Not Yet Available</p>
-                <p>Benchmark results will appear here after the first benchmark run. 
-                   Benchmarks run weekly or can be triggered manually via GitHub Actions.</p>
-                <p><a href="https://github.com/ncosentino/needlr/actions/workflows/benchmarks.yml">
-                   → Trigger a benchmark run</a></p>
-            </div>
-        `;
-    }
-});
-
-function renderSummary(data, container) {
-    if (!data?.Benchmarks) {
-        container.innerHTML = '<p>No benchmark data found.</p>';
-        return;
-    }
-
-    const totalBenchmarks = data.Benchmarks.length;
-    const classes = [...new Set(data.Benchmarks.map(b => b.Type?.split('.').pop()))];
-    const hostInfo = data.HostEnvironmentInfo;
-
-    let html = `<p><strong>${totalBenchmarks} benchmarks</strong> across <strong>${classes.length} categories</strong></p>`;
-    if (hostInfo) {
-        html += `<details class="benchmark-env"><summary>Environment Details</summary>`;
-        html += `<ul>`;
-        html += `<li><strong>OS:</strong> ${hostInfo.OsVersion || 'Unknown'}</li>`;
-        html += `<li><strong>CPU:</strong> ${hostInfo.ProcessorName || 'Unknown'}</li>`;
-        html += `<li><strong>Runtime:</strong> ${hostInfo.RuntimeVersion || 'Unknown'}</li>`;
-        html += `<li><strong>Config:</strong> ${hostInfo.Configuration || 'Unknown'}</li>`;
-        html += `</ul></details>`;
-    }
-    container.innerHTML = html;
-}
-
-function renderNavigation(data, descriptions, container) {
-    if (!data?.Benchmarks) return;
-
-    const classes = [...new Set(data.Benchmarks.map(b => b.Type?.split('.').pop()))].sort();
-
-    let html = '<div class="benchmark-toc"><strong>Jump to:</strong><ul>';
-    html += classes.map(c => {
-        const anchor = c.toLowerCase().replace(/benchmarks?$/i, '');
-        const label = c.replace(/Benchmarks?$/i, '');
-        return `<li><a href="#${anchor}">${label}</a></li>`;
-    }).join('');
-    html += '</ul></div>';
-
-    container.innerHTML = html;
-}
-
-function renderBenchmarkSections(data, descriptions, container) {
-    if (!data?.Benchmarks) return;
-
-    // Group benchmarks by class
-    const grouped = {};
-    data.Benchmarks.forEach(b => {
-        const className = (b.Type || 'Unknown').split('.').pop();
-        if (!grouped[className]) grouped[className] = [];
-        grouped[className].push(b);
-    });
-
-    let html = '';
-    let chartIndex = 0;
-
-    for (const className of Object.keys(grouped).sort()) {
-        const benchmarks = grouped[className];
-        const anchor = className.toLowerCase().replace(/benchmarks?$/i, '');
-        const displayName = className.replace(/Benchmarks?$/i, '');
-        const desc = descriptions[className];
-        const baselineMethodName = desc?.baseline;
-
-        html += `<div class="benchmark-section" id="${anchor}">`;
-        html += `<h3>${displayName}</h3>`;
-
-        // Description and source link from descriptions.json
-        if (desc) {
-            html += `<p class="benchmark-desc">${desc.description}</p>`;
-            html += `<p class="benchmark-source"><a href="https://github.com/ncosentino/needlr/blob/main/${desc.source}" target="_blank">View Source ↗</a></p>`;
-        }
-
-        // Data table (pass baseline method name)
-        html += renderBenchmarkTable(benchmarks, baselineMethodName);
-
-        // Chart containers - find baseline for memory check
-        const baseline = baselineMethodName 
-            ? benchmarks.find(b => b.Method === baselineMethodName)
-            : benchmarks[0];
-        const hasMemory = baseline?.Memory?.BytesAllocatedPerOperation;
-
-        html += `<div class="chart-row">`;
-        html += `<div class="chart-cell"><canvas id="timeChart${chartIndex}"></canvas></div>`;
-        if (hasMemory) {
-            html += `<div class="chart-cell"><canvas id="memChart${chartIndex}"></canvas></div>`;
-        }
-        html += `</div>`;
-
-        html += `</div>`;
-        chartIndex++;
-    }
-
-    container.innerHTML = html;
-
-    // Render charts after DOM update
-    chartIndex = 0;
-    for (const className of Object.keys(grouped).sort()) {
-        const desc = descriptions[className];
-        const baselineMethodName = desc?.baseline;
-        renderChartsForBenchmark(className, grouped[className], chartIndex, baselineMethodName);
-        chartIndex++;
-    }
-}
-
-function renderBenchmarkTable(benchmarks, baselineMethodName) {
-    const baseline = baselineMethodName 
-        ? benchmarks.find(b => b.Method === baselineMethodName)
-        : benchmarks[0];
-    const baselineMean = getMeanFromMeasurements(baseline);
-    const baselineAlloc = baseline?.Memory?.BytesAllocatedPerOperation;
-
-    let html = '<table><thead><tr><th>Method</th><th>Mean</th><th>Time Ratio</th><th>Allocated</th><th>Memory Ratio</th></tr></thead><tbody>';
-
-    benchmarks.forEach(b => {
-        const isBaseline = baselineMethodName ? b.Method === baselineMethodName : b === baseline;
-        const mean = getMeanFromMeasurements(b);
-        const allocated = b.Memory?.BytesAllocatedPerOperation;
-
-        let timeRatio = '-', timeRatioClass = '';
-        if (mean && baselineMean) {
-            const ratioVal = mean / baselineMean;
-            timeRatio = ratioVal.toFixed(2);
-            timeRatioClass = ratioVal < 0.95 ? 'faster' : (ratioVal > 1.05 ? 'slower' : '');
-        }
-        if (isBaseline) timeRatio = '1.00';
-
-        let memRatio = '-', memRatioClass = '';
-        if (allocated && baselineAlloc) {
-            const ratioVal = allocated / baselineAlloc;
-            memRatio = ratioVal.toFixed(2);
-            memRatioClass = ratioVal < 0.95 ? 'faster' : (ratioVal > 1.05 ? 'slower' : '');
-        }
-        if (isBaseline) memRatio = '1.00';
-
-        html += `<tr class="${isBaseline ? 'baseline' : ''}">
-            <td>${b.Method}</td>
-            <td>${formatTime(mean)}</td>
-            <td class="${timeRatioClass}">${timeRatio}</td>
-            <td>${formatBytes(allocated)}</td>
-            <td class="${memRatioClass}">${memRatio}</td>
-        </tr>`;
-    });
-
-    html += '</tbody></table>';
-    return html;
-}
-
-function renderChartsForBenchmark(className, benchmarks, chartIndex, baselineMethodName) {
-    const baseline = baselineMethodName 
-        ? benchmarks.find(b => b.Method === baselineMethodName)
-        : benchmarks[0];
-    if (!baseline) return;
-
-    const methods = benchmarks.map(b => ({
-        name: b.Method,
-        time: getMeanFromMeasurements(b),
-        memory: b.Memory?.BytesAllocatedPerOperation,
-        isBaseline: baselineMethodName ? b.Method === baselineMethodName : b === baseline
-    })).filter(m => m.time);
-
-    if (methods.length < 2) return;
-
-    const shortClassName = className.replace(/Benchmarks?$/i, '');
-    const labels = methods.map(m => m.name.replace(shortClassName + '_', '').replace(/_/g, ' '));
-    const timeData = methods.map(m => m.time / 1e6);
-    const memData = methods.map(m => m.memory ? m.memory / 1024 : 0);
-    const colors = methods.map(m => m.isBaseline ? 'rgba(33, 150, 243, 0.7)' : 'rgba(46, 125, 50, 0.7)');
-    const borderColors = methods.map(m => m.isBaseline ? 'rgba(33, 150, 243, 1)' : 'rgba(46, 125, 50, 1)');
-
-    // Time chart
-    const timeCanvas = document.getElementById(`timeChart${chartIndex}`);
-    if (timeCanvas) {
-        new Chart(timeCanvas, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{ label: 'Time (ms)', data: timeData, backgroundColor: colors, borderColor: borderColors, borderWidth: 1 }]
-            },
-            options: {
-                responsive: true,
-                plugins: { title: { display: true, text: `Time (lower is better)` }, legend: { display: false } },
-                scales: { y: { beginAtZero: true, title: { display: true, text: 'ms' } } }
-            }
-        });
-    }
-
-    // Memory chart - show if any benchmark has memory data (including 0)
-    const hasAnyMemory = methods.some(m => m.memory !== null && m.memory !== undefined);
-    if (hasAnyMemory) {
-        const memCanvas = document.getElementById(`memChart${chartIndex}`);
-        if (memCanvas) {
-            new Chart(memCanvas, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'Memory (KB)', data: memData, backgroundColor: colors, borderColor: borderColors, borderWidth: 1 }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { title: { display: true, text: `Memory (lower is better)` }, legend: { display: false } },
-                    scales: { y: { beginAtZero: true, title: { display: true, text: 'KB' } } }
-                }
-            });
-        }
-    }
-}
-
-function getMeanFromMeasurements(benchmark) {
-    if (!benchmark?.Measurements) return null;
-    if (benchmark.Statistics?.Mean) return benchmark.Statistics.Mean;
-
-    // Try Actual stage first
-    let measurements = benchmark.Measurements.filter(m => 
-        m.IterationMode === 'Workload' && m.IterationStage === 'Actual'
-    );
-
-    // Fallback to Result stage if no Actual
-    if (measurements.length === 0) {
-        measurements = benchmark.Measurements.filter(m => 
-            m.IterationMode === 'Workload' && m.IterationStage === 'Result'
-        );
-    }
-
-    // Last resort: use last few Pilot iterations
-    if (measurements.length === 0) {
-        const pilots = benchmark.Measurements.filter(m => 
-            m.IterationMode === 'Workload' && m.IterationStage === 'Pilot'
-        );
-        if (pilots.length > 3) {
-            measurements = pilots.slice(-3); // Last 3 pilots as estimate
-        }
-    }
-
-    if (measurements.length === 0) return null;
-
-    const totalNsPerOp = measurements.reduce((sum, m) => sum + (m.Nanoseconds / m.Operations), 0);
-    return totalNsPerOp / measurements.length;
-}
-
-function formatTime(ns) {
-    if (!ns) return '-';
-    if (ns >= 1e9) return (ns / 1e9).toFixed(2) + ' s';
-    if (ns >= 1e6) return (ns / 1e6).toFixed(2) + ' ms';
-    if (ns >= 1e3) return (ns / 1e3).toFixed(2) + ' μs';
-    return ns.toFixed(2) + ' ns';
-}
-
-function formatBytes(bytes) {
-    if (bytes === null || bytes === undefined) return '-';
-    if (bytes === 0) return '0 B';
-    if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-    if (bytes >= 1024) return (bytes / 1024).toFixed(2) + ' KB';
-    return bytes + ' B';
-}
-
-function updateKeyTakeaway(data, element) {
-    if (!data?.Benchmarks || !element) return;
-
-    const buildBenchmarks = data.Benchmarks.filter(b => 
-        b.Type?.includes('Build') || b.Method?.includes('Build')
-    );
-
-    let details = [];
-    const grouped = {};
-    buildBenchmarks.forEach(b => {
-        const className = (b.Type || 'Unknown').split('.').pop();
-        if (!grouped[className]) grouped[className] = {};
-        if (b.Method?.includes('ManualDI')) grouped[className].manual = b;
-        else if (b.Method?.includes('SourceGen') && !b.Method?.includes('Explicit')) grouped[className].sourceGen = b;
-        else if (b.Method?.includes('Reflection')) grouped[className].reflection = b;
-    });
-
-    for (const [benchName, benchmarks] of Object.entries(grouped)) {
-        // Compare source gen to manual DI if available, otherwise to reflection
-        const baseline = benchmarks.manual || benchmarks.reflection;
-        if (baseline && benchmarks.sourceGen) {
-            const baseTime = getMeanFromMeasurements(baseline);
-            const sgTime = getMeanFromMeasurements(benchmarks.sourceGen);
-            if (baseTime && sgTime && sgTime > 0) {
-                const speedup = (baseTime / sgTime).toFixed(1);
-                const shortName = benchName.replace(/Benchmarks?$/i, '').replace(/Build/g, '');
-                details.push(`${shortName || 'Build'}: ${speedup}x`);
-            }
-        }
-    }
-
-    if (details.length > 0) {
-        element.innerHTML = `<strong>DI container build speedups (source-gen vs manual DI):</strong> ${details.join(', ')}. Service resolution is identical once the container is built.`;
-    }
-}
-</script>
-
-<style>
-.benchmark-toc {
-    background: var(--md-default-fg-color--lightest);
-    padding: 0.75em 1em;
-    border-radius: 4px;
-    margin: 1em 0 2em 0;
-}
-.benchmark-toc ul {
-    margin: 0.5em 0 0 0;
-    padding-left: 1.5em;
-    columns: 2;
-}
-.benchmark-toc li {
-    margin: 0.2em 0;
-}
-.benchmark-toc a {
-    text-decoration: none;
-}
-.benchmark-section {
-    margin: 2em 0;
-    padding: 1.5em;
-    border: 1px solid var(--md-default-fg-color--lightest);
-    border-radius: 8px;
-}
-.benchmark-section h3 {
-    margin-top: 0;
-}
-.benchmark-desc {
-    color: var(--md-default-fg-color--light);
-    margin-bottom: 0.5em;
-}
-.benchmark-source {
-    font-size: 0.85em;
-    margin-bottom: 1em;
-}
-.benchmark-section table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1em 0;
-}
-.benchmark-section th,
-.benchmark-section td {
-    padding: 8px 12px;
-    text-align: left;
-    border-bottom: 1px solid var(--md-default-fg-color--lightest);
-}
-.benchmark-section th {
-    background: var(--md-default-fg-color--lightest);
-    font-weight: 600;
-}
-.benchmark-section .baseline {
-    background: rgba(33, 150, 243, 0.1);
-}
-.benchmark-section .faster {
-    color: #2e7d32;
-    font-weight: 600;
-}
-.benchmark-section .slower {
-    color: #c62828;
-}
-.chart-row {
-    display: block;
-    margin-top: 1em;
-}
-.chart-cell {
-    width: 100%;
-    max-height: 350px;
-    margin-bottom: 1.5em;
-}
-.benchmark-env {
-    margin-top: 0.5em;
-}
-.benchmark-env summary {
-    cursor: pointer;
-    color: var(--md-default-fg-color--light);
-}
-</style>
-
-<h2 id="running-benchmarks-locally">Running Benchmarks Locally<a class="headerlink" href="#running-benchmarks-locally" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">cd</span><span class="w"> </span>src/NexusLabs.Needlr.Benchmarks
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>dotnet<span class="w"> </span>run<span class="w"> </span>-c<span class="w"> </span>Release<span class="w"> </span>--<span class="w"> </span>--filter<span class="w"> </span><span class="s1">'*Build*'</span>
-</span></code></pre></div>
-<p>To run all benchmarks:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>dotnet<span class="w"> </span>run<span class="w"> </span>-c<span class="w"> </span>Release<span class="w"> </span>--<span class="w"> </span>--filter<span class="w"> </span><span class="s1">'*'</span>
-</span></code></pre></div>
-<h2 id="ci-integration">CI Integration<a class="headerlink" href="#ci-integration" title="Permanent link">&para;</a></h2>
-<p>Benchmarks run automatically:</p>
+<h2 id="context-and-scope">Context and scope<a class="headerlink" href="#context-and-scope" title="Permanent link">&para;</a></h2>
+<p>ADR-0011 introduced advisory mutation testing with runtime and direct generator
+implementation scopes. Hosted evidence showed that the runtime model works but the
+generator model is not practical with the current Stryker.NET and xUnit v3 integration.</p>
+<p>Stryker analyzes the complete project before applying the mutate filter. The narrowed
+three-file generator configuration therefore still created 10,779 candidate mutants
+across the 17,000-line generator project. After compile-error and mutate filtering, 330
+mutants remained. Stryker's preview MTP runner discovered all 1,070 generator tests,
+ignored the configured VSTest-style test-case filter, and reported zero covered mutants
+after more than six minutes of coverage capture. The run then exceeded its
+forty-five-minute limit.</p>
+<p>By contrast, the runtime scope completed on the same runner in roughly two minutes.
+A focused local MTP probe also killed 12 of 22 tested runtime mutants, confirming that
+the xUnit v3 runner applies mutants correctly.</p>
+<p>This decision supersedes ADR-0011's direct generator-project scope. It does not abandon
+mutation testing for source-generation scenarios; it chooses a source-generated runtime
+consumer as the bounded compatibility proof.</p>
+<h2 id="decision-drivers">Decision drivers<a class="headerlink" href="#decision-drivers" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Weekly</strong>: Every Sunday at 3am UTC (if code has changed)</li>
-<li><strong>On-demand</strong>: Via <a href="https://github.com/ncosentino/needlr/actions/workflows/benchmarks.yml">workflow dispatch</a></li>
+<li>Ready-pull-request feedback must remain bounded enough to be actionable.</li>
+<li>A mutate filter that still incurs whole-project mutant creation does not provide
+  proportional isolation.</li>
+<li>xUnit v3 requires Stryker's preview MTP runner for meaningful mutant execution.</li>
+<li>Generated composition should remain exercised without claiming unsupported direct
+  generator mutation coverage.</li>
+<li>Scope reduction must follow measured runtime and tool behavior rather than score
+  optimization.</li>
+<li>Mutation scores remain advisory and artifact-free.</li>
 </ul>
-<p>Results are published to this page after each run.</p>
-<h2 id="methodology">Methodology<a class="headerlink" href="#methodology" title="Permanent link">&para;</a></h2>
-<p>All benchmarks use <a href="https://benchmarkdotnet.org/">BenchmarkDotNet</a> with:</p>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p>Needlr defines fourteen advisory runtime-package scopes in one committed manifest.
+Every scope declares its project, direct test project, source/test trigger roots,
+numeric priority, and at most five representative files.</p>
+<p>The direct <code>NexusLabs.Needlr.Generators</code> mutation configuration is removed. Generator
+and generator-test changes select the <code>sourcegen</code> consumer scope so those changes still
+prove that generated composition builds and behaves under mutation. Direct generator
+implementation mutation remains deferred until Stryker can avoid whole-project mutant
+construction and provide reliable MTP coverage/test filtering for this test project, or
+Needlr introduces a separately justified smaller production boundary.</p>
+<p>Mutation testing is pull-request-only. The classifier selects affected scopes and uses
+Stryker changed-code analysis against <code>origin/main</code>. It selects no more than two scopes
+per pull request and no more than five changed source files per scope. Scope selection
+uses committed numeric priority; file selection uses changed-line count followed by
+path. Every omitted scope and file is reported.</p>
+<p>Selected jobs run with maximum parallelism two and a ten-minute timeout. Generated
+configs use MTP, Standard mutation level, per-test coverage analysis, concurrency two,
+<code>thresholds.break = 0</code>, and local JSON/Markdown reporters. The workflow is not required,
+does not persist baselines or reports, does not run on a schedule, does not upload
+artifacts, and does not use the Stryker dashboard.</p>
+<p>The lightweight selector reads changed-file metadata through GitHub's pull-request API
+instead of fetching full history. Only selected Stryker jobs fetch full history for NBGV,
+SourceLink, and <code>since: origin/main</code>.</p>
+<p>Each internal scope run upserts one neutral GitHub Check with duration, counts, mutated
+files, actionable survivors/uncovered mutants, and a workflow link. After all selected
+scopes complete, the workflow upserts one concise PR comment containing only the scope
+table and links to those detailed Checks. This is delivery evidence, not report
+persistence: reruns replace the current-head comment, raw JSON/Markdown stays on the
+runner, and no cross-run baseline is retained. Forks keep the job summary but cannot
+publish comments or checks with their read-only token.</p>
+<p>Each scope's test project directly references the project under mutation. Stryker uses
+that direct edge to select the mutation target; a merely transitive reference can produce
+a fast but meaningless run whose tests never observe the mutant assembly.</p>
+<h2 id="alternatives-considered">Alternatives considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
+<h3 id="run-complete-project-scopes-on-every-pull-request">Run complete project scopes on every pull request<a class="headerlink" href="#run-complete-project-scopes-on-every-pull-request" title="Permanent link">&para;</a></h3>
+<p>This maximizes each run's breadth. It was rejected because mutation testing would add
+unbounded feedback time and repeat work unrelated to the pull request. Changed-code
+selection provides direct feedback on the code currently being reviewed.</p>
+<h3 id="add-scheduled-complete-runs">Add scheduled complete runs<a class="headerlink" href="#add-scheduled-complete-runs" title="Permanent link">&para;</a></h3>
+<p>Scheduled rotation would eventually inspect untouched code and support trend analysis.
+It was rejected for the current integration because the repository does not need
+historical reports or baseline persistence, and the immediate goal is bounded PR
+feedback.</p>
+<h3 id="allow-the-generator-job-ninety-minutes">Allow the generator job ninety minutes<a class="headerlink" href="#allow-the-generator-job-ninety-minutes" title="Permanent link">&para;</a></h3>
+<p>The first five-file scope exceeded seventy minutes and the three-file scope exceeded
+forty-five minutes before completing. Raising the timeout would normalize poor feedback
+latency without solving full-project mutant creation, failed coverage capture, or the
+ignored test filter. It was rejected.</p>
+<h3 id="use-mutation-level-basic">Use mutation level Basic<a class="headerlink" href="#use-mutation-level-basic" title="Permanent link">&para;</a></h3>
+<p>Basic would reduce tested mutation kinds, but Stryker would still analyze the complete
+generator project and MTP would still run against the full test set. It might reduce
+runtime without correcting the dominant architecture problem. It was rejected as an
+unmeasured score-shaping workaround.</p>
+<h3 id="build-a-mutation-only-project-that-links-production-generator-files">Build a mutation-only project that links production generator files<a class="headerlink" href="#build-a-mutation-only-project-that-links-production-generator-files" title="Permanent link">&para;</a></h3>
+<p>A small linked-source project could make Stryker see only selected files. It was
+rejected for now because it creates a second compilation boundary whose references,
+preprocessor symbols, analyzer options, and source layout can drift from the shipped
+generator. Such a harness requires its own decision and parity checks.</p>
+<h3 id="remove-source-generation-from-mutation-testing-entirely">Remove source generation from mutation testing entirely<a class="headerlink" href="#remove-source-generation-from-mutation-testing-entirely" title="Permanent link">&para;</a></h3>
+<p>This would leave only the fast runtime scope. It was rejected because a small runtime
+integration package can still prove that mutation testing coexists with generated
+registries and module initialization without taking on direct generator-project cost.</p>
+<h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
+<h3 id="positive">Positive<a class="headerlink" href="#positive" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>ShortRun job</strong>: 3 warmup iterations, 3 target iterations</li>
-<li><strong>Memory diagnostics</strong>: Tracks allocations per operation</li>
-<li><strong>Baseline comparison</strong>: Reflection is always the baseline</li>
+<li>Every mutation job has an explicit ten-minute ceiling.</li>
+<li>Fourteen directly tested runtime packages are eligible when their code or tests change.</li>
+<li>Source-generated composition remains in the mutation test path.</li>
+<li>The workflow no longer spends an hour on a generator run that cannot use its intended
+  test or coverage filters.</li>
+<li>The scope reflects measured tool behavior rather than an arbitrary coverage target.</li>
 </ul>
-<p>Each benchmark class follows strict rules:</p>
-<ol>
-<li>One baseline per class (reflection approach)</li>
-<li>All methods in a class compare the same scenario</li>
-<li>Benchmark methods contain only what needs to be measured</li>
-</ol>
+<h3 id="negative">Negative<a class="headerlink" href="#negative" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Needlr does not directly mutation-test generator implementation code.</li>
+<li>Generator changes receive compatibility evidence from a consumer rather than
+  assertion-strength evidence inside generator algorithms.</li>
+<li>Future Stryker/xUnit improvements require reevaluation before direct generator
+  mutation can return.</li>
+</ul>
+<h3 id="neutral">Neutral<a class="headerlink" href="#neutral" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Runtime mutation score remains advisory.</li>
+<li>Normal generator, analyzer, integration, package, and Native AOT tests remain required.</li>
+<li>No report persistence or external dashboard is introduced.</li>
+</ul>
+<h2 id="confirmation">Confirmation<a class="headerlink" href="#confirmation" title="Permanent link">&para;</a></h2>
+<p><code>scripts/test-mutation.ps1</code> validates all scope mappings and priority files, the two-scope
+and five-file limits, deterministic trimming, MTP selection, zero break thresholds,
+ephemeral local reporters, ten-minute timeout, full-history checkout, changed-code
+selection, fork routing, and non-required delivery declaration.</p>
+<p>The corrective pull request must complete both scopes on PitCrew and expose readable job
+summaries without artifact uploads. The source-generated consumer run must produce
+non-empty mutant results within its timeout.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li>ADR-0011 records the initial direct-generator decision and is superseded by this
+  measured correction.</li>
+<li>Stryker.NET documents MTP as preview with incomplete per-test filtering:
+  <a href="https://stryker-mutator.io/blog/stryker-net-mtp-runner/">https://stryker-mutator.io/blog/stryker-net-mtp-runner/</a>.</li>
+<li>Stryker tracks xUnit v3 behavior under VSTest:
+  <a href="https://github.com/stryker-mutator/stryker-net/issues/3117">https://github.com/stryker-mutator/stryker-net/issues/3117</a>.</li>
+</ul>
 
 
 
 
 
 
+
+  
+  
 
 
 
@@ -5852,12 +5711,12 @@ function updateKeyTakeaway(data, element) {
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "content.code.annotate", "search.highlight", "search.suggest", "toc.integrate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "content.code.annotate", "search.highlight", "search.suggest", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
-        <script src="../javascripts/api-version-switcher.js"></script>
+        <script src="../../javascripts/api-version-switcher.js"></script>
       
     
   </body>
