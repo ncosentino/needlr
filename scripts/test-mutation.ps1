@@ -163,7 +163,8 @@ Assert-Condition `
 Assert-Condition `
     -Condition (
         $workflow -match '(?m)^  checks:\s*write\r?$' -and
-        $workflow -match '(?m)^  issues:\s*write\r?$') `
+        $workflow -match '(?m)^  pull-requests:\s*write\r?$' -and
+        $workflow -notmatch '(?m)^  issues:\s*write\r?$') `
     -Message 'Internal mutation runs must publish first-class PR evidence.'
 Assert-Condition `
     -Condition (
