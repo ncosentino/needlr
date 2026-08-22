@@ -4,6 +4,14 @@
 
 - Added advisory Stryker.NET mutation testing for fourteen directly tested runtime packages. Pull requests select at most two affected project scopes and five changed files per scope, cap each job at ten minutes, report omitted work explicitly, and keep results ephemeral in job summaries and logs without baselines, artifacts, scheduled runs, or an external dashboard.
 
+### Changed
+
+- CI/CD now runs exclusively on standard GitHub-hosted runners with a committed label allowlist and one-day explicit artifact retention.
+
+### Removed
+
+- Removed PitCrew routing, self-hosted runner profiles, the repository-owned runner image, and the `CI_RUNNER` workflow contract.
+
 ## [0.0.3-alpha.5] - 2026-08-14
 
 ### Fixed

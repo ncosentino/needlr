@@ -78,7 +78,7 @@ choosing commands.
 - Do not invent a command that the repository does not declare or document.
 - Do not run complete suites, browser/platform matrices, hosted scenarios, or
   credentialed/live checks on a workstation.
-- Pull request CI and declared runner profiles own complete and hosted evidence.
+- Pull request GitHub Actions CI owns complete and hosted evidence.
 - For a pull request, inspect `gh pr checks` instead of reproducing heavy work.
 
 Record every command/result and every required check that was not run.

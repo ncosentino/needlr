@@ -10,8 +10,7 @@ the composition boundary you are changing:
 - [Solution-Wide Source Generation](../solution-wide-source-generation.md)
 - [Generated Constructors](../generated-constructors.md)
 - [Plugin Development](../plugin-development.md)
-- [Local CI Runners](../local-runners.md)
-- [Repository-Owned Runner Image](../runner-image.md)
+- [GitHub Actions CI/CD](../github-actions.md)
 - [Releasing Needlr](../releasing.md)
 
 Feature-specific pages in the main navigation remain the canonical API and consumer

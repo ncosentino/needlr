@@ -160,8 +160,10 @@ Assert-Condition `
     -Condition ($workflow -match 'github\.event\.pull_request\.draft == false') `
     -Message 'Mutation testing must not occupy runners for draft pull requests.'
 Assert-Condition `
-    -Condition ($workflow -match 'head\.repo\.full_name != github\.repository') `
-    -Message 'External fork mutation runs must use GitHub-hosted infrastructure.'
+    -Condition (
+        $workflow -match
+            '(?ms)^  mutation:\r?$.*?^\s+run(?:s)?-on:\s*ubuntu-24\.04\r?$') `
+    -Message 'Mutation analysis must use the declared GitHub-hosted runner.'
 Assert-Condition `
     -Condition (
         $workflow -match '(?m)^  checks:\s*write\r?$' -and

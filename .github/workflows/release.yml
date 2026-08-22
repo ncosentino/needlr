@@ -14,7 +14,7 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  RELEASE_ARTIFACT_RETENTION_DAYS: 7
+  RELEASE_ARTIFACT_RETENTION_DAYS: 1
 
 jobs:
   verify-main-ci:
@@ -86,8 +86,7 @@ jobs:
   prepare:
     name: Prepare release
     needs: verify-main-ci
-    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
-    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 90
     permissions:
       contents: read
@@ -318,8 +317,7 @@ jobs:
   publish-nuget:
     name: Publish to NuGet.org
     needs: [verify-main-ci, prepare]
-    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
-    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: release
     permissions:
@@ -376,8 +374,7 @@ jobs:
   publish-github-packages:
     name: Publish to GitHub Packages
     needs: [verify-main-ci, prepare]
-    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
-    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: release
     permissions:
@@ -430,8 +427,7 @@ jobs:
     # way the previous single publication job did. Each destination stays
     # independently retryable because prepared artifacts outlive every attempt.
     needs: [prepare, publish-nuget, publish-github-packages]
-    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
-    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: release
     permissions:
@@ -512,8 +508,7 @@ jobs:
       - publish-nuget
       - publish-github-packages
       - deploy-documentation
-    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
-    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: release
     permissions:

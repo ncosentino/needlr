@@ -1,6 +1,6 @@
 {
   "$schema": "./genesis-delivery.schema.json",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "template": "needlr",
   "defaultBranch": "main",
   "ciWorkflow": "CI",
@@ -11,78 +11,20 @@
   ],
   "draftValidation": {
     "hostedDefault": "subset",
-    "pitcrewDefault": "subset",
     "subsetJobs": [
       "marketplace-validation",
       "preflight"
     ]
   },
-  "runnerProfiles": [
-    {
-      "id": "linux-x64-general-purpose",
-      "source": "needlr-pitcrew",
-      "labels": [
-        "self-hosted",
-        "linux",
-        "x64",
-        "general-purpose"
-      ],
-      "jobs": [
-        "preflight",
-        "build-and-test",
-        "package-validation",
-        "aot-console-app",
-        "aot-web-app",
-        "deploy-documentation",
-        "release/prepare",
-        "release/publish-nuget",
-        "release/publish-github-packages",
-        "release/deploy-documentation",
-        "release/create-release",
-        "benchmarks/check-changes",
-        "benchmarks/run-benchmarks",
-        "mutation-testing/mutation",
-        "ide-extensions/build-vscode",
-        "ide-extensions/release"
-      ]
-    },
-    {
-      "id": "needlr-ci",
-      "source": "ghcr.io/ncosentino/needlr-runner@sha256:233a06905fc35312fe73099d12e93bf496ac1b98dd19a0482be000c12d7b4461",
-      "labels": [
-        "needlr-ci"
-      ],
-      "jobs": [
-        "preflight",
-        "build-and-test",
-        "package-validation",
-        "aot-console-app",
-        "aot-web-app",
-        "deploy-documentation",
-        "release/prepare",
-        "release/publish-nuget",
-        "release/publish-github-packages",
-        "release/deploy-documentation",
-        "release/create-release",
-        "benchmarks/check-changes",
-        "benchmarks/run-benchmarks",
-        "mutation-testing/mutation",
-        "ide-extensions/build-vscode",
-        "ide-extensions/release"
-      ]
-    }
-  ],
+  "runnerPolicy": {
+    "provider": "github-hosted",
+    "labels": [
+      "ubuntu-latest",
+      "ubuntu-24.04",
+      "windows-latest"
+    ]
+  },
   "componentWorkflows": [
-    {
-      "source": "needlr",
-      "path": ".github/workflows/runner-image.yml",
-      "roles": [
-        "draft-optional",
-        "post-merge"
-      ],
-      "draftBehavior": "full",
-      "requiredChecks": []
-    },
     {
       "source": "needlr",
       "path": ".github/workflows/maui-example.yml",

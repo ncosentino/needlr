@@ -105,10 +105,7 @@ jobs:
     name: Delivery preflight
     needs: [validation-plan, changes, marketplace-validation]
     if: always() && needs.validation-plan.outputs.scope != 'ready-only'
-    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
-    # Untrusted fork pull requests always use GitHub-hosted infrastructure.
-    # Marketplace-only changes use a lightweight hosted no-op rather than occupying PitCrew.
-    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     steps:
@@ -175,15 +172,10 @@ jobs:
       shell: pwsh
       run: scripts/test-release-artifacts.ps1
 
-    - name: Validate runner image contract
+    - name: Validate hosted runner policy
       if: needs.changes.outputs.source_required == 'true'
       shell: pwsh
-      run: scripts/test-runner-image.ps1
-
-    - name: Validate runner profile contract
-      if: needs.changes.outputs.source_required == 'true'
-      shell: pwsh
-      run: scripts/test-runner-profile.ps1
+      run: scripts/test-hosted-runner-policy.ps1
 
     - name: Validate mutation testing contract
       if: needs.changes.outputs.source_required == 'true'
@@ -201,10 +193,7 @@ jobs:
   build-and-test:
     needs: [validation-plan, changes, marketplace-validation, preflight]
     if: always() && needs.validation-plan.outputs.scope == 'full' && needs.preflight.result == 'success'
-    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
-    # Untrusted fork pull requests always use GitHub-hosted infrastructure.
-    # Marketplace-only changes use a lightweight hosted no-op rather than occupying PitCrew.
-    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 90
 
     steps:
@@ -309,6 +298,7 @@ jobs:
       with:
         name: coverage-report
         path: coverage/report/
+        retention-days: 1
 
     - name: Setup Python for MkDocs
       if: needs.changes.outputs.source_required == 'true'
@@ -401,7 +391,7 @@ jobs:
   package-validation:
     needs: [validation-plan, changes, preflight]
     if: always() && needs.validation-plan.outputs.scope == 'full' && needs.preflight.result == 'success'
-    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     # Runs in parallel with the other source jobs after scope detection.
 
@@ -460,7 +450,7 @@ jobs:
   aot-console-app:
     needs: [validation-plan, changes, preflight]
     if: always() && needs.validation-plan.outputs.scope == 'full' && needs.preflight.result == 'success'
-    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     # Runs in parallel with the other source jobs after scope detection.
 
@@ -523,7 +513,7 @@ jobs:
   aot-web-app:
     needs: [validation-plan, changes, preflight]
     if: always() && needs.validation-plan.outputs.scope == 'full' && needs.preflight.result == 'success'
-    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || needs.changes.outputs.source_required != 'true' && 'ubuntu-latest' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     # Runs in parallel with the other source jobs after scope detection.
 
@@ -685,7 +675,7 @@ jobs:
       needs.aot-console-app.result == 'success' &&
       needs.aot-web-app.result == 'success' &&
       needs.ci.result == 'success'
-    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-24.04' || vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
       actions: read

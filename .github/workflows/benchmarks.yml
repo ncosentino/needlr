@@ -14,8 +14,7 @@ env:
 
 jobs:
   check-changes:
-    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
-    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    runs-on: ubuntu-24.04
     outputs:
       has_changes: ${{ steps.check.outputs.has_changes }}
     steps:
@@ -54,7 +53,7 @@ jobs:
   run-benchmarks:
     needs: check-changes
     if: needs.check-changes.outputs.has_changes == 'true'
-    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
       pages: write
@@ -156,6 +155,7 @@ jobs:
         with:
           name: benchmark-results
           path: benchmark-results/
+          retention-days: 1
 
       - name: Setup Python for MkDocs
         uses: actions/setup-python@v5
