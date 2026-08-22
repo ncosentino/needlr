@@ -8,6 +8,10 @@
 
 - CI/CD now runs exclusively on standard GitHub-hosted runners with a committed label allowlist and one-day explicit artifact retention.
 
+### Fixed
+
+- Generic hosts built through `ForHost().BuildHost()` now invoke source-generated options and extension registrars with the host configuration, matching the service-provider and web-application composition paths. Generated `[Options]` values bind before hosted services start, and `ValidateOnStart` failures now stop host startup.
+
 ### Removed
 
 - Removed PitCrew routing, self-hosted runner profiles, the repository-owned runner image, and the `CI_RUNNER` workflow contract.
