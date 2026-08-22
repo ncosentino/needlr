@@ -405,4 +405,43 @@ Assert-Condition `
     -Condition (@($component.requiredChecks).Count -eq 0) `
     -Message 'Mutation testing must remain outside required branch checks.'
 
+# A pull request that changes exactly one file in a scope must still produce a JSON
+# array for `mutate`; Stryker rejects a scalar and the whole job fails.
+$configFixture = Join-Path (
+    [IO.Path]::GetTempPath()) (
+    'needlr-mutation-config-' + [guid]::NewGuid().ToString('N'))
+try {
+    foreach ($fileCount in @(1, 2)) {
+        $fixtureFiles = @($manifest.scopes[0].priorityFiles | Select-Object -First $fileCount)
+        Assert-Condition `
+            -Condition (@($fixtureFiles).Count -eq $fileCount) `
+            -Message "Expected $fileCount priority file(s) for the config fixture."
+
+        $emittedConfigPath = & $runnerPath `
+            -Scope ([string]$manifest.scopes[0].name) `
+            -MutateFiles $fixtureFiles `
+            -OutputPath (Join-Path $configFixture "files-$fileCount") `
+            -EmitConfigOnly
+        $emittedConfig = [Text.Json.JsonDocument]::Parse(
+            [IO.File]::ReadAllText([string]$emittedConfigPath))
+        try {
+            $mutateElement = $emittedConfig.RootElement.
+                GetProperty('stryker-config').
+                GetProperty('mutate')
+            Assert-Condition `
+                -Condition ($mutateElement.ValueKind -eq [Text.Json.JsonValueKind]::Array) `
+                -Message "Generated Stryker config must emit 'mutate' as an array for $fileCount file(s)."
+            Assert-Condition `
+                -Condition ($mutateElement.GetArrayLength() -eq $fileCount) `
+                -Message "Generated Stryker config must list all $fileCount selected file(s)."
+        } finally {
+            $emittedConfig.Dispose()
+        }
+    }
+} finally {
+    if (Test-Path -LiteralPath $configFixture) {
+        Remove-Item -LiteralPath $configFixture -Recurse -Force
+    }
+}
+
 Write-Host 'Mutation testing contract validation passed.' -ForegroundColor Green

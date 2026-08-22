@@ -9,6 +9,11 @@
 - **BREAKING (alpha): `NeedlrBootstrapper.RunAsync` and `NeedlrSerilogBootstrapper.RunAsync` no longer swallow unexpected exceptions.** An unexpected exception is logged once at `Critical` (surfacing as `Fatal` through Serilog), cleanup and log flushing still run in `finally`, and the exception is then rethrown so an unhandled top-level `await` produces a nonzero process exit code. Service managers, containers, and CI smoke tests can therefore detect a worker that never started. Cooperative cancellation through the token passed to `RunAsync`, and clean host shutdown, continue to complete normally with exit code `0`. Callers that intentionally relied on the previous swallow behavior must now catch around their own `RunAsync` call.
 - CI/CD now runs exclusively on standard GitHub-hosted runners with a committed label allowlist and one-day explicit artifact retention.
 
+### Fixed
+
+- Generic hosts built through `ForHost().BuildHost()` now invoke source-generated options and extension registrars with the host configuration, matching the service-provider and web-application composition paths. Generated `[Options]` values bind before hosted services start, and `ValidateOnStart` failures now stop host startup.
+- Mutation analysis no longer fails when a pull request changes exactly one file in a scope. The generated Stryker configuration now always emits `mutate` as a JSON array, and the mutation contract test covers both the single-file and multi-file shapes.
+
 ### Removed
 
 - Removed PitCrew routing, self-hosted runner profiles, the repository-owned runner image, and the `CI_RUNNER` workflow contract.

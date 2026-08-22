@@ -90,7 +90,11 @@ public sealed record HostSyringe
         var serviceCollectionPopulator = BaseSyringe.GetOrCreateServiceCollectionPopulator(typeRegistrar, typeFilterer, pluginFactory);
         var assemblyProvider = BaseSyringe.GetOrCreateAssemblyProvider();
         var additionalAssemblies = BaseSyringe.GetAdditionalAssemblies();
-        var callbacks = BaseSyringe.GetPostPluginRegistrationCallbacks();
+        var callbacks = ConfiguredSyringe.ComposePostPluginRegistrationCallbacks(
+            BaseSyringe.GetPostPluginRegistrationCallbacks(),
+            services => ConfiguredSyringe.GetRequiredRegisteredConfiguration(
+                services,
+                nameof(HostSyringe)));
 
         var serviceProviderBuilder = BaseSyringe.GetOrCreateServiceProviderBuilder(
             serviceCollectionPopulator,
