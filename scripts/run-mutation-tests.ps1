@@ -13,6 +13,10 @@
 
 .PARAMETER OutputPath
     Report root. Defaults to artifacts/mutation under the repository.
+
+.PARAMETER EmitConfigOnly
+    Writes the generated Stryker configuration and returns its path without
+    running Stryker. Used by the mutation contract test.
 #>
 param(
     [Parameter(Mandatory)]
@@ -23,7 +27,9 @@ param(
 
     [string]$SinceTarget,
 
-    [string]$OutputPath
+    [string]$OutputPath,
+
+    [switch]$EmitConfigOnly
 )
 
 $ErrorActionPreference = 'Stop'
@@ -50,7 +56,10 @@ if (Test-Path -LiteralPath $scopeOutput) {
 }
 
 $maxFiles = [int]$manifest.limits.maxFilesPerScope
-$selectedFiles = if (@($MutateFiles).Count -gt 0) {
+# Declaring the array type is required: assigning from a statement block unwraps a
+# single-element array into a scalar, which Stryker rejects because `mutate` must be
+# a JSON array even when a pull request changes exactly one file in this scope.
+[string[]]$selectedFiles = if (@($MutateFiles).Count -gt 0) {
     @($MutateFiles)
 } else {
     @($definition.priorityFiles | Select-Object -First $maxFiles)
@@ -93,6 +102,10 @@ if (-not [string]::IsNullOrWhiteSpace($SinceTarget)) {
     $configPath,
     (ConvertTo-Json ([ordered]@{ 'stryker-config' = $options }) -Depth 10) + "`n",
     [Text.UTF8Encoding]::new($false))
+
+if ($EmitConfigOnly) {
+    return $configPath
+}
 
 Push-Location $repoRoot
 try {
