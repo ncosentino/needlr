@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 08/22/2026 - 06:56:51 |
-| Coverage date: | 08/22/2026 - 06:54:17 - 08/22/2026 - 06:56:47 |
+| Generated on: | 08/22/2026 - 07:06:09 |
+| Coverage date: | 08/22/2026 - 07:03:38 - 08/22/2026 - 07:06:05 |
 | Parser: | MultiReport (25x Cobertura) |
 | Assemblies: | 20 |
-| Classes: | 250 |
-| Files: | 231 |
-| **Line coverage:** | 92.7% (13602 of 14671) |
-| Covered lines: | 13602 |
+| Classes: | 251 |
+| Files: | 232 |
+| **Line coverage:** | 92.7% (13609 of 14678) |
+| Covered lines: | 13609 |
 | Uncovered lines: | 1069 |
-| Coverable lines: | 14671 |
-| Total lines: | 36598 |
-| **Branch coverage:** | 84.5% (6256 of 7398) |
-| Covered branches: | 6256 |
-| Total branches: | 7398 |
+| Coverable lines: | 14678 |
+| Total lines: | 36635 |
+| **Branch coverage:** | 84.5% (6260 of 7400) |
+| Covered branches: | 6260 |
+| Total branches: | 7400 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -255,11 +255,11 @@
 |NexusLabs.Needlr.Generators.ValidatorProviderAttribute|0%|0%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Hosting - 93.7%</summary>
+<details><summary>NexusLabs.Needlr.Hosting - 93.8%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Hosting**|**93.7%**|**77.2%**|
+|**NexusLabs.Needlr.Hosting**|**93.8%**|**80.4%**|
 |NexusLabs.Needlr.Hosting.CreateHostOptions|88.5%|83.3%|
 |NexusLabs.Needlr.Hosting.CreateHostOptionsExtensions|100%||
 |NexusLabs.Needlr.Hosting.HostApplicationBuilderNeedlrExtensions|94%|75%|
@@ -270,8 +270,9 @@
 |NexusLabs.Needlr.Hosting.HostSyringeExtensions|91.6%||
 |NexusLabs.Needlr.Hosting.IHostFactoryExtensions|60%|100%|
 |NexusLabs.Needlr.Hosting.NeedlrBootstrapContext|100%||
-|NexusLabs.Needlr.Hosting.NeedlrBootstrapper|96.4%|70%|
+|NexusLabs.Needlr.Hosting.NeedlrBootstrapper|96.6%|80%|
 |NexusLabs.Needlr.Hosting.NeedlrBootstrapperExtensions|100%||
+|NexusLabs.Needlr.Hosting.NeedlrBootstrapperLog|100%|100%|
 |NexusLabs.Needlr.Hosting.SyringeHostingExtensions|75%||
 
 </details>
@@ -305,15 +306,15 @@
 |NexusLabs.Needlr.Injection.Bundle.SyringeBundleExtensions|91.3%|100%|
 
 </details>
-<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.7%</summary>
+<details><summary>NexusLabs.Needlr.Injection.Reflection - 93.9%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection.Reflection**|**93.7%**|**89.3%**|
+|**NexusLabs.Needlr.Injection.Reflection**|**93.9%**|**89.8%**|
 |NexusLabs.Needlr.Injection.Reflection.AssemblyProviderBuilder|100%||
 |NexusLabs.Needlr.Injection.Reflection.IAssemblyProviderBuilderExtensions|65.7%|50%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.AllAssembliesLoader|100%|50%|
-|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|97.2%|50%|
+|NexusLabs.Needlr.Injection.Reflection.Loaders.FileMatchAssemblyLoader|100%|100%|
 |NexusLabs.Needlr.Injection.Reflection.Loaders.ReflectionAssemblyLoader|100%|50%|
 |NexusLabs.Needlr.Injection.Reflection.PluginFactories.ReflectionPluginFacto<br/>ry|95.9%|100%|
 |NexusLabs.Needlr.Injection.Reflection.ReflectionFallbackContext|100%||
@@ -374,15 +375,15 @@
 |NexusLabs.Needlr.Maui.SyringeMauiExtensions|100%||
 
 </details>
-<details><summary>NexusLabs.Needlr.Serilog - 80.3%</summary>
+<details><summary>NexusLabs.Needlr.Serilog - 79.4%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Serilog**|**80.3%**|**90%**|
+|**NexusLabs.Needlr.Serilog**|**79.4%**|**90%**|
 |NexusLabs.Needlr.Serilog.Generated.NeedlrSourceGenModuleInitializer|100%||
 |NexusLabs.Needlr.Serilog.Generated.ServiceCatalog|0%||
 |NexusLabs.Needlr.Serilog.Generated.TypeRegistry|100%||
-|NexusLabs.Needlr.Serilog.NeedlrSerilogBootstrapper|100%|90%|
+|NexusLabs.Needlr.Serilog.NeedlrSerilogBootstrapper|97.5%|90%|
 |NexusLabs.Needlr.Serilog.NeedlrSerilogBootstrapperExtensions|100%||
 |NexusLabs.Needlr.Serilog.SerilogPlugin|100%||
 

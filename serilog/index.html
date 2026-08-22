@@ -5639,11 +5639,13 @@ the values may happen to overlap, but neither depends on the other.</p>
 <li>Sets <code>Log.Logger</code> globally.</li>
 <li>Creates a <code>SerilogLoggerFactory</code> and passes it to <code>NeedlrBootstrapper.UsingLoggerFactory(...)</code>.</li>
 <li>Registers <code>Log.CloseAndFlushAsync</code> via <code>NeedlrBootstrapper.WithCleanup(...)</code>.</li>
-<li>Calls <code>NeedlrBootstrapper.RunAsync(...)</code> for exception catching, cleanup, and factory lifetime.</li>
+<li>Calls <code>NeedlrBootstrapper.RunAsync(...)</code> for exception logging and propagation, cancellation, cleanup, and factory lifetime.</li>
 </ol>
 <p>This guarantees:</p>
 <ul>
-<li>Exceptions are caught, logged at <code>Critical</code>, and do <strong>not</strong> rethrow.</li>
+<li>Unexpected exceptions are logged once at <code>Critical</code> and rethrown after cleanup, so an
+  unhandled top-level failure produces a nonzero process exit code.</li>
+<li>Cooperative cancellation completes normally without a critical log.</li>
 <li><code>Log.CloseAndFlushAsync</code> is called in <code>finally</code>, even if the callback throws.</li>
 <li><code>Log.Logger</code> is available via the static Serilog API throughout the application lifetime.</li>
 </ul>

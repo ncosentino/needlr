@@ -7288,7 +7288,7 @@ internally:</p>
 <ol>
 <li><strong>Pre-DI bootstrap logger</strong> — a console logger is available before any DI container is built.</li>
 <li><strong>Pre-DI bootstrap configuration</strong> — an <code>IConfiguration</code> is available before DI, so bootstrap behavior can be config-driven.</li>
-<li><strong>Top-level exception handling</strong> — unhandled exceptions are logged at <code>Critical</code> level and do not rethrow.</li>
+<li><strong>Top-level exception handling</strong> — unexpected exceptions are logged at <code>Critical</code> and rethrown after cleanup so an unhandled top-level failure exits nonzero.</li>
 <li><strong>Guaranteed cleanup</strong> — an optional async cleanup delegate runs in <code>finally</code> (useful for flushing log sinks).</li>
 </ol>
 <p>The callback receives a <code>NeedlrBootstrapContext</code> that exposes the bootstrap <code>ILogger</code> and <code>IConfiguration</code>.</p>
@@ -7312,7 +7312,7 @@ internally:</p>
 <p class="admonition-title">Note</p>
 <p>The <code>CancellationToken</code> parameter follows standard .NET async conventions — it comes last and is separate from
 <code>NeedlrBootstrapContext</code>. Pass your own <code>CancellationToken</code> when you need cooperative cancellation; omit it to
-use the default.</p>
+use the default. Requested cancellation completes normally without a critical log.</p>
 </div>
 <h3 id="bootstrap-configuration">Bootstrap Configuration<a class="headerlink" href="#bootstrap-configuration" title="Permanent link">&para;</a></h3>
 <p>By default, <code>context.BootstrapConfiguration</code> is an empty <code>IConfiguration</code> — no files, no environment variables. Use <code>ConfigureBootstrapConfiguration</code> to add whatever config sources your bootstrap phase needs:</p>
@@ -7416,8 +7416,8 @@ references. ASP.NET Core users get it automatically:</p>
 </span><span id="__span-56-18"><a id="__codelineno-56-18" name="__codelineno-56-18" href="#__codelineno-56-18"></a><span class="w">    </span><span class="p">});</span>
 </span></code></pre></div>
 <p><code>ctx.Logger</code> is backed by the configured Serilog pipeline. Omit <code>.Configure(...)</code> to use the default console sink.
-All lifecycle guarantees from <code>NeedlrBootstrapper</code> apply: exceptions are caught and logged at <code>Critical</code>,
-and <code>Log.CloseAndFlushAsync</code> is always called in <code>finally</code>.</p>
+All lifecycle guarantees from <code>NeedlrBootstrapper</code> apply: unexpected exceptions are logged at <code>Critical</code>
+and rethrown after <code>Log.CloseAndFlushAsync</code> runs, while cooperative cancellation completes normally.</p>
 <h4 id="config-driven-serilog-bootstrap">Config-driven Serilog bootstrap<a class="headerlink" href="#config-driven-serilog-bootstrap" title="Permanent link">&para;</a></h4>
 <p>Use <code>ConfigureBootstrapConfiguration</code> to load config sources, then use the <code>Configure</code> overload that receives <code>IConfiguration</code>:</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-57-1"><a id="__codelineno-57-1" name="__codelineno-57-1" href="#__codelineno-57-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">Microsoft.Extensions.Configuration</span><span class="p">;</span>
