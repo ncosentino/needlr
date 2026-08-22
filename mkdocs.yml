@@ -83,8 +83,7 @@ nav:
     - Solution-Wide Source Generation: solution-wide-source-generation.md
     - Cross-Generator Plugins: cross-generator-plugins.md
     - IDE Extensions: ide-extensions.md
-    - Local CI Runners: local-runners.md
-    - Repository-Owned Runner Image: runner-image.md
+    - GitHub Actions CI/CD: github-actions.md
     - Releasing Needlr: releasing.md
   - Contributor Guidance:
     - Guide Index: guides/index.md
@@ -205,6 +204,7 @@ nav:
     - ADR-0010 Own a Repository Runner Image: adr/adr-0010-own-repository-runner-image.md
     - ADR-0011 Adopt Advisory Mutation Testing: adr/adr-0011-adopt-advisory-mutation-testing.md
     - ADR-0012 Bound Mutation Testing to Runtime Projects: adr/adr-0012-bound-mutation-testing-to-runtime-projects.md
+    - ADR-0013 Use GitHub-Hosted Runners for Public CI: adr/adr-0013-use-github-hosted-runners-for-public-ci.md
 
 plugins:
   - search

@@ -21,8 +21,7 @@ env:
 jobs:
   build-vscode:
     name: Build VSCode Extension
-    # PitCrew default. Set CI_RUNNER=ubuntu-latest for the manual cloud fallback.
-    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -54,9 +53,13 @@ jobs:
         with:
           name: vscode-extension
           path: ide-extensions/vscode/needlr-tools-${{ inputs.version }}.vsix
+          retention-days: 1
 
   build-vs-codelens:
     name: Build VS CodeLens Extension
+    # GitHub lists windows-latest as a standard hosted runner whose use is free
+    # and unlimited for public repositories:
+    # https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -95,9 +98,13 @@ jobs:
         with:
           name: vs-codelens-extension
           path: ide-extensions/visualstudio/NeedlrCodeLens/bin/Release/net8.0-windows8.0/NeedlrCodeLens-${{ inputs.version }}.vsix
+          retention-days: 1
 
   build-vs-toolwindow:
     name: Build VS Tool Window Extension
+    # GitHub lists windows-latest as a standard hosted runner whose use is free
+    # and unlimited for public repositories:
+    # https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -139,11 +146,12 @@ jobs:
         with:
           name: vs-toolwindow-extension
           path: ide-extensions/visualstudio/NeedlrToolsExtension/bin/Release/net48/win/NeedlrToolsExtension-${{ inputs.version }}.vsix
+          retention-days: 1
 
   release:
     name: Create GitHub Release
     needs: [build-vscode, build-vs-codelens, build-vs-toolwindow]
-    runs-on: ${{ vars.CI_RUNNER || fromJSON('["self-hosted","linux","x64","general-purpose"]') }}
+    runs-on: ubuntu-24.04
     if: ${{ inputs.create_release }}
     permissions:
       contents: write

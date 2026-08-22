@@ -1,11 +1,11 @@
 ---
 title: "ADR-0010: Own a repository runner image"
-status: "Accepted"
+status: "Superseded"
 date: "2026-07-29"
 authors: ["Nick Cosentino"]
 tags: ["architecture", "decision", "ci", "containers", "runners"]
 supersedes: ""
-superseded_by: ""
+superseded_by: "ADR-0013"
 ---
 
 ## Context and scope

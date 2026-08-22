@@ -39,6 +39,9 @@ env:
 
 jobs:
   build-maui-example:
+    # GitHub lists windows-latest as a standard hosted runner whose use is free
+    # and unlimited for public repositories:
+    # https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories
     runs-on: windows-latest
 
     steps:

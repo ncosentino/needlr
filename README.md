@@ -35,7 +35,7 @@ optional Needlr integration packages.
 
 Additional documentation:
 - [Solution-Wide Source Generation](docs/solution-wide-source-generation.md) - Set up `NexusLabs.Needlr.Build` for multi-project solutions
-- [Local CI Runners](docs/local-runners.md) - Route trusted Linux jobs through PitCrew
+- [GitHub Actions CI/CD](docs/github-actions.md) - Hosted Linux/Windows runner policy and public-repository billing evidence
 - [Core Concepts](docs/core-concepts.md) - Understand the architecture and design
 - [Hosted Services](docs/hosted-services.md) - Auto-discovery of BackgroundService and IHostedService
 - [Keyed Services](docs/keyed-services.md) - Multiple implementations with different keys

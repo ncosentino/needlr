@@ -76,12 +76,7 @@ if (-not (Test-Path $contractPath)) {
 
 $contract = Get-Content $contractPath -Raw | ConvertFrom-Json
 $requiredChecks = @($contract.requiredChecks | ForEach-Object { [string]$_ })
-$draftMode =
-    if (@($contract.runnerProfiles).Count -gt 0) {
-        [string]$contract.draftValidation.pitcrewDefault
-    } else {
-        [string]$contract.draftValidation.hostedDefault
-    }
+$draftMode = [string]$contract.draftValidation.hostedDefault
 
 function Invoke-GhJson {
     param(
