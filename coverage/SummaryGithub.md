@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 08/22/2026 - 06:46:24 |
-| Coverage date: | 08/22/2026 - 06:44:23 - 08/22/2026 - 06:46:21 |
+| Generated on: | 08/22/2026 - 06:56:51 |
+| Coverage date: | 08/22/2026 - 06:54:17 - 08/22/2026 - 06:56:47 |
 | Parser: | MultiReport (25x Cobertura) |
 | Assemblies: | 20 |
 | Classes: | 250 |
 | Files: | 231 |
-| **Line coverage:** | 92.7% (13572 of 14640) |
-| Covered lines: | 13572 |
-| Uncovered lines: | 1068 |
-| Coverable lines: | 14640 |
-| Total lines: | 36551 |
-| **Branch coverage:** | 84.5% (6250 of 7390) |
-| Covered branches: | 6250 |
-| Total branches: | 7390 |
+| **Line coverage:** | 92.7% (13602 of 14671) |
+| Covered lines: | 13602 |
+| Uncovered lines: | 1069 |
+| Coverable lines: | 14671 |
+| Total lines: | 36598 |
+| **Branch coverage:** | 84.5% (6256 of 7398) |
+| Covered branches: | 6256 |
+| Total branches: | 7398 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -266,7 +266,7 @@
 |NexusLabs.Needlr.Hosting.HostApplicationBuilderPluginOptions|40%||
 |NexusLabs.Needlr.Hosting.HostFactory|96%|75%|
 |NexusLabs.Needlr.Hosting.HostPluginOptions|50%||
-|NexusLabs.Needlr.Hosting.HostSyringe|93.3%|80%|
+|NexusLabs.Needlr.Hosting.HostSyringe|94.1%|80%|
 |NexusLabs.Needlr.Hosting.HostSyringeExtensions|91.6%||
 |NexusLabs.Needlr.Hosting.IHostFactoryExtensions|60%|100%|
 |NexusLabs.Needlr.Hosting.NeedlrBootstrapContext|100%||
@@ -279,12 +279,12 @@
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Injection**|**96.9%**|**94.8%**|
+|**NexusLabs.Needlr.Injection**|**96.9%**|**93.9%**|
 |NexusLabs.Needlr.Injection.AssemblyOrdering.AssemblyInfo|100%|50%|
 |NexusLabs.Needlr.Injection.AssemblyOrdering.AssemblyOrder|100%||
 |NexusLabs.Needlr.Injection.AssemblyOrdering.AssemblyOrderBuilder|97.9%|85.7%|
 |NexusLabs.Needlr.Injection.AssemblyOrdering.AssemblyOrderRule|87.5%|50%|
-|NexusLabs.Needlr.Injection.ConfiguredSyringe|96.8%|98.1%|
+|NexusLabs.Needlr.Injection.ConfiguredSyringe|96.7%|95.1%|
 |NexusLabs.Needlr.Injection.ITypeFilterer|100%|100%|
 |NexusLabs.Needlr.Injection.ITypeFiltererExtensionMethods|95.5%|96.1%|
 |NexusLabs.Needlr.Injection.OrderedAssemblyProvider|100%||
