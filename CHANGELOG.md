@@ -8,6 +8,10 @@
 
 - CI/CD now runs exclusively on standard GitHub-hosted runners with a committed label allowlist and one-day explicit artifact retention.
 
+### Fixed
+
+- Mutation analysis no longer fails when a pull request changes exactly one file in a scope. The generated Stryker configuration now always emits `mutate` as a JSON array, and the mutation contract test covers both the single-file and multi-file shapes.
+
 ### Removed
 
 - Removed PitCrew routing, self-hosted runner profiles, the repository-owned runner image, and the `CI_RUNNER` workflow contract.
