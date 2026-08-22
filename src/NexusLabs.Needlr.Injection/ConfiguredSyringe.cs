@@ -108,20 +108,9 @@ public sealed record ConfiguredSyringe
         var postCallbacks = PostPluginRegistrationCallbacks ?? [];
         var verificationOptions = VerificationOptions ?? Needlr.VerificationOptions.Default;
 
-        // Build the list of post-plugin callbacks
-        var callbacksWithExtras = new List<Action<IServiceCollection>>(postCallbacks);
-        
-        // Auto-register options from source-generated bootstrap
-        if (SourceGenRegistry.TryGetOptionsRegistrar(out var optionsRegistrar) && optionsRegistrar != null)
-        {
-            callbacksWithExtras.Add(services => optionsRegistrar(services, config));
-        }
-        
-        // Auto-register extensions (e.g., FluentValidation) from source-generated bootstrap
-        if (SourceGenRegistry.TryGetExtensionRegistrar(out var extensionRegistrar) && extensionRegistrar != null)
-        {
-            callbacksWithExtras.Add(services => extensionRegistrar(services, config));
-        }
+        var callbacksWithExtras = ComposePostPluginRegistrationCallbacks(
+            postCallbacks,
+            _ => config);
         
         // Add verification as the final callback
         callbacksWithExtras.Add(services => RunVerification(services, verificationOptions));
@@ -136,6 +125,60 @@ public sealed record ConfiguredSyringe
             config: config,
             preRegistrationCallbacks: [.. preCallbacks],
             postPluginRegistrationCallbacks: callbacksWithExtras);
+    }
+
+    internal static List<Action<IServiceCollection>> ComposePostPluginRegistrationCallbacks(
+        IReadOnlyList<Action<IServiceCollection>> callbacks,
+        Func<IServiceCollection, IConfiguration> configurationResolver)
+    {
+        ArgumentNullException.ThrowIfNull(callbacks);
+        ArgumentNullException.ThrowIfNull(configurationResolver);
+
+        var callbacksWithRegistrars = new List<Action<IServiceCollection>>(callbacks);
+
+        if (SourceGenRegistry.TryGetOptionsRegistrar(out var optionsRegistrar) &&
+            optionsRegistrar is not null)
+        {
+            callbacksWithRegistrars.Add(
+                services => optionsRegistrar(
+                    services,
+                    configurationResolver(services)));
+        }
+
+        if (SourceGenRegistry.TryGetExtensionRegistrar(out var extensionRegistrar) &&
+            extensionRegistrar is not null)
+        {
+            callbacksWithRegistrars.Add(
+                services => extensionRegistrar(
+                    services,
+                    configurationResolver(services)));
+        }
+
+        return callbacksWithRegistrars;
+    }
+
+    internal static IConfiguration GetRequiredRegisteredConfiguration(
+        IServiceCollection services,
+        string compositionPath)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentException.ThrowIfNullOrWhiteSpace(compositionPath);
+
+        for (var index = services.Count - 1; index >= 0; index--)
+        {
+            var descriptor = services[index];
+            if (descriptor.ServiceType == typeof(IConfiguration) &&
+                descriptor.ImplementationInstance is IConfiguration configuration)
+            {
+                return configuration;
+            }
+        }
+
+        using var provider = services.BuildServiceProvider();
+        return provider.GetService<IConfiguration>()
+            ?? throw new InvalidOperationException(
+                $"{compositionPath} could not locate an IConfiguration registration " +
+                "when invoking source-generated registrars.");
     }
 
     private static void RunVerification(IServiceCollection services, VerificationOptions options)

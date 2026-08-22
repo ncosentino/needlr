@@ -10,6 +10,7 @@
 
 ### Fixed
 
+- Generic hosts built through `ForHost().BuildHost()` now invoke source-generated options and extension registrars with the host configuration, matching the service-provider and web-application composition paths. Generated `[Options]` values bind before hosted services start, and `ValidateOnStart` failures now stop host startup.
 - Mutation analysis no longer fails when a pull request changes exactly one file in a scope. The generated Stryker configuration now always emits `mutate` as a JSON array, and the mutation contract test covers both the single-file and multi-file shapes.
 
 ### Removed
