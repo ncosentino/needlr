@@ -39,8 +39,7 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Solution-Wide Source Generation](https://www.devleader.ca/projects/needlr/solution-wide-source-generation/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Cross-Generator Plugins](https://www.devleader.ca/projects/needlr/cross-generator-plugins/) -- Register plugin types emitted by a second source generator with Needlr using RegisterPlugins() and a module initializer, bypassing the Roslyn generator isolation boundary.
 - [IDE Extensions](https://www.devleader.ca/projects/needlr/ide-extensions/) -- Configure Needlr dependency-graph export for the VS Code and Visual Studio extensions.
-- [Local CI Runners](https://www.devleader.ca/projects/needlr/local-runners/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Repository-Owned Runner Image](https://www.devleader.ca/projects/needlr/runner-image/) -- Build, publish, activate, update, and roll back Needlr's repository-owned PitCrew runner image.
+- [GitHub Actions CI/CD](https://www.devleader.ca/projects/needlr/github-actions/) -- Run Needlr CI/CD on standard GitHub-hosted runners.
 - [Releasing Needlr](https://www.devleader.ca/projects/needlr/releasing/) -- Opinionated fluent dependency injection for .NET with source generation
 
 ## Contributor Guidance
@@ -182,3 +181,4 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [ADR-0010 Own a Repository Runner Image](https://www.devleader.ca/projects/needlr/adr/adr-0010-own-repository-runner-image/) -- Opinionated fluent dependency injection for .NET with source generation
 - [ADR-0011 Adopt Advisory Mutation Testing](https://www.devleader.ca/projects/needlr/adr/adr-0011-adopt-advisory-mutation-testing/) -- Opinionated fluent dependency injection for .NET with source generation
 - [ADR-0012 Bound Mutation Testing to Runtime Projects](https://www.devleader.ca/projects/needlr/adr/adr-0012-bound-mutation-testing-to-runtime-projects/) -- Opinionated fluent dependency injection for .NET with source generation
+- [ADR-0013 Use GitHub-Hosted Runners for Public CI](https://www.devleader.ca/projects/needlr/adr/adr-0013-use-github-hosted-runners-for-public-ci/) -- Opinionated fluent dependency injection for .NET with source generation
