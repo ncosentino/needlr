@@ -205,11 +205,13 @@ await new NeedlrSerilogBootstrapper()
 2. Sets `Log.Logger` globally.
 3. Creates a `SerilogLoggerFactory` and passes it to `NeedlrBootstrapper.UsingLoggerFactory(...)`.
 4. Registers `Log.CloseAndFlushAsync` via `NeedlrBootstrapper.WithCleanup(...)`.
-5. Calls `NeedlrBootstrapper.RunAsync(...)` for exception catching, cleanup, and factory lifetime.
+5. Calls `NeedlrBootstrapper.RunAsync(...)` for exception logging and propagation, cancellation, cleanup, and factory lifetime.
 
 This guarantees:
 
-- Exceptions are caught, logged at `Critical`, and do **not** rethrow.
+- Unexpected exceptions are logged once at `Critical` and rethrown after cleanup, so an
+  unhandled top-level failure produces a nonzero process exit code.
+- Cooperative cancellation completes normally without a critical log.
 - `Log.CloseAndFlushAsync` is called in `finally`, even if the callback throws.
 - `Log.Logger` is available via the static Serilog API throughout the application lifetime.
 

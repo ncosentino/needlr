@@ -1384,7 +1384,7 @@ These analyzers work with Needlr's registration attributes (`[Singleton]`, `[Sco
 
 1. **Pre-DI bootstrap logger** — a console logger is available before any DI container is built.
 2. **Pre-DI bootstrap configuration** — an `IConfiguration` is available before DI, so bootstrap behavior can be config-driven.
-3. **Top-level exception handling** — unhandled exceptions are logged at `Critical` level and do not rethrow.
+3. **Top-level exception handling** — unexpected exceptions are logged at `Critical` and rethrown after cleanup so an unhandled top-level failure exits nonzero.
 4. **Guaranteed cleanup** — an optional async cleanup delegate runs in `finally` (useful for flushing log sinks).
 
 The callback receives a `NeedlrBootstrapContext` that exposes the bootstrap `ILogger` and `IConfiguration`.
@@ -1410,7 +1410,7 @@ await new NeedlrBootstrapper()
 !!! note
     The `CancellationToken` parameter follows standard .NET async conventions — it comes last and is separate from
     `NeedlrBootstrapContext`. Pass your own `CancellationToken` when you need cooperative cancellation; omit it to
-    use the default.
+    use the default. Requested cancellation completes normally without a critical log.
 
 ### Bootstrap Configuration
 
@@ -1535,8 +1535,8 @@ await new NeedlrSerilogBootstrapper()
 ```
 
 `ctx.Logger` is backed by the configured Serilog pipeline. Omit `.Configure(...)` to use the default console sink.
-All lifecycle guarantees from `NeedlrBootstrapper` apply: exceptions are caught and logged at `Critical`,
-and `Log.CloseAndFlushAsync` is always called in `finally`.
+All lifecycle guarantees from `NeedlrBootstrapper` apply: unexpected exceptions are logged at `Critical`
+and rethrown after `Log.CloseAndFlushAsync` runs, while cooperative cancellation completes normally.
 
 #### Config-driven Serilog bootstrap
 

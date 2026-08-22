@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
+using Serilog.Events;
+
 using Xunit;
 
 namespace NexusLabs.Needlr.Serilog.Tests;
@@ -329,23 +331,97 @@ public sealed class NeedlrSerilogBootstrapperTests
     // -------------------------------------------------------------------------
 
     [Fact]
-    public async Task RunAsync_DoesNotRethrow_OnException()
+    public async Task RunAsync_StartupFailure_LogsOnceAndRethrows()
     {
-        await new NeedlrSerilogBootstrapper()
-            .Configure(cfg => cfg.WriteTo.Sink(new CapturingSink()))
-            .RunAsync(
-                (ctx, ct) => throw new InvalidOperationException("boom"),
-                TestContext.Current.CancellationToken);
+        var sink = new CapturingSink();
+        var exception = new InvalidOperationException("startup failure");
+        var bootstrapper = new NeedlrSerilogBootstrapper()
+            .Configure(cfg => cfg.WriteTo.Sink(sink));
+
+        var thrown = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            bootstrapper.RunAsync(
+                (ctx, ct) => throw exception,
+                TestContext.Current.CancellationToken));
+
+        Assert.Same(exception, thrown);
+        var fatalEvent = Assert.Single(
+            sink.Events,
+            logEvent => logEvent.Level == LogEventLevel.Fatal);
+        Assert.Same(exception, fatalEvent.Exception);
     }
 
     [Fact]
-    public async Task RunAsync_DoesNotRethrow_OnSerilogConfigurationFailure()
+    public async Task RunAsync_RuntimeFailure_LogsOnceAndRethrows()
     {
-        // Simulate a broken Configure delegate — should not escape
+        var sink = new CapturingSink();
+        var exception = new InvalidOperationException("runtime failure");
+        var bootstrapper = new NeedlrSerilogBootstrapper()
+            .Configure(cfg => cfg.WriteTo.Sink(sink));
+
+        var thrown = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            bootstrapper.RunAsync(
+                async (ctx, ct) =>
+                {
+                    await Task.Yield();
+                    throw exception;
+                },
+                TestContext.Current.CancellationToken));
+
+        Assert.Same(exception, thrown);
+        var fatalEvent = Assert.Single(
+            sink.Events,
+            logEvent => logEvent.Level == LogEventLevel.Fatal);
+        Assert.Same(exception, fatalEvent.Exception);
+    }
+
+    [Fact]
+    public async Task RunAsync_RequestedCancellation_CompletesWithoutFatalLog()
+    {
+        var sink = new CapturingSink();
+        using var cancellationTokenSource =
+            CancellationTokenSource.CreateLinkedTokenSource(
+                TestContext.Current.CancellationToken);
+        cancellationTokenSource.Cancel();
+
         await new NeedlrSerilogBootstrapper()
-            .Configure(cfg => throw new InvalidOperationException("bad serilog config"))
+            .Configure(cfg => cfg.WriteTo.Sink(sink))
+            .RunAsync(
+                (ctx, ct) => Task.FromCanceled(ct),
+                cancellationTokenSource.Token);
+
+        Assert.DoesNotContain(
+            sink.Events,
+            logEvent => logEvent.Level == LogEventLevel.Fatal);
+    }
+
+    [Fact]
+    public async Task RunAsync_CleanCompletion_CompletesWithoutFatalLog()
+    {
+        var sink = new CapturingSink();
+
+        await new NeedlrSerilogBootstrapper()
+            .Configure(cfg => cfg.WriteTo.Sink(sink))
             .RunAsync(
                 (ctx, ct) => Task.CompletedTask,
                 TestContext.Current.CancellationToken);
+
+        Assert.DoesNotContain(
+            sink.Events,
+            logEvent => logEvent.Level == LogEventLevel.Fatal);
+    }
+
+    [Fact]
+    public async Task RunAsync_SerilogConfigurationFailure_Rethrows()
+    {
+        var exception = new InvalidOperationException("bad serilog config");
+        var bootstrapper = new NeedlrSerilogBootstrapper()
+            .Configure(cfg => throw exception);
+
+        var thrown = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            bootstrapper.RunAsync(
+                (ctx, ct) => Task.CompletedTask,
+                TestContext.Current.CancellationToken));
+
+        Assert.Same(exception, thrown);
     }
 }

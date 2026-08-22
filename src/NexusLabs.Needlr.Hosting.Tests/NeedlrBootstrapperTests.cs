@@ -276,11 +276,12 @@ public sealed class NeedlrBootstrapperTests
                     ["Key"] = "BeforeException",
                 }));
 
-        await bootstrapper.RunAsync((ctx, ct) =>
-        {
-            captured = ctx.BootstrapConfiguration;
-            throw new InvalidOperationException("boom");
-        }, TestContext.Current.CancellationToken);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            bootstrapper.RunAsync((ctx, ct) =>
+            {
+                captured = ctx.BootstrapConfiguration;
+                throw new InvalidOperationException("boom");
+            }, TestContext.Current.CancellationToken));
 
         Assert.NotNull(captured);
         Assert.Equal("BeforeException", captured!["Key"]);
@@ -321,9 +322,10 @@ public sealed class NeedlrBootstrapperTests
                 return Task.CompletedTask;
             });
 
-        await bootstrapper.RunAsync(
-            (ctx, ct) => throw new InvalidOperationException("boom"),
-            TestContext.Current.CancellationToken);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            bootstrapper.RunAsync(
+                (ctx, ct) => throw new InvalidOperationException("boom"),
+                TestContext.Current.CancellationToken));
 
         Assert.True(cleanupCalled);
     }
@@ -363,30 +365,57 @@ public sealed class NeedlrBootstrapperTests
     // -------------------------------------------------------------------------
 
     [Fact]
-    public async Task RunAsync_DoesNotRethrow_OnException()
+    public async Task RunAsync_Rethrows_OnException()
     {
+        var exception = new InvalidOperationException("unhandled");
         var bootstrapper = new NeedlrBootstrapper()
             .UsingLoggerFactory(new CapturingLoggerFactory());
 
-        // Must not throw
-        await bootstrapper.RunAsync(
-            (ctx, ct) => throw new InvalidOperationException("unhandled"),
-            TestContext.Current.CancellationToken);
+        var thrown = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            bootstrapper.RunAsync(
+                (ctx, ct) => throw exception,
+                TestContext.Current.CancellationToken));
+
+        Assert.Same(exception, thrown);
     }
 
     [Fact]
-    public async Task RunAsync_LogsCritical_OnException()
+    public async Task RunAsync_LogsCriticalOnce_OnException()
     {
         var factory = new CapturingLoggerFactory();
         var ex = new InvalidOperationException("boom");
         var bootstrapper = new NeedlrBootstrapper()
             .UsingLoggerFactory(factory);
 
-        await bootstrapper.RunAsync(
-            (ctx, ct) => throw ex,
-            TestContext.Current.CancellationToken);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            bootstrapper.RunAsync(
+                (ctx, ct) => throw ex,
+                TestContext.Current.CancellationToken));
 
-        Assert.Contains(factory.Logger.Logs, e => e.Level == LogLevel.Critical && e.Ex == ex);
+        var criticalLog = Assert.Single(
+            factory.Logger.Logs,
+            entry => entry.Level == LogLevel.Critical);
+        Assert.Same(ex, criticalLog.Ex);
+    }
+
+    [Fact]
+    public async Task RunAsync_RequestedCancellation_CompletesWithoutCriticalLog()
+    {
+        var factory = new CapturingLoggerFactory();
+        using var cancellationTokenSource =
+            CancellationTokenSource.CreateLinkedTokenSource(
+                TestContext.Current.CancellationToken);
+        cancellationTokenSource.Cancel();
+        var bootstrapper = new NeedlrBootstrapper()
+            .UsingLoggerFactory(factory);
+
+        await bootstrapper.RunAsync(
+            (ctx, ct) => Task.FromCanceled(ct),
+            cancellationTokenSource.Token);
+
+        Assert.DoesNotContain(
+            factory.Logger.Logs,
+            entry => entry.Level == LogLevel.Critical);
     }
 }
 
