@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.0.3-alpha.6] - 2026-08-22
+
 ### Added
 
 - Added advisory Stryker.NET mutation testing for fourteen directly tested runtime packages. Pull requests select at most two affected project scopes and five changed files per scope, cap each job at ten minutes, report omitted work explicitly, and keep results ephemeral in job summaries and logs without baselines, artifacts, scheduled runs, or an external dashboard.
