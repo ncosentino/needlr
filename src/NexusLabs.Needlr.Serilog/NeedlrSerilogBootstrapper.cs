@@ -15,8 +15,9 @@ namespace NexusLabs.Needlr.Serilog;
 /// <remarks>
 /// <para>
 /// <see cref="NeedlrSerilogBootstrapper"/> composes <see cref="NeedlrBootstrapper"/> internally.
-/// All lifecycle behaviour (exception catching, cleanup, logger factory ownership) is delegated
-/// to <see cref="NeedlrBootstrapper"/> — this type only adds Serilog-specific wiring:
+/// All lifecycle behaviour (exception logging and propagation, cancellation, cleanup, and logger
+/// factory ownership) is delegated to <see cref="NeedlrBootstrapper"/> — this type only adds
+/// Serilog-specific wiring:
 /// setting <c>Log.Logger</c> before the callback runs and flushing it in <c>finally</c>.
 /// </para>
 /// <para>
@@ -74,7 +75,10 @@ public sealed record NeedlrSerilogBootstrapper
     /// <param name="cancellationToken">
     /// Optional cancellation token forwarded to the callback.
     /// </param>
-    /// <returns>A <see cref="Task"/> that completes when the application exits.</returns>
+    /// <returns>
+    /// A <see cref="Task"/> that completes when the application exits normally or through
+    /// cooperative cancellation, and faults after Serilog flushes for an unexpected exception.
+    /// </returns>
     public async Task RunAsync(
         Func<NeedlrBootstrapContext, CancellationToken, Task> runAsync,
         CancellationToken cancellationToken = default)
@@ -111,13 +115,9 @@ public sealed record NeedlrSerilogBootstrapper
         catch (Exception ex)
         {
             // Serilog configuration failed — fall back to a bare console logger so
-            // the error is visible, then rethrow into the inner bootstrapper's
-            // catch/cleanup path via a wrapper callback.
+            // the inner bootstrapper can log the failure before cleanup and propagation.
             Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
-            Log.Fatal(ex, "Failed to configure Serilog bootstrap logger.");
 
-            // Let the inner bootstrapper handle cleanup. The callback will throw
-            // the original exception so it is logged at Critical by NeedlrBootstrapper.
             var capturedEx = ex;
             await RunInnerBootstrapper(
                 bootstrapConfiguration,
@@ -159,11 +159,16 @@ public sealed record NeedlrSerilogBootstrapper
         // same sources — this is acceptable because bootstrap config is cheap
         // and the Serilog config phase is done.
 
-        await inner.RunAsync(runAsync, cancellationToken)
-            .ConfigureAwait(false);
-
-        // Dispose our pre-built config after the inner bootstrapper has
-        // disposed its own copy and completed cleanup.
-        (bootstrapConfiguration as IDisposable)?.Dispose();
+        try
+        {
+            await inner.RunAsync(runAsync, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            // Dispose our pre-built config after the inner bootstrapper has
+            // disposed its own copy and completed cleanup.
+            (bootstrapConfiguration as IDisposable)?.Dispose();
+        }
     }
 }

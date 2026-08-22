@@ -6,6 +6,7 @@
 
 ### Changed
 
+- **BREAKING (alpha): `NeedlrBootstrapper.RunAsync` and `NeedlrSerilogBootstrapper.RunAsync` no longer swallow unexpected exceptions.** An unexpected exception is logged once at `Critical` (surfacing as `Fatal` through Serilog), cleanup and log flushing still run in `finally`, and the exception is then rethrown so an unhandled top-level `await` produces a nonzero process exit code. Service managers, containers, and CI smoke tests can therefore detect a worker that never started. Cooperative cancellation through the token passed to `RunAsync`, and clean host shutdown, continue to complete normally with exit code `0`. Callers that intentionally relied on the previous swallow behavior must now catch around their own `RunAsync` call.
 - CI/CD now runs exclusively on standard GitHub-hosted runners with a committed label allowlist and one-day explicit artifact retention.
 
 ### Fixed

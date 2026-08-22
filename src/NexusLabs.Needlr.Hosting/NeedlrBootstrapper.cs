@@ -22,8 +22,9 @@ namespace NexusLabs.Needlr.Hosting;
 /// See <see cref="NeedlrBootstrapContext.BootstrapConfiguration"/> for details.
 /// </para>
 /// <para>
-/// Unhandled exceptions from the callback are caught, logged at <c>Critical</c>, and then
-/// swallowed so the process exits cleanly after cleanup.
+/// Unexpected exceptions from the callback are logged at <c>Critical</c> and rethrown
+/// after cleanup so a top-level caller produces a nonzero process exit code. Cooperative
+/// cancellation completes normally without a critical log.
 /// </para>
 /// </remarks>
 /// <example>
@@ -62,7 +63,10 @@ public sealed record NeedlrBootstrapper
     /// <param name="cancellationToken">
     /// Optional cancellation token forwarded to the callback.
     /// </param>
-    /// <returns>A <see cref="Task"/> that completes when the application exits.</returns>
+    /// <returns>
+    /// A <see cref="Task"/> that completes when the application exits normally or through
+    /// cooperative cancellation, and faults after cleanup for an unexpected exception.
+    /// </returns>
     /// <example>
     /// <code>
     /// await new NeedlrBootstrapper().RunAsync(async (ctx, ct) =>
@@ -98,9 +102,17 @@ public sealed record NeedlrBootstrapper
                 cancellationToken)
                 .ConfigureAwait(false);
         }
+        // Cooperative shutdown requested through this token is an intended exit, not a
+        // failure, so it must not log critically or fault the returned task. Any other
+        // cancellation still propagates through the general handler below.
+        catch (OperationCanceledException)
+            when (cancellationToken.IsCancellationRequested)
+        {
+        }
         catch (Exception ex)
         {
-            logger.LogCritical(ex, "Application terminated unexpectedly.");
+            NeedlrBootstrapperLog.ApplicationTerminatedUnexpectedly(logger, ex);
+            throw;
         }
         finally
         {
