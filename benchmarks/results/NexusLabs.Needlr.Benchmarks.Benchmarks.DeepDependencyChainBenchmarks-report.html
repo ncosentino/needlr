@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.DeepDependencyChainBenchmarks-20260816-032357</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.DeepDependencyChainBenchmarks-20260823-032412</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,21 +14,21 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-Intel Core 7 150U, 1 CPU, 12 logical and 6 physical cores
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 .NET SDK 10.0.302
-  [Host]   : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
+  [Host]   : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX2
 </code></pre>
 <pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 </code></pre>
 
 <table>
-<thead><tr><th>Method                      </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
+<thead><tr><th>Method                      </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_ResolveDeepChain</td><td>16.97 ns</td><td>12.501 ns</td><td>3.247 ns</td><td>1.03</td><td>0.25</td><td>2</td><td>-</td><td>NA</td>
-</tr><tr><td>Needlr_Reflection_ResolveDeepChain</td><td>11.41 ns</td><td>1.086 ns</td><td>0.168 ns</td><td>0.69</td><td>0.12</td><td>1</td><td>-</td><td>NA</td>
-</tr><tr><td>Needlr_SourceGen_ResolveDeepChain</td><td>10.65 ns</td><td>2.568 ns</td><td>0.397 ns</td><td>0.65</td><td>0.11</td><td>1</td><td>-</td><td>NA</td>
+</thead><tbody><tr><td>ManualDI_ResolveDeepChain</td><td>16.25 ns</td><td>0.681 ns</td><td>0.177 ns</td><td>1.00</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_Reflection_ResolveDeepChain</td><td>15.53 ns</td><td>0.682 ns</td><td>0.105 ns</td><td>0.96</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_SourceGen_ResolveDeepChain</td><td>15.25 ns</td><td>0.499 ns</td><td>0.077 ns</td><td>0.94</td><td>1</td><td>-</td><td>NA</td>
 </tr></tbody></table>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.TypeRegistrationBenchmarks-20260816-033052</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.TypeRegistrationBenchmarks-20260823-033038</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,21 +14,21 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-Intel Core 7 150U, 1 CPU, 12 logical and 6 physical cores
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 .NET SDK 10.0.302
-  [Host]   : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
+  [Host]   : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX2
 </code></pre>
 <pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 </code></pre>
 
 <table>
-<thead><tr><th>Method                   </th><th>Mean   </th><th>Error  </th><th>StdDev </th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Gen0</th><th>Gen1</th><th>Allocated</th><th>Alloc Ratio</th>
+<thead><tr><th>Method                   </th><th>Mean     </th><th>Error  </th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Gen0</th><th>Gen1</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_RegisterTypes</td><td>90.18 ns</td><td>41.21 ns</td><td>10.70 ns</td><td>1.01</td><td>0.15</td><td>1</td><td>0.0842</td><td>0.0001</td><td>528 B</td><td>1.00</td>
-</tr><tr><td>Needlr_Reflection_RegisterTypes</td><td>983,032.47 ns</td><td>442,662.20 ns</td><td>114,957.97 ns</td><td>11,017.11</td><td>1,627.71</td><td>3</td><td>93.7500</td><td>7.8125</td><td>598472 B</td><td>1,133.47</td>
-</tr><tr><td>Needlr_SourceGen_RegisterTypes</td><td>11,988.64 ns</td><td>5,701.50 ns</td><td>882.31 ns</td><td>134.36</td><td>16.32</td><td>2</td><td>4.9286</td><td>0.3510</td><td>30960 B</td><td>58.64</td>
+</thead><tbody><tr><td>ManualDI_RegisterTypes</td><td>97.73 ns</td><td>3.537 ns</td><td>0.919 ns</td><td>1.00</td><td>0.01</td><td>1</td><td>0.0315</td><td>-</td><td>528 B</td><td>1.00</td>
+</tr><tr><td>Needlr_Reflection_RegisterTypes</td><td>1,209,315.27 ns</td><td>34,140.337 ns</td><td>8,866.137 ns</td><td>12,374.78</td><td>134.27</td><td>3</td><td>35.1563</td><td>-</td><td>589442 B</td><td>1,116.37</td>
+</tr><tr><td>Needlr_SourceGen_RegisterTypes</td><td>17,211.21 ns</td><td>933.735 ns</td><td>242.488 ns</td><td>176.12</td><td>2.72</td><td>2</td><td>1.8311</td><td>0.1221</td><td>30960 B</td><td>58.64</td>
 </tr></tbody></table>
 </body>
 </html>

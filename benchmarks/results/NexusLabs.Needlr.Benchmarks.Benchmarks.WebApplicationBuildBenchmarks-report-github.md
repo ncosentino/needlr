@@ -1,18 +1,18 @@
 ```
 
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-Intel Core 7 150U, 1 CPU, 12 logical and 6 physical cores
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 .NET SDK 10.0.302
-  [Host]   : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
+  [Host]   : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX2
 
 Job=ShortRun  InvocationCount=1  IterationCount=5  
 LaunchCount=1  UnrollFactor=1  WarmupCount=3  
 
 ```
-| Method                               | Mean      | Error      | StdDev    | Ratio | RatioSD | Rank | Allocated  | Alloc Ratio |
-|------------------------------------- |----------:|-----------:|----------:|------:|--------:|-----:|-----------:|------------:|
-| ManualDI_BuildWebApp                 |  2.401 ms |  0.5665 ms | 0.1471 ms |  1.00 |    0.08 |    1 |   506.9 KB |        1.00 |
-| Needlr_Reflection_BuildWebApp        | 16.734 ms | 12.4252 ms | 3.2268 ms |  6.99 |    1.29 |    4 | 1747.58 KB |        3.45 |
-| Needlr_SourceGen_BuildWebApp         |  3.314 ms |  0.5256 ms | 0.1365 ms |  1.38 |    0.09 |    2 |  811.63 KB |        1.60 |
-| Needlr_SourceGenExplicit_BuildWebApp |  5.686 ms |  1.6743 ms | 0.4348 ms |  2.38 |    0.21 |    3 |  716.42 KB |        1.41 |
+| Method                               | Mean     | Error     | StdDev    | Ratio | RatioSD | Rank | Allocated  | Alloc Ratio |
+|------------------------------------- |---------:|----------:|----------:|------:|--------:|-----:|-----------:|------------:|
+| ManualDI_BuildWebApp                 | 2.703 ms | 0.1244 ms | 0.0193 ms |  1.00 |    0.01 |    1 |  521.65 KB |        1.00 |
+| Needlr_Reflection_BuildWebApp        | 8.968 ms | 0.4971 ms | 0.0769 ms |  3.32 |    0.03 |    3 | 1778.72 KB |        3.41 |
+| Needlr_SourceGen_BuildWebApp         | 3.539 ms | 0.1010 ms | 0.0262 ms |  1.31 |    0.01 |    2 |  803.13 KB |        1.54 |
+| Needlr_SourceGenExplicit_BuildWebApp | 3.479 ms | 0.0899 ms | 0.0234 ms |  1.29 |    0.01 |    2 |  726.09 KB |        1.39 |
