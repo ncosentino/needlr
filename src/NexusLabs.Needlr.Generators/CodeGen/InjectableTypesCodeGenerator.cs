@@ -21,13 +21,13 @@ internal static class InjectableTypesCodeGenerator
         builder.AppendLine("    private static readonly InjectableTypeInfo[] _types =");
         builder.AppendLine("    [");
 
-        var typesByAssembly = types.GroupBy(t => t.AssemblyName).OrderBy(g => g.Key);
+        var typesByAssembly = types.GroupBy(t => t.AssemblyName).OrderBy(g => g.Key, StringComparer.Ordinal);
 
         foreach (var group in typesByAssembly)
         {
             breadcrumbs.WriteInlineComment(builder, "        ", $"From {group.Key}");
 
-            foreach (var type in group.OrderBy(t => t.TypeName))
+            foreach (var type in group.OrderBy(t => t.TypeName, StringComparer.Ordinal))
             {
                 // Write breadcrumb for this type
                 if (breadcrumbs.Level == BreadcrumbLevel.Verbose)

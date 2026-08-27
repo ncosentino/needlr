@@ -333,7 +333,7 @@ internal static class InterceptorCodeGenerator
         builder.AppendLine("    /// <summary>");
         builder.AppendLine("    /// Gets the number of intercepted services discovered at compile time.");
         builder.AppendLine("    /// </summary>");
-        builder.AppendLine($"    public static int Count => {interceptedServices.Count};");
+        builder.AppendLine($"    public static int Count => {GeneratorHelpers.Literal(interceptedServices.Count)};");
         builder.AppendLine("}");
 
         return builder.ToString();

@@ -31,7 +31,7 @@ internal static class GeneratedConstructorCodeGenerator
 
         var safeName = GeneratorHelpers.SanitizeIdentifier(baseName);
 
-        return $"{safeName}_T{model.Arity}{GeneratedConstructorFileSuffix}";
+        return $"{safeName}_T{GeneratorHelpers.Literal(model.Arity)}{GeneratedConstructorFileSuffix}";
     }
 
     internal static string GenerateConstructorSource(GeneratedConstructorModel model, string assemblyName, BreadcrumbWriter breadcrumbs)
@@ -48,7 +48,7 @@ internal static class GeneratedConstructorCodeGenerator
             builder.AppendLine();
         }
 
-        breadcrumbs.WriteInlineComment(builder, string.Empty, $"Constructor generated from {model.Fields.Length} eligible field(s)");
+        breadcrumbs.WriteInlineComment(builder, string.Empty, $"Constructor generated from {GeneratorHelpers.Literal(model.Fields.Length)} eligible field(s)");
         builder.AppendLine($"partial class {model.ContainingTypeName}{model.TypeParameterList}");
         builder.AppendLine("{");
 

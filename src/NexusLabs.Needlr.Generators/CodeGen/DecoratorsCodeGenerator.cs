@@ -68,7 +68,7 @@ internal static class DecoratorsCodeGenerator
                 // Group decorators by service type and order by Order property
                 var decoratorsByService = decorators
                     .GroupBy(d => d.ServiceTypeName)
-                    .OrderBy(g => g.Key);
+                    .OrderBy(g => g.Key, StringComparer.Ordinal);
 
                 foreach (var serviceGroup in decoratorsByService)
                 {
@@ -86,7 +86,7 @@ internal static class DecoratorsCodeGenerator
                             var sourcePath = dec.SourceFilePath != null
                                 ? BreadcrumbWriter.GetRelativeSourcePath(dec.SourceFilePath, projectDirectory)
                                 : $"[{dec.AssemblyName}]";
-                            lines.Add($"  {i + 1}. {dec.DecoratorTypeName.Split('.').Last()} (Order={dec.Order}) ← {sourcePath}");
+                            lines.Add($"  {GeneratorHelpers.Literal(i + 1)}. {dec.DecoratorTypeName.Split('.').Last()} (Order={GeneratorHelpers.Literal(dec.Order)}) ← {sourcePath}");
                         }
                         lines.Add($"Triggered by: [DecoratorFor<{serviceGroup.Key.Split('.').Last()}>] attributes");
 
@@ -101,7 +101,7 @@ internal static class DecoratorsCodeGenerator
 
                     foreach (var decorator in serviceGroup.OrderBy(d => d.Order))
                     {
-                        builder.AppendLine($"        services.AddDecorator<{decorator.ServiceTypeName}, {decorator.DecoratorTypeName}>(); // Order: {decorator.Order}");
+                        builder.AppendLine($"        services.AddDecorator<{decorator.ServiceTypeName}, {decorator.DecoratorTypeName}>(); // Order: {GeneratorHelpers.Literal(decorator.Order)}");
                     }
                 }
             }

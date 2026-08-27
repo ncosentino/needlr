@@ -27,7 +27,7 @@ internal static class PluginsCodeGenerator
             .ToList();
 
         // Group for breadcrumb display, but maintain the sorted order
-        var pluginsByAssembly = sortedPlugins.GroupBy(p => p.AssemblyName).OrderBy(g => g.Key);
+        var pluginsByAssembly = sortedPlugins.GroupBy(p => p.AssemblyName).OrderBy(g => g.Key, StringComparer.Ordinal);
 
         foreach (var group in pluginsByAssembly)
         {
@@ -45,7 +45,7 @@ internal static class PluginsCodeGenerator
                     var interfaces = plugin.InterfaceNames.Length > 0
                         ? string.Join(", ", plugin.InterfaceNames.Select(i => i.Split('.').Last()))
                         : "none";
-                    var orderInfo = plugin.Order != 0 ? $"Order: {plugin.Order}" : "Order: 0 (default)";
+                    var orderInfo = plugin.Order != 0 ? $"Order: {GeneratorHelpers.Literal(plugin.Order)}" : "Order: 0 (default)";
 
                     breadcrumbs.WriteVerboseBox(builder, "        ",
                         $"Plugin: {plugin.TypeName.Split('.').Last()}",
@@ -56,7 +56,7 @@ internal static class PluginsCodeGenerator
                 else if (breadcrumbs.Level == BreadcrumbLevel.Minimal && plugin.Order != 0)
                 {
                     // Show order in minimal mode only if non-default
-                    breadcrumbs.WriteInlineComment(builder, "        ", $"{plugin.TypeName.Split('.').Last()} (Order: {plugin.Order})");
+                    breadcrumbs.WriteInlineComment(builder, "        ", $"{plugin.TypeName.Split('.').Last()} (Order: {GeneratorHelpers.Literal(plugin.Order)})");
                 }
 
                 builder.Append($"        new(typeof({plugin.TypeName}), ");
@@ -89,7 +89,7 @@ internal static class PluginsCodeGenerator
                 }
 
                 // Order
-                builder.AppendLine($"{plugin.Order}),");
+                builder.AppendLine($"{GeneratorHelpers.Literal(plugin.Order)}),");
             }
         }
 

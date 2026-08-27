@@ -98,7 +98,7 @@ internal static class DiagnosticsGenerator
             sb.AppendLine("Types from referenced assemblies with `[GenerateTypeRegistry]`:");
             sb.AppendLine();
 
-            foreach (var kvp in referencedAssemblyTypes.OrderBy(kv => kv.Key))
+            foreach (var kvp in referencedAssemblyTypes.OrderBy(kv => kv.Key, StringComparer.Ordinal))
             {
                 var refAsm = kvp.Key;
                 var refTypes = kvp.Value;
@@ -182,7 +182,7 @@ internal static class DiagnosticsGenerator
                 // Show summary table for this assembly
                 sb.AppendLine($"| Service | Lifetime | Interfaces |");
                 sb.AppendLine($"|---------|----------|------------|");
-                foreach (var type in refTypes.OrderBy(t => t.ShortName))
+                foreach (var type in refTypes.OrderBy(t => t.ShortName, StringComparer.Ordinal))
                 {
                     var interfaces = type.Interfaces.Any() ? string.Join(", ", type.Interfaces.Select(GeneratorHelpers.GetShortTypeName)) : "-";
                     sb.AppendLine($"| {type.ShortName} | {type.Lifetime} | {interfaces} |");
@@ -260,7 +260,7 @@ internal static class DiagnosticsGenerator
             // Host decorators - group by service type
             var decoratorsByService = decorators
                 .GroupBy(d => d.ServiceTypeName)
-                .OrderBy(g => g.Key);
+                .OrderBy(g => g.Key, StringComparer.Ordinal);
 
             foreach (var serviceGroup in decoratorsByService)
             {
@@ -299,7 +299,7 @@ internal static class DiagnosticsGenerator
             }
 
             // Plugin decorators (we don't have chain order info, just show the decorator types)
-            foreach (var (assembly, type) in pluginDecorators.OrderBy(x => x.Type.ShortName))
+            foreach (var (assembly, type) in pluginDecorators.OrderBy(x => x.Type.ShortName, StringComparer.Ordinal))
             {
                 var decoratorId = GeneratorHelpers.GetMermaidNodeId(type.FullName);
                 var decoratorName = type.ShortName;
@@ -324,7 +324,7 @@ internal static class DiagnosticsGenerator
             sb.AppendLine("graph LR");
 
             // Host intercepted services
-            foreach (var service in interceptedServices.OrderBy(s => s.TypeName))
+            foreach (var service in interceptedServices.OrderBy(s => s.TypeName, StringComparer.Ordinal))
             {
                 var targetId = GeneratorHelpers.GetMermaidNodeId(service.TypeName);
                 var targetName = GeneratorHelpers.GetShortTypeName(service.TypeName);
@@ -349,7 +349,7 @@ internal static class DiagnosticsGenerator
             }
 
             // Plugin intercepted services
-            foreach (var (assembly, type) in pluginInterceptors.OrderBy(x => x.Type.ShortName))
+            foreach (var (assembly, type) in pluginInterceptors.OrderBy(x => x.Type.ShortName, StringComparer.Ordinal))
             {
                 var targetId = GeneratorHelpers.GetMermaidNodeId(type.FullName);
                 var targetName = type.ShortName;
@@ -378,13 +378,13 @@ internal static class DiagnosticsGenerator
             var typesByKey = keyedTypes
                 .SelectMany(t => t.ServiceKeys.Select(k => (Key: k, Type: t)))
                 .GroupBy(x => x.Key)
-                .OrderBy(g => g.Key);
+                .OrderBy(g => g.Key, StringComparer.Ordinal);
 
             foreach (var keyGroup in typesByKey)
             {
                 var safeKey = GeneratorHelpers.SanitizeMermaidId(keyGroup.Key);
                 sb.AppendLine($"    subgraph key_{safeKey}[\"{GeneratorHelpers.EscapeMermaidLabel(keyGroup.Key)}\"]");
-                foreach (var item in keyGroup.OrderBy(x => x.Type.TypeName))
+                foreach (var item in keyGroup.OrderBy(x => x.Type.TypeName, StringComparer.Ordinal))
                 {
                     var nodeId = GeneratorHelpers.GetMermaidNodeId(item.Type.TypeName);
                     var nodeName = GeneratorHelpers.GetShortTypeName(item.Type.TypeName);
@@ -409,14 +409,14 @@ internal static class DiagnosticsGenerator
             // Group plugins by assembly
             var pluginsByAssembly = plugins
                 .GroupBy(p => p.AssemblyName)
-                .OrderBy(g => g.Key);
+                .OrderBy(g => g.Key, StringComparer.Ordinal);
 
             foreach (var asmGroup in pluginsByAssembly)
             {
                 var safeAsm = GeneratorHelpers.SanitizeMermaidId(asmGroup.Key);
                 var shortAsm = GeneratorHelpers.GetShortTypeName(asmGroup.Key);
                 sb.AppendLine($"    subgraph asm_{safeAsm}[\"{GeneratorHelpers.EscapeMermaidLabel(shortAsm)}\"]");
-                foreach (var plugin in asmGroup.OrderBy(p => p.TypeName))
+                foreach (var plugin in asmGroup.OrderBy(p => p.TypeName, StringComparer.Ordinal))
                 {
                     var nodeId = GeneratorHelpers.GetMermaidNodeId(plugin.TypeName);
                     var nodeName = GeneratorHelpers.GetShortTypeName(plugin.TypeName);
@@ -444,7 +444,7 @@ internal static class DiagnosticsGenerator
             sb.AppendLine("graph LR");
 
             // Host factories
-            foreach (var factory in factories.OrderBy(f => f.TypeName))
+            foreach (var factory in factories.OrderBy(f => f.TypeName, StringComparer.Ordinal))
             {
                 var sourceNodeId = GeneratorHelpers.GetMermaidNodeId(factory.TypeName);
                 var sourceName = GeneratorHelpers.GetShortTypeName(factory.TypeName);
@@ -460,7 +460,7 @@ internal static class DiagnosticsGenerator
             }
 
             // Plugin factories
-            foreach (var (assembly, type) in pluginFactories.OrderBy(f => f.Type.ShortName))
+            foreach (var (assembly, type) in pluginFactories.OrderBy(f => f.Type.ShortName, StringComparer.Ordinal))
             {
                 var sourceNodeId = GeneratorHelpers.GetMermaidNodeId(type.FullName);
                 var sourceName = type.ShortName;
@@ -488,7 +488,7 @@ internal static class DiagnosticsGenerator
             sb.AppendLine("```mermaid");
             sb.AppendLine("graph LR");
 
-            foreach (var type in typesWithInterfaces.OrderBy(t => t.TypeName))
+            foreach (var type in typesWithInterfaces.OrderBy(t => t.TypeName, StringComparer.Ordinal))
             {
                 var implId = GeneratorHelpers.GetMermaidNodeId(type.TypeName);
                 var implName = GeneratorHelpers.GetShortTypeName(type.TypeName);
@@ -514,7 +514,7 @@ internal static class DiagnosticsGenerator
         sb.AppendLine("| Metric | Value |");
         sb.AppendLine("|--------|-------|");
 
-        sb.AppendLine($"| Total Services | {types.Count} |");
+        sb.AppendLine($"| Total Services | {GeneratorHelpers.Literal(types.Count)} |");
 
         // Calculate max dependency depth using BFS
         var maxDepth = CalculateMaxDependencyDepth(types);
@@ -522,7 +522,7 @@ internal static class DiagnosticsGenerator
 
         // Calculate hub services (services that appear as dependencies in 3+ other services)
         var hubServices = CalculateHubServices(types, 3);
-        sb.AppendLine($"| Hub Services (≥3 dependents) | {hubServices.Count} |");
+        sb.AppendLine($"| Hub Services (≥3 dependents) | {GeneratorHelpers.Literal(hubServices.Count)} |");
 
         if (hubServices.Any())
         {
@@ -538,7 +538,7 @@ internal static class DiagnosticsGenerator
         sb.AppendLine("| Service | Lifetime | Dependencies |");
         sb.AppendLine("|---------|----------|--------------|");
 
-        foreach (var type in types.OrderBy(t => t.TypeName))
+        foreach (var type in types.OrderBy(t => t.TypeName, StringComparer.Ordinal))
         {
             var deps = type.ConstructorParameterTypes.Any()
                 ? string.Join(", ", type.ConstructorParameterTypes.Select(GeneratorHelpers.GetShortTypeName))
@@ -572,7 +572,7 @@ internal static class DiagnosticsGenerator
             sb.AppendLine("## Referenced Plugin Assemblies");
             sb.AppendLine();
 
-            foreach (var kvp in referencedAssemblyTypes.OrderBy(kv => kv.Key))
+            foreach (var kvp in referencedAssemblyTypes.OrderBy(kv => kv.Key, StringComparer.Ordinal))
             {
                 var refAsm = kvp.Key;
                 var refTypes = kvp.Value;
@@ -600,9 +600,9 @@ internal static class DiagnosticsGenerator
 
         if (total > 0)
         {
-            sb.AppendLine($"| Singleton | {singletons.Count} | {GeneratorHelpers.Percentage(singletons.Count, total)}% |");
-            sb.AppendLine($"| Scoped | {scopeds.Count} | {GeneratorHelpers.Percentage(scopeds.Count, total)}% |");
-            sb.AppendLine($"| Transient | {transients.Count} | {GeneratorHelpers.Percentage(transients.Count, total)}% |");
+            sb.AppendLine($"| Singleton | {GeneratorHelpers.Literal(singletons.Count)} | {GeneratorHelpers.Percentage(singletons.Count, total)}% |");
+            sb.AppendLine($"| Scoped | {GeneratorHelpers.Literal(scopeds.Count)} | {GeneratorHelpers.Percentage(scopeds.Count, total)}% |");
+            sb.AppendLine($"| Transient | {GeneratorHelpers.Literal(transients.Count)} | {GeneratorHelpers.Percentage(transients.Count, total)}% |");
             sb.AppendLine($"| **Total** | **{total}** | 100% |");
         }
         else
@@ -615,27 +615,27 @@ internal static class DiagnosticsGenerator
         // List by category
         if (singletons.Any())
         {
-            sb.AppendLine($"## Singleton ({singletons.Count})");
+            sb.AppendLine($"## Singleton ({GeneratorHelpers.Literal(singletons.Count)})");
             sb.AppendLine();
-            foreach (var type in singletons.OrderBy(t => t.TypeName))
+            foreach (var type in singletons.OrderBy(t => t.TypeName, StringComparer.Ordinal))
                 sb.AppendLine($"- {GeneratorHelpers.GetShortTypeName(type.TypeName)}");
             sb.AppendLine();
         }
 
         if (scopeds.Any())
         {
-            sb.AppendLine($"## Scoped ({scopeds.Count})");
+            sb.AppendLine($"## Scoped ({GeneratorHelpers.Literal(scopeds.Count)})");
             sb.AppendLine();
-            foreach (var type in scopeds.OrderBy(t => t.TypeName))
+            foreach (var type in scopeds.OrderBy(t => t.TypeName, StringComparer.Ordinal))
                 sb.AppendLine($"- {GeneratorHelpers.GetShortTypeName(type.TypeName)}");
             sb.AppendLine();
         }
 
         if (transients.Any())
         {
-            sb.AppendLine($"## Transient ({transients.Count})");
+            sb.AppendLine($"## Transient ({GeneratorHelpers.Literal(transients.Count)})");
             sb.AppendLine();
-            foreach (var type in transients.OrderBy(t => t.TypeName))
+            foreach (var type in transients.OrderBy(t => t.TypeName, StringComparer.Ordinal))
                 sb.AppendLine($"- {GeneratorHelpers.GetShortTypeName(type.TypeName)}");
             sb.AppendLine();
         }
@@ -663,18 +663,18 @@ internal static class DiagnosticsGenerator
             sb.AppendLine("## Referenced Plugin Assemblies");
             sb.AppendLine();
 
-            foreach (var kvp in referencedAssemblyTypes.OrderBy(kv => kv.Key))
+            foreach (var kvp in referencedAssemblyTypes.OrderBy(kv => kv.Key, StringComparer.Ordinal))
             {
                 var refAsm = kvp.Key;
                 var refTypes = kvp.Value;
 
-                sb.AppendLine($"### {refAsm} ({refTypes.Count} services)");
+                sb.AppendLine($"### {refAsm} ({GeneratorHelpers.Literal(refTypes.Count)} services)");
                 sb.AppendLine();
                 sb.AppendLine("| # | Interface | Implementation | Lifetime |");
                 sb.AppendLine("|---|-----------|----------------|----------|");
 
                 var index = 1;
-                foreach (var type in refTypes.OrderBy(t => t.ShortName))
+                foreach (var type in refTypes.OrderBy(t => t.ShortName, StringComparer.Ordinal))
                 {
                     var iface = type.Interfaces.FirstOrDefault() ?? "-";
                     sb.AppendLine($"| {index} | {GeneratorHelpers.GetShortTypeName(iface)} | {type.ShortName} | {type.Lifetime} |");
@@ -685,7 +685,7 @@ internal static class DiagnosticsGenerator
         }
 
         // Services table
-        sb.AppendLine($"## Services ({types.Count})");
+        sb.AppendLine($"## Services ({GeneratorHelpers.Literal(types.Count)})");
         sb.AppendLine();
 
         if (types.Any())
@@ -694,7 +694,7 @@ internal static class DiagnosticsGenerator
             sb.AppendLine("|---|-----------|----------------|----------|--------|");
 
             var index = 1;
-            foreach (var type in types.OrderBy(t => t.TypeName))
+            foreach (var type in types.OrderBy(t => t.TypeName, StringComparer.Ordinal))
             {
                 var iface = type.InterfaceNames.FirstOrDefault() ?? "-";
                 var source = BreadcrumbWriter.GetRelativeSourcePath(type.SourceFilePath, projectDirectory);
@@ -725,7 +725,7 @@ internal static class DiagnosticsGenerator
             // Host decorators
             var decoratorsByTarget = decorators
                 .GroupBy(d => d.ServiceTypeName)
-                .OrderBy(g => g.Key);
+                .OrderBy(g => g.Key, StringComparer.Ordinal);
 
             foreach (var group in decoratorsByTarget)
             {
@@ -736,7 +736,7 @@ internal static class DiagnosticsGenerator
             }
 
             // Plugin decorators
-            foreach (var (assembly, type) in pluginDecorators.OrderBy(x => x.Type.ShortName))
+            foreach (var (assembly, type) in pluginDecorators.OrderBy(x => x.Type.ShortName, StringComparer.Ordinal))
             {
                 // For plugin decorators, we show them individually since we don't have chain info
                 var serviceName = type.Interfaces.FirstOrDefault() ?? "-";
@@ -760,7 +760,7 @@ internal static class DiagnosticsGenerator
             sb.AppendLine("|---------|--------------|-------|----------|");
 
             // Host intercepted services
-            foreach (var service in interceptedServices.OrderBy(s => s.TypeName))
+            foreach (var service in interceptedServices.OrderBy(s => s.TypeName, StringComparer.Ordinal))
             {
                 var serviceName = GeneratorHelpers.GetShortTypeName(service.TypeName);
                 var interceptors = string.Join(", ", service.AllInterceptorTypeNames.Select(GeneratorHelpers.GetShortTypeName));
@@ -769,7 +769,7 @@ internal static class DiagnosticsGenerator
             }
 
             // Plugin intercepted services
-            foreach (var (assembly, type) in pluginIntercepted.OrderBy(x => x.Type.ShortName))
+            foreach (var (assembly, type) in pluginIntercepted.OrderBy(x => x.Type.ShortName, StringComparer.Ordinal))
             {
                 var proxyName = type.ShortName + "_InterceptorProxy";
                 sb.AppendLine($"| {type.ShortName} | (see plugin) | {proxyName} | {assembly} |");
@@ -792,7 +792,7 @@ internal static class DiagnosticsGenerator
             sb.AppendLine("|-------------|-------------------|-------------------|----------|");
 
             // Host factories
-            foreach (var factory in factories.OrderBy(f => f.TypeName))
+            foreach (var factory in factories.OrderBy(f => f.TypeName, StringComparer.Ordinal))
             {
                 var sourceName = factory.SimpleTypeName;
                 var factoryInterface = "I" + sourceName + "Factory";
@@ -801,7 +801,7 @@ internal static class DiagnosticsGenerator
             }
 
             // Plugin factories
-            foreach (var (assembly, type) in pluginFactories.OrderBy(x => x.Type.ShortName))
+            foreach (var (assembly, type) in pluginFactories.OrderBy(x => x.Type.ShortName, StringComparer.Ordinal))
             {
                 var factoryInterface = "I" + type.ShortName + "Factory";
                 var factoryImpl = type.ShortName + "Factory";
@@ -813,9 +813,9 @@ internal static class DiagnosticsGenerator
         // Plugins section
         if (plugins.Any())
         {
-            var orderedPlugins = plugins.OrderBy(p => p.Order).ThenBy(p => p.TypeName);
+            var orderedPlugins = plugins.OrderBy(p => p.Order).ThenBy(p => p.TypeName, StringComparer.Ordinal);
 
-            sb.AppendLine($"## Plugins ({plugins.Count})");
+            sb.AppendLine($"## Plugins ({GeneratorHelpers.Literal(plugins.Count)})");
             sb.AppendLine();
             sb.AppendLine("| Order | Plugin | Interfaces |");
             sb.AppendLine("|-------|--------|------------|");
@@ -823,7 +823,7 @@ internal static class DiagnosticsGenerator
             foreach (var plugin in orderedPlugins)
             {
                 var interfaces = string.Join(", ", plugin.InterfaceNames.Select(GeneratorHelpers.GetShortTypeName));
-                sb.AppendLine($"| {plugin.Order} | {GeneratorHelpers.GetShortTypeName(plugin.TypeName)} | {interfaces} |");
+                sb.AppendLine($"| {GeneratorHelpers.Literal(plugin.Order)} | {GeneratorHelpers.GetShortTypeName(plugin.TypeName)} | {interfaces} |");
             }
             sb.AppendLine();
         }
@@ -837,7 +837,7 @@ internal static class DiagnosticsGenerator
             sb.AppendLine("| Key | Interface | Implementation | Lifetime |");
             sb.AppendLine("|-----|-----------|----------------|----------|");
 
-            foreach (var type in keyedTypes.OrderBy(t => t.TypeName))
+            foreach (var type in keyedTypes.OrderBy(t => t.TypeName, StringComparer.Ordinal))
             {
                 foreach (var key in type.ServiceKeys)
                 {
@@ -1093,7 +1093,7 @@ internal static class DiagnosticsGenerator
         sb.AppendLine();
         sb.AppendLine($"| Metric | Count |");
         sb.AppendLine($"|:-------|------:|");
-        sb.AppendLine($"| Total Options Classes | {options.Count} |");
+        sb.AppendLine($"| Total Options Classes | {GeneratorHelpers.Literal(options.Count)} |");
         sb.AppendLine($"| Named Options | {options.Count(o => o.IsNamed)} |");
         sb.AppendLine($"| With Validation | {options.Count(o => o.ValidateOnStart)} |");
         sb.AppendLine($"| With External Validator | {options.Count(o => o.HasExternalValidator)} |");
@@ -1105,7 +1105,7 @@ internal static class DiagnosticsGenerator
         sb.AppendLine("| Class | Section | Name | ValidateOnStart | Validator |");
         sb.AppendLine("|:------|:--------|:-----|:---------------:|:----------|");
 
-        foreach (var opt in options.OrderBy(o => o.SectionName).ThenBy(o => o.TypeName))
+        foreach (var opt in options.OrderBy(o => o.SectionName, StringComparer.Ordinal).ThenBy(o => o.TypeName, StringComparer.Ordinal))
         {
             var shortName = GeneratorHelpers.GetShortTypeName(opt.TypeName);
             var namedLabel = opt.IsNamed ? opt.Name : "-";
@@ -1118,7 +1118,7 @@ internal static class DiagnosticsGenerator
         sb.AppendLine();
 
         // Detailed breakdown by section
-        var sectionGroups = options.GroupBy(o => o.SectionName).OrderBy(g => g.Key);
+        var sectionGroups = options.GroupBy(o => o.SectionName).OrderBy(g => g.Key, StringComparer.Ordinal);
         
         sb.AppendLine("## Configuration Sections");
         sb.AppendLine();
@@ -1128,7 +1128,7 @@ internal static class DiagnosticsGenerator
             sb.AppendLine($"### `{group.Key}`");
             sb.AppendLine();
 
-            foreach (var opt in group.OrderBy(o => o.TypeName))
+            foreach (var opt in group.OrderBy(o => o.TypeName, StringComparer.Ordinal))
             {
                 var shortName = GeneratorHelpers.GetShortTypeName(opt.TypeName);
                 sb.AppendLine($"**{shortName}**");
