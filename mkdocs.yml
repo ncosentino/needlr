@@ -94,9 +94,11 @@ nav:
       - Project Structure: architecture/project-structure.md
       - Data Access Boundary: architecture/data-access.md
       - HTTP Clients and Options: architecture/http-clients-and-options.md
+      - Feature Layer Pattern: architecture/feature-layers.md
     - Development:
       - .NET Engineering: development/dotnet-engineering.md
       - Deterministic Generator Output: development/deterministic-generators.md
+      - Pull Request Delivery: development/delivery.md
       - Roslyn Analyzers: development/roslyn-analyzers.md
       - Validation and Scheduling Boundaries: development/request-validation-and-jobs.md
       - Performance: performance/dotnet-performance.md
