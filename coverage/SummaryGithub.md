@@ -3,17 +3,17 @@
 
 |||
 |:---|:---|
-| Generated on: | 08/22/2026 - 07:32:00 |
-| Coverage date: | 08/22/2026 - 07:29:41 - 08/22/2026 - 07:31:56 |
+| Generated on: | 08/27/2026 - 01:52:35 |
+| Coverage date: | 08/27/2026 - 01:50:10 - 08/27/2026 - 01:52:32 |
 | Parser: | MultiReport (25x Cobertura) |
 | Assemblies: | 20 |
 | Classes: | 251 |
 | Files: | 232 |
-| **Line coverage:** | 92.7% (13609 of 14678) |
-| Covered lines: | 13609 |
-| Uncovered lines: | 1069 |
-| Coverable lines: | 14678 |
-| Total lines: | 36635 |
+| **Line coverage:** | 92.7% (13604 of 14670) |
+| Covered lines: | 13604 |
+| Uncovered lines: | 1066 |
+| Coverable lines: | 14670 |
+| Total lines: | 36633 |
 | **Branch coverage:** | 84.5% (6260 of 7400) |
 | Covered branches: | 6260 |
 | Total branches: | 7400 |
@@ -94,11 +94,11 @@
 |NexusLabs.Needlr.Avalonia.Diagnostics.AvaloniaDiagnosticDescriptors|100%||
 
 </details>
-<details><summary>NexusLabs.Needlr.Carter - 57.6%</summary>
+<details><summary>NexusLabs.Needlr.Carter - 58.8%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Carter**|**57.6%**|****|
+|**NexusLabs.Needlr.Carter**|**58.8%**|****|
 |NexusLabs.Needlr.Carter.CarterWebApplicationBuilderPlugin|100%||
 |NexusLabs.Needlr.Carter.CarterWebApplicationPlugin|100%||
 |NexusLabs.Needlr.Carter.Generated.NeedlrSourceGenModuleInitializer|100%||
@@ -148,7 +148,7 @@
 |NexusLabs.Needlr.Generators.CodeGen.PluginsCodeGenerator|95%|80%|
 |NexusLabs.Needlr.Generators.CodeGen.ProviderCodeGenerator|90.9%|73.3%|
 |NexusLabs.Needlr.Generators.CodeGen.RecordConstructorOverloadCodeGenerator|100%|94.4%|
-|NexusLabs.Needlr.Generators.CodeGen.ServiceCatalogCodeGenerator|95.7%|78.7%|
+|NexusLabs.Needlr.Generators.CodeGen.ServiceCatalogCodeGenerator|95.5%|78.7%|
 |NexusLabs.Needlr.Generators.ComposedRegistrationDiscoveryHelper|99.3%|95.7%|
 |NexusLabs.Needlr.Generators.ConstructorGenerationDiscoveryHelper|93.4%|88%|
 |NexusLabs.Needlr.Generators.ConstructorGuardAnalysisHelper|88.5%|82.6%|
@@ -375,11 +375,11 @@
 |NexusLabs.Needlr.Maui.SyringeMauiExtensions|100%||
 
 </details>
-<details><summary>NexusLabs.Needlr.Serilog - 79.4%</summary>
+<details><summary>NexusLabs.Needlr.Serilog - 80.1%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.Serilog**|**79.4%**|**90%**|
+|**NexusLabs.Needlr.Serilog**|**80.1%**|**90%**|
 |NexusLabs.Needlr.Serilog.Generated.NeedlrSourceGenModuleInitializer|100%||
 |NexusLabs.Needlr.Serilog.Generated.ServiceCatalog|0%||
 |NexusLabs.Needlr.Serilog.Generated.TypeRegistry|100%||
@@ -388,11 +388,11 @@
 |NexusLabs.Needlr.Serilog.SerilogPlugin|100%||
 
 </details>
-<details><summary>NexusLabs.Needlr.SignalR - 76.6%</summary>
+<details><summary>NexusLabs.Needlr.SignalR - 77.5%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**NexusLabs.Needlr.SignalR**|**76.6%**|**83.3%**|
+|**NexusLabs.Needlr.SignalR**|**77.5%**|**83.3%**|
 |NexusLabs.Needlr.SignalR.Generated.NeedlrSourceGenModuleInitializer|100%||
 |NexusLabs.Needlr.SignalR.Generated.ServiceCatalog|0%||
 |NexusLabs.Needlr.SignalR.Generated.TypeRegistry|100%||
