@@ -55,6 +55,30 @@ Two enforcement routes do **not** work here, so do not rely on them:
 `en-US` and under hostile locales and compares every generated file. Extend its source
 sample when adding an emitter, or the new emitter is uncovered.
 
+## Emitted paths are normalized, relative, and never absolute
+
+Roslyn reports `SyntaxTree.FilePath` with the host's native separator, so a path copied
+through unchanged is `Services\Thing.cs` on Windows and `Services/Thing.cs` on Linux —
+different bytes in the compiled assembly for the same source.
+
+- **Always call `BreadcrumbWriter.GetRelativeSourcePath`.** Never write a private path
+  helper in an emitter. A duplicate private copy in the service-catalog emitter is
+  exactly how the separator defect survived while every other emitter was correct.
+- It normalizes separators to `/`, relativizes against the project directory, and falls
+  back to the bare file name rather than emitting an absolute path. An absolute path
+  embeds the build machine's directory layout into the shipped assembly.
+
+`GeneratedSourcePathNormalizationTests` supplies Windows-style paths explicitly so it
+fails on a non-Windows agent too, rather than passing by accident of the host.
+
+## Analyzer-config options in tests
+
+`AnalyzerConfigOptions` compares keys **case-insensitively** through
+`AnalyzerConfigOptions.KeyComparer`. A test double backed by a default `Dictionary` is
+case-sensitive, so a generator reading `build_property.ProjectDir` silently misses a test
+that set `build_property.projectdir`, takes its "option absent" branch, and the test
+passes while proving nothing. Any new options double must use `KeyComparer`.
+
 ## Stamp timestamps where the artifact is written
 A timestamp is legitimate in a human-readable report, but it must never reach `AddSource`.
 Emit a constant placeholder and substitute the real value at the point the artifact is

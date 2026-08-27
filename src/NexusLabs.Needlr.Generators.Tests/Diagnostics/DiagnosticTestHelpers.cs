@@ -273,7 +273,11 @@ internal sealed class TestAnalyzerConfigOptions : AnalyzerConfigOptions
 
     public TestAnalyzerConfigOptions(Dictionary<string, string> options)
     {
-        _options = options;
+        // Roslyn compares analyzer-config keys case-insensitively via KeyComparer. A
+        // case-sensitive dictionary here silently misses options whose casing differs
+        // between the test that sets them and the generator that reads them, so the
+        // generator takes its "option absent" path and the test proves nothing.
+        _options = new Dictionary<string, string>(options, KeyComparer);
     }
 
     public override bool TryGetValue(string key, out string value)
