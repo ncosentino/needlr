@@ -33,6 +33,19 @@ example, formatting a `DateTime` constructed by hand).
     defect is present and fails only when a run happens to straddle a second boundary.
     Assert the invariant structurally instead.
 
+## Determinism is per-machine, per-OS, and per-locale
+
+A rebuild that is byte-identical on one machine is not sufficient. Generated output must
+also not depend on the host's operating system or the build machine's locale:
+
+- **Numbers** go through `GeneratorHelpers.Literal`. Locales including `sv-SE`, `fi-FI`,
+  and `lt-LT` format a negative number with U+2212 MINUS SIGN, which is not valid C#.
+- **String sorts** take an explicit `StringComparer.Ordinal`. The default comparer is
+  culture-sensitive, so emission order changes with the machine's locale.
+- **Source paths** go through `BreadcrumbWriter.GetRelativeSourcePath`, which normalizes
+  separators to `/` and never emits an absolute path.
+- **Line endings** are normalized to LF at the `AddSource` boundary.
+
 ## Keeping a timestamp you actually want
 
 A timestamp is legitimate in a human-readable report. Stamp it where the artifact is
@@ -57,9 +70,15 @@ Get-FileHash src\Examples\SourceGen\CarterSourceGen\bin\Release\net10.0\CarterSo
 
 Two runs must produce the same SHA-256.
 
-## Known limitation
+## Line endings
 
-`StringBuilder.AppendLine` uses `Environment.NewLine`, so generated source uses CRLF on
-Windows and LF on Linux. Output is deterministic *per operating system* but not identical
-across them. Fixing that requires pinning the newline for every emitter and is tracked
-separately.
+`StringBuilder.AppendLine` uses `Environment.NewLine`, so emitters naturally produce CRLF
+on Windows and LF elsewhere. Emitted text is normalized to LF once at the `AddSource`
+boundary by `GeneratedSourceText.Create`, which every generator routes through.
+
+`SourceText.From` is banned in `BannedSymbols.txt` so a new generator cannot bypass the
+helper; the single sanctioned call inside the helper carries a documented
+`#pragma warning disable RS0030`.
+
+Fixing this at the emitters was not viable: there are roughly 1,272 `AppendLine` call
+sites against 16 `AddSource` boundaries.

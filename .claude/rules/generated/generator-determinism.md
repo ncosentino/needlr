@@ -71,8 +71,27 @@ different bytes in the compiled assembly for the same source.
 `GeneratedSourcePathNormalizationTests` supplies Windows-style paths explicitly so it
 fails on a non-Windows agent too, rather than passing by accident of the host.
 
-## Analyzer-config options in tests
+## Line endings are normalized at the AddSource boundary
 
+`StringBuilder.AppendLine` emits `Environment.NewLine`, so emitters naturally produce
+CRLF on Windows and LF elsewhere.
+
+- **Always create source text with `GeneratedSourceText.Create`.** It normalizes to LF
+  and wraps the result as UTF-8 `SourceText`.
+- **`SourceText.From` is banned** in `BannedSymbols.txt`. The single sanctioned call
+  lives inside the helper behind a documented `#pragma warning disable RS0030`. Do not
+  add a second suppression — route the emitter through the helper instead.
+
+The boundary is the right place: there are roughly 1,272 `AppendLine` call sites against
+16 `AddSource` boundaries, so normalizing at the emitters would be unmaintainable and
+would silently regress.
+
+Tests that assert on multi-line generated output must normalize their expected value
+with `.ReplaceLineEndings("\n")`. A raw string literal carries the *test file's* line
+endings, which are CRLF in a Windows checkout, so an un-normalized expectation compares
+CRLF against the generator's LF and fails on Windows only.
+
+## Analyzer-config options in tests
 `AnalyzerConfigOptions` compares keys **case-insensitively** through
 `AnalyzerConfigOptions.KeyComparer`. A test double backed by a default `Dictionary` is
 case-sensitive, so a generator reading `build_property.ProjectDir` silently misses a test
