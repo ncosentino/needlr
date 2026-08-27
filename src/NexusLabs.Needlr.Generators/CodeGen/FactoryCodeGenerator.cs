@@ -287,7 +287,7 @@ internal static class FactoryCodeGenerator
         builder.AppendLine("    /// <summary>");
         builder.AppendLine("    /// Gets the number of factory types generated at compile time.");
         builder.AppendLine("    /// </summary>");
-        builder.AppendLine($"    public static int Count => {factories.Count};");
+        builder.AppendLine($"    public static int Count => {GeneratorHelpers.Literal(factories.Count)};");
         builder.AppendLine("}");
 
         return builder.ToString();

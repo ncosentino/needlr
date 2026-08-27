@@ -16,6 +16,21 @@ namespace NexusLabs.Needlr.Generators;
 internal static class GeneratorHelpers
 {
     /// <summary>
+    /// Formats an integer for emission into generated source or JSON.
+    /// </summary>
+    /// <remarks>
+    /// String interpolation uses the ambient culture, and several locales render a
+    /// negative number with U+2212 MINUS SIGN, which is not valid C#. Every number that
+    /// reaches generated output must go through this method. A generator cannot pin the
+    /// ambient culture instead: <c>RS1035</c> bans analyzers from touching
+    /// <c>CultureInfo.CurrentCulture</c>.
+    /// </remarks>
+    public static string Literal(int value)
+    {
+        return value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
     /// Sanitizes an assembly name to be a valid C# identifier for use in namespaces.
     /// </summary>
     public static string SanitizeIdentifier(string name)

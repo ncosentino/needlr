@@ -345,7 +345,7 @@ internal static class OptionsCodeGenerator
         var byNamespace = optionsNeedingConstructors
             .Where(o => o.PositionalRecordInfo != null)
             .GroupBy(o => o.PositionalRecordInfo!.Value.ContainingNamespace)
-            .OrderBy(g => g.Key);
+            .OrderBy(g => g.Key, StringComparer.Ordinal);
 
         foreach (var namespaceGroup in byNamespace)
         {

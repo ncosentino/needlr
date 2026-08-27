@@ -21,7 +21,7 @@ internal static class RecordConstructorOverloadCodeGenerator
         var baseName = model.ContainingNamespace.Length > 0
             ? $"{model.ContainingNamespace}.{model.ContainingTypeName}"
             : model.ContainingTypeName;
-        return $"{GeneratorHelpers.SanitizeIdentifier(baseName)}_T{model.Arity}{GeneratedFileSuffix}";
+        return $"{GeneratorHelpers.SanitizeIdentifier(baseName)}_T{GeneratorHelpers.Literal(model.Arity)}{GeneratedFileSuffix}";
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ internal static class RecordConstructorOverloadCodeGenerator
         breadcrumbs.WriteInlineComment(
             builder,
             string.Empty,
-            $"Constructor overload generated from {model.PropertyParameters.Length} marked property parameter(s)");
+            $"Constructor overload generated from {GeneratorHelpers.Literal(model.PropertyParameters.Length)} marked property parameter(s)");
         builder.AppendLine(
             $"partial record class {model.EscapedContainingTypeName}{model.TypeParameterList}");
         builder.AppendLine("{");

@@ -402,16 +402,16 @@ internal static class GraphExporter
         
         // Statistics object
         sb.AppendLine("  \"statistics\": {");
-        sb.AppendLine($"    \"totalServices\": {graph.Statistics.TotalServices},");
-        sb.AppendLine($"    \"singletons\": {graph.Statistics.Singletons},");
-        sb.AppendLine($"    \"scoped\": {graph.Statistics.Scoped},");
-        sb.AppendLine($"    \"transient\": {graph.Statistics.Transient},");
-        sb.AppendLine($"    \"decorators\": {graph.Statistics.Decorators},");
-        sb.AppendLine($"    \"interceptors\": {graph.Statistics.Interceptors},");
-        sb.AppendLine($"    \"factories\": {graph.Statistics.Factories},");
-        sb.AppendLine($"    \"options\": {graph.Statistics.Options},");
-        sb.AppendLine($"    \"hostedServices\": {graph.Statistics.HostedServices},");
-        sb.AppendLine($"    \"plugins\": {graph.Statistics.Plugins}");
+        sb.AppendLine($"    \"totalServices\": {GeneratorHelpers.Literal(graph.Statistics.TotalServices)},");
+        sb.AppendLine($"    \"singletons\": {GeneratorHelpers.Literal(graph.Statistics.Singletons)},");
+        sb.AppendLine($"    \"scoped\": {GeneratorHelpers.Literal(graph.Statistics.Scoped)},");
+        sb.AppendLine($"    \"transient\": {GeneratorHelpers.Literal(graph.Statistics.Transient)},");
+        sb.AppendLine($"    \"decorators\": {GeneratorHelpers.Literal(graph.Statistics.Decorators)},");
+        sb.AppendLine($"    \"interceptors\": {GeneratorHelpers.Literal(graph.Statistics.Interceptors)},");
+        sb.AppendLine($"    \"factories\": {GeneratorHelpers.Literal(graph.Statistics.Factories)},");
+        sb.AppendLine($"    \"options\": {GeneratorHelpers.Literal(graph.Statistics.Options)},");
+        sb.AppendLine($"    \"hostedServices\": {GeneratorHelpers.Literal(graph.Statistics.HostedServices)},");
+        sb.AppendLine($"    \"plugins\": {GeneratorHelpers.Literal(graph.Statistics.Plugins)}");
         sb.AppendLine("  }");
         
         sb.AppendLine("}");
@@ -439,8 +439,8 @@ internal static class GraphExporter
             {
                 sb.AppendLine("          \"location\": {");
                 sb.AppendLine($"            \"filePath\": {NullableString(iface.Location.FilePath)},");
-                sb.AppendLine($"            \"line\": {iface.Location.Line},");
-                sb.AppendLine($"            \"column\": {iface.Location.Column}");
+                sb.AppendLine($"            \"line\": {GeneratorHelpers.Literal(iface.Location.Line)},");
+                sb.AppendLine($"            \"column\": {GeneratorHelpers.Literal(iface.Location.Column)}");
                 sb.AppendLine("          }");
             }
             else
@@ -458,8 +458,8 @@ internal static class GraphExporter
         {
             sb.AppendLine("      \"location\": {");
             sb.AppendLine($"        \"filePath\": {NullableString(service.Location.FilePath)},");
-            sb.AppendLine($"        \"line\": {service.Location.Line},");
-            sb.AppendLine($"        \"column\": {service.Location.Column}");
+            sb.AppendLine($"        \"line\": {GeneratorHelpers.Literal(service.Location.Line)},");
+            sb.AppendLine($"        \"column\": {GeneratorHelpers.Literal(service.Location.Column)}");
             sb.AppendLine("      },");
         }
         else
@@ -491,7 +491,7 @@ internal static class GraphExporter
         {
             var dec = service.Decorators[i];
             var comma = i < service.Decorators.Count - 1 ? "," : "";
-            sb.AppendLine($"        {{ \"typeName\": \"{Escape(dec.TypeName)}\", \"order\": {dec.Order} }}{comma}");
+            sb.AppendLine($"        {{ \"typeName\": \"{Escape(dec.TypeName)}\", \"order\": {GeneratorHelpers.Literal(dec.Order)} }}{comma}");
         }
         sb.AppendLine("      ],");
         
@@ -533,8 +533,8 @@ internal static class GraphExporter
         {
             sb.AppendLine("      \"location\": {");
             sb.AppendLine($"        \"filePath\": {NullableString(diagnostic.Location.FilePath)},");
-            sb.AppendLine($"        \"line\": {diagnostic.Location.Line},");
-            sb.AppendLine($"        \"column\": {diagnostic.Location.Column}");
+            sb.AppendLine($"        \"line\": {GeneratorHelpers.Literal(diagnostic.Location.Line)},");
+            sb.AppendLine($"        \"column\": {GeneratorHelpers.Literal(diagnostic.Location.Column)}");
             sb.AppendLine("      },");
         }
         else
