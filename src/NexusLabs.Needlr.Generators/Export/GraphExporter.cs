@@ -12,6 +12,14 @@ namespace NexusLabs.Needlr.Generators.Export;
 internal static class GraphExporter
 {
     /// <summary>
+    /// Placeholder emitted in place of a wall-clock timestamp so generated source stays
+    /// byte-identical across builds. It is a schema-valid RFC 3339 value, so the embedded
+    /// JSON still satisfies <c>needlr-graph-v1.schema.json</c>. The generated
+    /// <c>WriteGraphToFile</c> substitutes the real UTC time when the graph is written.
+    /// </summary>
+    internal const string GeneratedAtSentinel = "0001-01-01T00:00:00.0000000+00:00";
+
+    /// <summary>
     /// Generates the needlr-graph.json content from the discovery result.
     /// </summary>
     public static string GenerateGraphJson(
@@ -35,7 +43,7 @@ internal static class GraphExporter
         var graph = new NeedlrGraph
         {
             SchemaVersion = "1.0",
-            GeneratedAt = DateTime.UtcNow.ToString("O"),
+            GeneratedAt = GeneratedAtSentinel,
             ProjectPath = projectPath,
             AssemblyName = assemblyName
         };
@@ -593,11 +601,12 @@ internal static class GraphExporter
         sb.AppendLine("\";");
         sb.AppendLine();
         sb.AppendLine("        /// <summary>");
-        sb.AppendLine("        /// Writes the graph to the specified path.");
+        sb.AppendLine("        /// Writes the graph to the specified path, stamping the current UTC time.");
         sb.AppendLine("        /// </summary>");
         sb.AppendLine("        public static void WriteGraphToFile(string path)");
         sb.AppendLine("        {");
-        sb.AppendLine("            File.WriteAllText(path, GraphJson);");
+        sb.AppendLine($"            var stamped = GraphJson.Replace(\"{GeneratedAtSentinel}\", DateTime.UtcNow.ToString(\"O\"));");
+        sb.AppendLine("            File.WriteAllText(path, stamped);");
         sb.AppendLine("        }");
         sb.AppendLine("    }");
         sb.AppendLine("}");

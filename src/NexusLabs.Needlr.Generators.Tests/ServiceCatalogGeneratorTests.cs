@@ -221,7 +221,7 @@ public sealed class ServiceCatalogGeneratorTests
     }
 
     [Fact]
-    public void ServiceCatalog_IncludesAssemblyNameAndGeneratedAt()
+    public void ServiceCatalog_IncludesAssemblyName()
     {
         var source = """
             using NexusLabs.Needlr.Generators;
@@ -236,9 +236,27 @@ public sealed class ServiceCatalogGeneratorTests
 
         var catalogContent = GetServiceCatalogOutput(source);
 
-        // Should have assembly name and generation timestamp
         Assert.Contains("AssemblyName => \"TestAssembly\"", catalogContent);
-        Assert.Contains("GeneratedAt =>", catalogContent);
+    }
+
+    [Fact]
+    public void ServiceCatalog_OmitsGenerationTimestamp()
+    {
+        var source = """
+            using NexusLabs.Needlr.Generators;
+
+            [assembly: GenerateTypeRegistry]
+
+            namespace TestApp
+            {
+                public sealed class SimpleService { }
+            }
+            """;
+
+        var catalogContent = GetServiceCatalogOutput(source);
+
+        Assert.DoesNotContain("GeneratedAt", catalogContent);
+        Assert.DoesNotMatch(@"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", catalogContent);
     }
 
     [Fact]

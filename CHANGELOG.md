@@ -1,5 +1,17 @@
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING (alpha): `IServiceCatalog.GeneratedAt` has been removed.** The property was populated by reading the wall clock while generating source, so identical inputs produced different generated code and a different assembly hash on every build. The value could never be correct anyway: under any build cache it reported the time of an earlier build rather than the current one. It was undocumented and had no consumers. Remove references to it; `AssemblyName` and the catalog collections are unaffected.
+
+### Fixed
+
+- Source generator output is now deterministic. Repeated builds of unchanged source produce byte-identical generated files and assemblies, so `<Deterministic>true</Deterministic>` and content-addressed build caches behave correctly. The service catalog no longer carries a timestamp at all, while the diagnostic markdown reports and the IDE graph JSON keep theirs — those values are now stamped when the artifact is written rather than baked into compiled source, so the reports are unchanged for readers.
+
+### Added
+
+- `Microsoft.CodeAnalysis.BannedApiAnalyzers` now fails the generator build with `RS0030` if a clock, randomness, or host-identity API is used while generating source, and `GeneratedSourceDeterminismTests` asserts that no generated file contains a timestamp-shaped value. New guidance lives in `docs/development/deterministic-generators.md`.
+
 ## [0.0.3-alpha.6] - 2026-08-22
 
 ### Added

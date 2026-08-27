@@ -74,6 +74,11 @@ try
     
     var sourceContent = File.ReadAllText(SourceFile);
     
+    // The generator emits a placeholder instead of a wall-clock timestamp so that
+    // generated source (and therefore the compiled assembly) stays byte-identical
+    // across builds. The real time is stamped here, at write time.
+    var generatedAt = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+    
     // Ensure output directory exists
     Directory.CreateDirectory(OutputDirectory);
     
@@ -90,6 +95,7 @@ try
         {
             // Unescape the verbatim string (doubled quotes become single quotes)
             var content = match.Groups[1].Value.Replace("\"\"", "\"");
+            content = content.Replace("__NEEDLR_GENERATED_AT__", generatedAt);
             var filePath = Path.Combine(OutputDirectory, fieldName + ".md");
             File.WriteAllText(filePath, content);
             Log.LogMessage(MessageImportance.Normal, "Wrote " + filePath);

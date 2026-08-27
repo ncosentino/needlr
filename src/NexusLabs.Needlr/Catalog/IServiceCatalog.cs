@@ -12,11 +12,6 @@ public interface IServiceCatalog
     string AssemblyName { get; }
 
     /// <summary>
-    /// Gets the UTC timestamp when this catalog was generated.
-    /// </summary>
-    string GeneratedAt { get; }
-
-    /// <summary>
     /// Gets all discovered service registrations.
     /// </summary>
     IReadOnlyList<ServiceCatalogEntry> Services { get; }

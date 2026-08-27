@@ -74,7 +74,11 @@ When adding a new source-generated feature, follow ALL layers of this pattern â€
 
 ## Glob-Targeted Instructions
 
-Pattern-specific rules live in `.github/instructions/*.instructions.md`. These activate automatically when you edit files matching their glob. See that directory for rules covering source generators, analyzers, CodeGen emission, attributes, integration tests, discovery helpers, models, docs, examples, and project files.
+Pattern-specific rules live in `.github/instructions/*.instructions.md`. These activate automatically when you edit files matching their glob. See that directory for rules covering source generators, generated-output determinism, analyzers, CodeGen emission, attributes, integration tests, discovery helpers, models, docs, examples, and project files.
+
+## Deterministic Generated Output
+
+`<Deterministic>true</Deterministic>` is set repo-wide. Never read the clock, randomness, or host identity inside a source generator â€” everything passed to `AddSource` is compiled into the consumer's assembly. Timestamps that are genuinely wanted must be stamped where the artifact is written, not where the source is generated. See `docs/development/deterministic-generators.md`.
 
 ## Pull Request Delivery
 

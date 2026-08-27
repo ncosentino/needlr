@@ -1,0 +1,65 @@
+# Deterministic generator output
+
+Needlr sets `<Deterministic>true</Deterministic>` in `src/Directory.Build.props`. That
+flag only guarantees the *compiler* is a pure function of its inputs — it cannot detect a
+source generator that reads ambient state. Anything passed to `AddSource` is compiled
+into the consumer's assembly, so a value read from the clock makes the assembly hash
+change between builds of identical source.
+
+## The rule
+
+Code that runs inside a generator must not read ambient state. Concretely, no
+`AddSource` output may depend on:
+
+- the wall clock (`DateTime.UtcNow`, `DateTimeOffset.Now`, and friends);
+- randomness (`Guid.NewGuid`, `Random`);
+- host identity (`Environment.MachineName`, `Environment.UserName`);
+- unordered enumeration — sort discovered symbols before emitting them.
+
+## Enforcement
+
+`src/NexusLabs.Needlr.Generators/BannedSymbols.txt` bans these APIs through
+`Microsoft.CodeAnalysis.BannedApiAnalyzers`. Because `TreatWarningsAsErrors` is enabled,
+a clock read fails the build with `RS0030` rather than silently shipping.
+
+`GeneratedSourceDeterminismTests` asserts that no generated file contains a
+timestamp-shaped value, which also covers routes the banned-API list cannot see (for
+example, formatting a `DateTime` constructed by hand).
+
+!!! note "Why not just run the generator twice and compare?"
+
+    A comparative test does not detect a clock read. Timestamps rendered at one-second
+    resolution are identical across two in-process runs, so such a test passes while the
+    defect is present and fails only when a run happens to straddle a second boundary.
+    Assert the invariant structurally instead.
+
+## Keeping a timestamp you actually want
+
+A timestamp is legitimate in a human-readable report. Stamp it where the artifact is
+**written**, never where the source is generated:
+
+| Artifact | Emitted into source as | Real time stamped by |
+|---|---|---|
+| Diagnostic markdown reports | `DiagnosticsGenerator.GeneratedAtPlaceholder` | the `NeedlrExtractDiagnostics` MSBuild task in `NexusLabs.Needlr.Generators.targets` |
+| IDE graph JSON | `GraphExporter.GeneratedAtSentinel` | the generated `NeedlrGraphExport.WriteGraphToFile` method |
+
+The sentinel used for the graph is a schema-valid RFC 3339 value, so the embedded JSON
+still satisfies `schemas/needlr-graph-v1.schema.json` while remaining constant.
+
+## Verifying
+
+Build any project that emits a service catalog twice and compare hashes:
+
+```powershell
+dotnet build src\Examples\SourceGen\CarterSourceGen\CarterSourceGen.csproj -c Release -t:Rebuild
+Get-FileHash src\Examples\SourceGen\CarterSourceGen\bin\Release\net10.0\CarterSourceGen.dll
+```
+
+Two runs must produce the same SHA-256.
+
+## Known limitation
+
+`StringBuilder.AppendLine` uses `Environment.NewLine`, so generated source uses CRLF on
+Windows and LF on Linux. Output is deterministic *per operating system* but not identical
+across them. Fixing that requires pinning the newline for every emitter and is tracked
+separately.
