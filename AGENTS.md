@@ -1,101 +1,49 @@
 # Needlr — AI Agent Instructions
 
-Needlr is an opinionated dependency injection framework for .NET with compile-time source generation as the primary discovery strategy. Reflection is opt-in.
+Needlr is an opinionated dependency injection framework for .NET. Compile-time source
+generation is the primary discovery strategy; reflection is opt-in.
 
-## Build & Test
+## Before you touch anything
 
-```bash
-dotnet build src/NexusLabs.Needlr.slnx
-dotnet test src/NexusLabs.Needlr.slnx
-```
+- **Never write to the repository root.** Source lives under `src/`, docs under `docs/`,
+  scripts under `scripts/`.
+- **Never add technical rules to this file.** It loads in every session and is capped at
+  60 lines / 3072 bytes, enforced by `scripts/test-agent-root-files.ps1`. Put rules in a
+  path-scoped instruction file whose glob matches the code the rule governs.
+- **Never edit `.github/instructions/genesis/`.** Those files are replaced by sync. Add
+  project specialization in a sibling file outside that directory.
 
-## File Conventions
+## Build and test
 
-- **One type per file.** Never put multiple classes, structs, or enums in the same `.cs` file.
-- **Never save files to the repo root.** Source code lives under `src/`, docs under `docs/`, scripts under `scripts/`.
-- **File-scoped namespaces** everywhere (`namespace Foo;`, not `namespace Foo { }`).
-- **`internal` by default** for types that are not part of the public API surface. Only types consumers reference directly should be `public`.
-- **Data carriers are records.** DTOs, options, contexts, definitions, results, snapshots, evidence,
-  counts, and structured failures must be `record` types, including body-style records with
-  validated constructors. Reserve classes for behavior, mutable runtime state, and services.
-- **Non-static class-only non-services require `[DoNotAutoRegister]`.** Never rely on `required`
-  members, constructor shape, generic arity, visibility, or namespace filters to keep an
-  instantiable class out of Needlr's automatic DI registration.
+    dotnet build src/NexusLabs.Needlr.slnx
+    dotnet test src/NexusLabs.Needlr.slnx
 
-## Naming
+## Where the rules live
 
-- PascalCase for all public members, types, and namespaces.
-- `_camelCase` for private fields.
-- Diagnostic IDs use the `NDLR` prefix with a component code: `NDLRCOR` (core), `NDLRGEN` (generators), `NDLRSIG` (SignalR), `NDLRLOG` (logging), `NDLRHTTP` (HttpClient).
+Path-scoped rules in `.github/instructions/**/*.instructions.md` activate automatically
+from their `applyTo` glob. Read the file that matches what you are editing.
 
-## XML Documentation
+| Editing | File |
+|---|---|
+| Any `.cs` | `csharp-conventions.instructions.md` |
+| Source generators | `source-generators.instructions.md` |
+| Anything reaching `AddSource` | `generator-determinism.instructions.md` |
+| Discovery helpers | `discovery-helpers.instructions.md` |
+| Generator models | `models.instructions.md` |
+| Attributes package | `attributes.instructions.md` |
+| Integration tests | `integration-tests.instructions.md` |
+| Project and props files | `project-files.instructions.md` |
+| Docs and `mkdocs.yml` | `docs.instructions.md` |
+| Examples | `examples.instructions.md` |
+| Workflows and CI | `needlr/hosted-ci.instructions.md` |
 
-Required on all `public` types and members. Use `<summary>`, `<param>`, `<returns>`, and `<example>` tags where appropriate. Internal types should have XML docs on the class itself; individual members are optional unless non-obvious.
+## Key documents
 
-## Central Package Management
+- Feature layer pattern: `docs/architecture/feature-layers.md` — a new source-generated
+  feature needs every layer, including the analyzer, docs, and integration tests.
+- Architecture decisions: `docs/architecture/decisions.md` — check existing ADRs before
+  implementing, and propose one when a choice is costly to reverse.
+- Delivery: `docs/development/delivery.md` — branch and PR rules, draft versus ready CI
+  scope, review policy, and the disclosure required before marking a PR ready.
 
-All NuGet package versions are declared in `src/Directory.Packages.props` (`ManagePackageVersionsCentrally=true`). Individual `.csproj` files reference packages by name only — never specify a version inline.
-
-## Design Principles
-
-- **Composition over inheritance.** Base classes should be extremely rare and only exist as pure convenience for implementors. Always prefer interfaces + composition. If a pattern has common boilerplate, solve it with source generation or composable helper types, not inheritance hierarchies.
-- **Interfaces over static classes.** Static classes are acceptable only for trivial value calculations or extension method containers. Anything with behavior, state, or dependencies must be an interface registered via DI.
-- **No static singleton holders.** Never use `static Instance` properties, `static Holder` classes, or any pattern that stores a singleton in a static field to share state between components. This destroys testability, breaks multi-threaded scenarios, and is antithetical to dependency injection. Pass dependencies through constructors, method parameters, or DI — never through static state. We are a dependency injection library; use dependency injection.
-
-## Architecture Decision Records
-
-When a task involves a significant architectural or technical decision:
-
-- Check existing ADRs before implementation. Flag contradictions with accepted decisions
-  instead of silently diverging.
-- Propose an ADR when the choice changes system structure, technology, integration
-  boundaries, important quality attributes, or another convention that is costly to
-  reverse.
-- Do not create an ADR for a routine implementation choice, straightforward bug fix, or
-  decision already covered by an accepted record.
-- Use the repository's established ADR location and format; default to `docs/adr/` only
-  when no convention exists.
-
-## Architecture
-
-The codebase follows a consistent per-feature pattern:
-
-| Layer | Location | Role |
-|-------|----------|------|
-| **Attribute** | `NexusLabs.Needlr.Generators.Attributes/` | User-facing marker (`[Options]`, `[HttpClientOptions]`, `[GenerateFactory]`, etc.). Targets `netstandard2.0`. |
-| **Discovery helper** | `NexusLabs.Needlr.Generators/*DiscoveryHelper.cs` or `*AttributeHelper.cs` | Roslyn-side logic that reads the attribute from `INamedTypeSymbol` and extracts a model struct. |
-| **Model** | `NexusLabs.Needlr.Generators/Models/` | `internal readonly struct` holding discovered metadata. One type per file, organized into feature subfolders. |
-| **Code generator** | `NexusLabs.Needlr.Generators/CodeGen/*CodeGenerator.cs` | `internal static class` that emits C# source text into a `StringBuilder`. |
-| **Analyzer** | `NexusLabs.Needlr.Generators/*Analyzer.cs` | `DiagnosticAnalyzer` enforcing compile-time contracts for the feature's attribute. |
-| **Integration tests** | `NexusLabs.Needlr.IntegrationTests/SourceGen/` | xUnit tests that build a real `Syringe` service provider and verify the generated code runs correctly. |
-| **Docs** | `docs/<feature>.md` + `docs/analyzers/NDLRXXX.md` | Feature page + per-diagnostic reference page, registered in `mkdocs.yml` nav. |
-
-When adding a new source-generated feature, follow ALL layers of this pattern — don't skip the analyzer, the docs, or the integration tests.
-
-## Glob-Targeted Instructions
-
-Pattern-specific rules live in `.github/instructions/*.instructions.md`. These activate automatically when you edit files matching their glob. See that directory for rules covering source generators, generated-output determinism, analyzers, CodeGen emission, attributes, integration tests, discovery helpers, models, docs, examples, and project files.
-
-## Deterministic Generated Output
-
-`<Deterministic>true</Deterministic>` is set repo-wide. Never read the clock, randomness, or host identity inside a source generator — everything passed to `AddSource` is compiled into the consumer's assembly. Timestamps that are genuinely wanted must be stamped where the artifact is written, not where the source is generated. See `docs/development/deterministic-generators.md`.
-
-## Pull Request Delivery
-
-- Deliver every change through a feature branch and pull request. Direct updates or
-  deletions of `main` are forbidden; local checkpoint commits on feature branches are
-  unrestricted.
-- "Open a draft PR" means keep the pull request in draft while the configured
-  `CI_DRAFT_MODE` validation runs. "Open" or "publish" a PR means make it ready for
-  review so a fresh full validation run publishes the stable `CI` check.
-- Use a conventional pull request title no longer than 72 characters. GitHub uses the
-  PR title as the squash commit subject and the PR body as the squash commit message.
-- `GENESIS_REVIEW_POLICY=copilot-one-approval` requires a ready pull request authored
-  by the Copilot bot to receive one trusted human approval on its current head SHA.
-  Pushing another commit invalidates that approval for delivery purposes.
-- An approval to run workflows from an external fork authorizes the entire proposed
-  workflow, including runner selection. Inspect workflow changes and confirm fork jobs
-  remain on GitHub-hosted runners before approving them.
-- Before marking a PR ready, report omitted behavior, implementation gaps, test
-  results, technical debt, missing coverage, weak assertions, and assumptions. Fix
-  every high-severity gap and discuss every medium-severity gap before delivery.
+Deliver every change through a feature branch and pull request. Never push to `main`.

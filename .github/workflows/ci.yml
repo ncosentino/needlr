@@ -177,6 +177,11 @@ jobs:
       shell: pwsh
       run: scripts/test-hosted-runner-policy.ps1
 
+    - name: Validate agent root files
+      if: needs.changes.outputs.source_required == 'true'
+      shell: pwsh
+      run: scripts/test-agent-root-files.ps1
+
     - name: Validate mutation testing contract
       if: needs.changes.outputs.source_required == 'true'
       shell: pwsh
