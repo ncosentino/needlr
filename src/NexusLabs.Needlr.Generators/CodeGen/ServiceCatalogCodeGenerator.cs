@@ -276,15 +276,14 @@ internal static class ServiceCatalogCodeGenerator
 
     private static string? GetRelativeSourcePath(string? fullPath, string? projectDirectory)
     {
-        if (fullPath == null || projectDirectory == null)
-            return fullPath;
-
-        if (fullPath.StartsWith(projectDirectory, StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrEmpty(fullPath))
         {
-            var relative = fullPath.Substring(projectDirectory.Length);
-            return relative.TrimStart('/', '\\');
+            return null;
         }
 
-        return fullPath;
+        // Delegates to the shared helper so the catalog cannot drift from every other
+        // emitter. The shared helper normalizes separators to '/' and falls back to the
+        // bare file name rather than leaking an absolute build-machine path.
+        return BreadcrumbWriter.GetRelativeSourcePath(fullPath, projectDirectory);
     }
 }
