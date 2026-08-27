@@ -70,7 +70,7 @@ public sealed class RecordConstructorOverloadGenerator : IIncrementalGenerator
                     breadcrumbs);
             sourceContext.AddSource(
                 RecordConstructorOverloadCodeGenerator.BuildHintName(model),
-                SourceText.From(generatedSource, Encoding.UTF8));
+                GeneratedSourceText.Create(generatedSource));
         });
     }
 }
