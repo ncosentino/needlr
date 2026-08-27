@@ -54,11 +54,13 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Project Structure](https://www.devleader.ca/projects/needlr/architecture/project-structure/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Data Access Boundary](https://www.devleader.ca/projects/needlr/architecture/data-access/) -- Opinionated fluent dependency injection for .NET with source generation
 - [HTTP Clients and Options](https://www.devleader.ca/projects/needlr/architecture/http-clients-and-options/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Feature Layer Pattern](https://www.devleader.ca/projects/needlr/architecture/feature-layers/) -- Opinionated fluent dependency injection for .NET with source generation
 
 ## Development
 
 - [.NET Engineering](https://www.devleader.ca/projects/needlr/development/dotnet-engineering/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Deterministic Generator Output](https://www.devleader.ca/projects/needlr/development/deterministic-generators/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Pull Request Delivery](https://www.devleader.ca/projects/needlr/development/delivery/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Roslyn Analyzers](https://www.devleader.ca/projects/needlr/development/roslyn-analyzers/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Validation and Scheduling Boundaries](https://www.devleader.ca/projects/needlr/development/request-validation-and-jobs/) -- Opinionated fluent dependency injection for .NET with source generation
 - [Performance](https://www.devleader.ca/projects/needlr/performance/dotnet-performance/) -- Opinionated fluent dependency injection for .NET with source generation
