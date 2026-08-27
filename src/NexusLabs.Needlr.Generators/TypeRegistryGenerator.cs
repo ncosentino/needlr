@@ -85,10 +85,10 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             if (nothingDiscovered)
             {
                 var emptyRegistrySource = CodeGen.EmptyTypeRegistryCodeGenerator.GenerateTypeRegistrySource(assemblyName, breadcrumbs);
-                spc.AddSource("TypeRegistry.g.cs", SourceText.From(emptyRegistrySource, Encoding.UTF8));
+                spc.AddSource("TypeRegistry.g.cs", GeneratedSourceText.Create(emptyRegistrySource));
 
                 var emptyBootstrapSource = CodeGen.EmptyTypeRegistryCodeGenerator.GenerateBootstrapSource(assemblyName, breadcrumbs);
-                spc.AddSource("NeedlrSourceGenBootstrap.g.cs", SourceText.From(emptyBootstrapSource, Encoding.UTF8));
+                spc.AddSource("NeedlrSourceGenBootstrap.g.cs", GeneratedSourceText.Create(emptyBootstrapSource));
                 return;
             }
 
@@ -141,23 +141,23 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             }
 
             var sourceText = GenerateTypeRegistrySource(discoveryResult, assemblyName, breadcrumbs, projectDirectory, isAotProject);
-            spc.AddSource("TypeRegistry.g.cs", SourceText.From(sourceText, Encoding.UTF8));
+            spc.AddSource("TypeRegistry.g.cs", GeneratedSourceText.Create(sourceText));
 
             var bootstrapText = CodeGen.BootstrapCodeGenerator.GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies, breadcrumbs, discoveryResult.Factories.Count > 0, discoveryResult.Options.Count > 0 || discoveryResult.HttpClients.Count > 0, discoveryResult.Providers.Count > 0);
-            spc.AddSource("NeedlrSourceGenBootstrap.g.cs", SourceText.From(bootstrapText, Encoding.UTF8));
+            spc.AddSource("NeedlrSourceGenBootstrap.g.cs", GeneratedSourceText.Create(bootstrapText));
 
             // Generate interceptor proxy classes if any were discovered
             if (discoveryResult.InterceptedServices.Count > 0)
             {
                 var interceptorProxiesText = CodeGen.InterceptorCodeGenerator.GenerateInterceptorProxiesSource(discoveryResult.InterceptedServices, assemblyName, breadcrumbs, projectDirectory);
-                spc.AddSource("InterceptorProxies.g.cs", SourceText.From(interceptorProxiesText, Encoding.UTF8));
+                spc.AddSource("InterceptorProxies.g.cs", GeneratedSourceText.Create(interceptorProxiesText));
             }
 
             // Generate factory classes if any were discovered
             if (discoveryResult.Factories.Count > 0)
             {
                 var factoriesText = CodeGen.FactoryCodeGenerator.GenerateFactoriesSource(discoveryResult.Factories, assemblyName, breadcrumbs, projectDirectory);
-                spc.AddSource("Factories.g.cs", SourceText.From(factoriesText, Encoding.UTF8));
+                spc.AddSource("Factories.g.cs", GeneratedSourceText.Create(factoriesText));
             }
 
             // Generate provider classes if any were discovered
@@ -168,7 +168,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 if (interfaceProviders.Count > 0)
                 {
                     var providersText = CodeGen.ProviderCodeGenerator.GenerateProvidersSource(interfaceProviders, assemblyName, breadcrumbs, projectDirectory);
-                    spc.AddSource("Providers.g.cs", SourceText.From(providersText, Encoding.UTF8));
+                    spc.AddSource("Providers.g.cs", GeneratedSourceText.Create(providersText));
                 }
 
                 // Shorthand class providers need to be generated in their original namespace
@@ -176,7 +176,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 foreach (var provider in classProviders)
                 {
                     var providerText = CodeGen.ProviderCodeGenerator.GenerateShorthandProviderSource(provider, assemblyName, breadcrumbs, projectDirectory);
-                    spc.AddSource($"Provider.{provider.SimpleTypeName}.g.cs", SourceText.From(providerText, Encoding.UTF8));
+                    spc.AddSource($"Provider.{provider.SimpleTypeName}.g.cs", GeneratedSourceText.Create(providerText));
                 }
             }
 
@@ -185,7 +185,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             if (optionsWithValidators.Count > 0)
             {
                 var validatorsText = CodeGen.OptionsCodeGenerator.GenerateOptionsValidatorsSource(optionsWithValidators, assemblyName, breadcrumbs, projectDirectory);
-                spc.AddSource("OptionsValidators.g.cs", SourceText.From(validatorsText, Encoding.UTF8));
+                spc.AddSource("OptionsValidators.g.cs", GeneratedSourceText.Create(validatorsText));
             }
 
             // Generate DataAnnotations validator classes if any have DataAnnotation attributes
@@ -193,7 +193,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             if (optionsWithDataAnnotations.Count > 0)
             {
                 var dataAnnotationsValidatorsText = CodeGen.OptionsCodeGenerator.GenerateDataAnnotationsValidatorsSource(optionsWithDataAnnotations, assemblyName, breadcrumbs, projectDirectory);
-                spc.AddSource("OptionsDataAnnotationsValidators.g.cs", SourceText.From(dataAnnotationsValidatorsText, Encoding.UTF8));
+                spc.AddSource("OptionsDataAnnotationsValidators.g.cs", GeneratedSourceText.Create(dataAnnotationsValidatorsText));
             }
 
             // Generate parameterless constructors for partial positional records with [Options]
@@ -201,12 +201,12 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             if (optionsNeedingConstructors.Count > 0)
             {
                 var constructorsText = CodeGen.OptionsCodeGenerator.GeneratePositionalRecordConstructorsSource(optionsNeedingConstructors, assemblyName, breadcrumbs, projectDirectory);
-                spc.AddSource("OptionsConstructors.g.cs", SourceText.From(constructorsText, Encoding.UTF8));
+                spc.AddSource("OptionsConstructors.g.cs", GeneratedSourceText.Create(constructorsText));
             }
 
             // Generate ServiceCatalog for runtime introspection
             var catalogText = CodeGen.ServiceCatalogCodeGenerator.GenerateServiceCatalogSource(discoveryResult, assemblyName, projectDirectory, breadcrumbs);
-            spc.AddSource("ServiceCatalog.g.cs", SourceText.From(catalogText, Encoding.UTF8));
+            spc.AddSource("ServiceCatalog.g.cs", GeneratedSourceText.Create(catalogText));
 
             // Generate diagnostic output files if configured
             var diagnosticOptions = GetDiagnosticOptions(configOptions);
@@ -214,7 +214,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             {
                 var referencedAssemblyTypes = AssemblyDiscoveryHelper.DiscoverReferencedAssemblyTypesForDiagnostics(compilation);
                 var diagnosticsText = DiagnosticsGenerator.GenerateDiagnosticsSource(discoveryResult, assemblyName, projectDirectory, diagnosticOptions, referencedAssemblies, referencedAssemblyTypes);
-                spc.AddSource("NeedlrDiagnostics.g.cs", SourceText.From(diagnosticsText, Encoding.UTF8));
+                spc.AddSource("NeedlrDiagnostics.g.cs", GeneratedSourceText.Create(diagnosticsText));
             }
 
             // Generate IDE graph export if configured
@@ -233,7 +233,7 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 // Embed graph as a comment in a generated file so it's accessible
                 // The actual JSON is written to obj folder via the generated code
                 var graphSourceText = Export.GraphExporter.GenerateGraphExportSource(graphJson, assemblyName, breadcrumbs, projectDirectory);
-                spc.AddSource("NeedlrGraph.g.cs", SourceText.From(graphSourceText, Encoding.UTF8));
+                spc.AddSource("NeedlrGraph.g.cs", GeneratedSourceText.Create(graphSourceText));
             }
         });
     }

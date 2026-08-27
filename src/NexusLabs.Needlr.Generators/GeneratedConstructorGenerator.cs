@@ -65,7 +65,7 @@ public sealed class GeneratedConstructorGenerator : IIncrementalGenerator
             var (model, emitContext) = source;
             var breadcrumbs = new BreadcrumbWriter(emitContext.BreadcrumbLevel);
             var generatedSource = GeneratedConstructorCodeGenerator.GenerateConstructorSource(model, emitContext.AssemblyName, breadcrumbs);
-            spc.AddSource(GeneratedConstructorCodeGenerator.BuildHintName(model), SourceText.From(generatedSource, Encoding.UTF8));
+            spc.AddSource(GeneratedConstructorCodeGenerator.BuildHintName(model), GeneratedSourceText.Create(generatedSource));
         });
     }
 }
