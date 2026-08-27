@@ -14,3 +14,4 @@ P:System.Environment.MachineName;Host identity makes generated output non-determ
 P:System.Environment.UserName;Host identity makes generated output non-deterministic and leaks build-machine details.
 P:System.Environment.TickCount;Ambient timing makes generated output non-deterministic.
 P:System.Environment.ProcessId;Ambient process state makes generated output non-deterministic.
+M:Microsoft.CodeAnalysis.Text.SourceText.From(System.String,System.Text.Encoding,Microsoft.CodeAnalysis.Text.SourceHashAlgorithm);Use GeneratedSourceText.Create so emitted line endings are normalized to LF and do not depend on the host OS.

@@ -114,7 +114,7 @@ public sealed class GeneratedConstructorGeneratorTests
                 /// <exception cref="global::System.ArgumentNullException">
                 /// <paramref name="repository"/> is <see langword="null"/>.
                 /// </exception>
-            """,
+            """.ReplaceLineEndings("\n"),
             generatedCode);
         Assert.Contains("_repository = repository;", generatedCode);
     }
@@ -378,7 +378,7 @@ public sealed class GeneratedConstructorGeneratorTests
                 /// <exception cref="global::System.ArgumentException">
                 /// <paramref name="displayName"/> is empty; or <paramref name="tenantName"/> is empty or consists only of white-space characters.
                 /// </exception>
-            """,
+            """.ReplaceLineEndings("\n"),
             generatedCode);
     }
 
