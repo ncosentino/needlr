@@ -1,16 +1,23 @@
 ## [Unreleased]
 
+## [0.0.3-alpha.7] - 2026-08-26
+
 ### Changed
 
 - **BREAKING (alpha): `IServiceCatalog.GeneratedAt` has been removed.** The property was populated by reading the wall clock while generating source, so identical inputs produced different generated code and a different assembly hash on every build. The value could never be correct anyway: under any build cache it reported the time of an earlier build rather than the current one. It was undocumented and had no consumers. Remove references to it; `AssemblyName` and the catalog collections are unaffected.
+- Generated source now uses invariant numeric formatting, ordinal string ordering, normalized relative source paths, and LF line endings. The output is independent of the build machine's locale and operating-system conventions rather than only repeatable on one machine.
+- Repository agent guidance now keeps `AGENTS.md` within its enforced 60-line and 3,072-byte budget and routes technical rules through glob-scoped instruction files.
 
 ### Fixed
 
 - Source generator output is now deterministic. Repeated builds of unchanged source produce byte-identical generated files and assemblies, so `<Deterministic>true</Deterministic>` and content-addressed build caches behave correctly. The service catalog no longer carries a timestamp at all, while the diagnostic markdown reports and the IDE graph JSON keep theirs — those values are now stamped when the artifact is written rather than baked into compiled source, so the reports are unchanged for readers.
+- Negatively ordered plugins and decorators now emit valid C# under locales such as Swedish, Finnish, and Lithuanian instead of using the culture-specific U+2212 minus sign.
+- Service-catalog source locations no longer use host-native path separators or leak absolute build-machine paths, and analyzer-config test doubles now match Roslyn's case-insensitive key semantics.
 
 ### Added
 
-- `Microsoft.CodeAnalysis.BannedApiAnalyzers` now fails the generator build with `RS0030` if a clock, randomness, or host-identity API is used while generating source, and `GeneratedSourceDeterminismTests` asserts that no generated file contains a timestamp-shaped value. New guidance lives in `docs/development/deterministic-generators.md`.
+- `Microsoft.CodeAnalysis.BannedApiAnalyzers` now fails the generator build with `RS0030` when generated output reads ambient time, randomness, host identity, or bypasses canonical line-ending normalization.
+- Structural determinism tests now cover wall-clock values, hostile locales, source-path normalization, and line endings. New guidance lives in `docs/development/deterministic-generators.md`.
 
 ## [0.0.3-alpha.6] - 2026-08-22
 
