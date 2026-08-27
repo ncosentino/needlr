@@ -1979,6 +1979,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#determinism-is-per-machine-per-os-and-per-locale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Determinism is per-machine, per-OS, and per-locale
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#keeping-a-timestamp-you-actually-want" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2001,10 +2012,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#known-limitation" class="md-nav__link">
+  <a href="#line-endings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Known limitation
+        Line endings
       
     </span>
   </a>
@@ -5500,6 +5511,18 @@ resolution are identical across two in-process runs, so such a test passes while
 defect is present and fails only when a run happens to straddle a second boundary.
 Assert the invariant structurally instead.</p>
 </div>
+<h2 id="determinism-is-per-machine-per-os-and-per-locale">Determinism is per-machine, per-OS, and per-locale<a class="headerlink" href="#determinism-is-per-machine-per-os-and-per-locale" title="Permanent link">&para;</a></h2>
+<p>A rebuild that is byte-identical on one machine is not sufficient. Generated output must
+also not depend on the host's operating system or the build machine's locale:</p>
+<ul>
+<li><strong>Numbers</strong> go through <code>GeneratorHelpers.Literal</code>. Locales including <code>sv-SE</code>, <code>fi-FI</code>,
+  and <code>lt-LT</code> format a negative number with U+2212 MINUS SIGN, which is not valid C#.</li>
+<li><strong>String sorts</strong> take an explicit <code>StringComparer.Ordinal</code>. The default comparer is
+  culture-sensitive, so emission order changes with the machine's locale.</li>
+<li><strong>Source paths</strong> go through <code>BreadcrumbWriter.GetRelativeSourcePath</code>, which normalizes
+  separators to <code>/</code> and never emits an absolute path.</li>
+<li><strong>Line endings</strong> are normalized to LF at the <code>AddSource</code> boundary.</li>
+</ul>
 <h2 id="keeping-a-timestamp-you-actually-want">Keeping a timestamp you actually want<a class="headerlink" href="#keeping-a-timestamp-you-actually-want" title="Permanent link">&para;</a></h2>
 <p>A timestamp is legitimate in a human-readable report. Stamp it where the artifact is
 <strong>written</strong>, never where the source is generated:</p>
@@ -5532,11 +5555,15 @@ still satisfies <code>schemas/needlr-graph-v1.schema.json</code> while remaining
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">Get-FileHash</span> <span class="n">src</span><span class="p">\</span><span class="n">Examples</span><span class="p">\</span><span class="n">SourceGen</span><span class="p">\</span><span class="n">CarterSourceGen</span><span class="p">\</span><span class="n">bin</span><span class="p">\</span><span class="n">Release</span><span class="p">\</span><span class="n">net10</span><span class="p">.</span><span class="n">0</span><span class="p">\</span><span class="n">CarterSourceGen</span><span class="p">.</span><span class="n">dll</span>
 </span></code></pre></div>
 <p>Two runs must produce the same SHA-256.</p>
-<h2 id="known-limitation">Known limitation<a class="headerlink" href="#known-limitation" title="Permanent link">&para;</a></h2>
-<p><code>StringBuilder.AppendLine</code> uses <code>Environment.NewLine</code>, so generated source uses CRLF on
-Windows and LF on Linux. Output is deterministic <em>per operating system</em> but not identical
-across them. Fixing that requires pinning the newline for every emitter and is tracked
-separately.</p>
+<h2 id="line-endings">Line endings<a class="headerlink" href="#line-endings" title="Permanent link">&para;</a></h2>
+<p><code>StringBuilder.AppendLine</code> uses <code>Environment.NewLine</code>, so emitters naturally produce CRLF
+on Windows and LF elsewhere. Emitted text is normalized to LF once at the <code>AddSource</code>
+boundary by <code>GeneratedSourceText.Create</code>, which every generator routes through.</p>
+<p><code>SourceText.From</code> is banned in <code>BannedSymbols.txt</code> so a new generator cannot bypass the
+helper; the single sanctioned call inside the helper carries a documented
+<code>#pragma warning disable RS0030</code>.</p>
+<p>Fixing this at the emitters was not viable: there are roughly 1,272 <code>AppendLine</code> call
+sites against 16 <code>AddSource</code> boundaries.</p>
 
 
 

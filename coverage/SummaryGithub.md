@@ -3,20 +3,20 @@
 
 |||
 |:---|:---|
-| Generated on: | 08/27/2026 - 03:50:14 |
-| Coverage date: | 08/27/2026 - 03:47:34 - 08/27/2026 - 03:50:10 |
+| Generated on: | 08/27/2026 - 04:12:01 |
+| Coverage date: | 08/27/2026 - 04:09:39 - 08/27/2026 - 04:11:58 |
 | Parser: | MultiReport (25x Cobertura) |
 | Assemblies: | 20 |
-| Classes: | 251 |
-| Files: | 232 |
-| **Line coverage:** | 92.7% (13606 of 14668) |
-| Covered lines: | 13606 |
-| Uncovered lines: | 1062 |
-| Coverable lines: | 14668 |
-| Total lines: | 36647 |
-| **Branch coverage:** | 84.6% (6260 of 7396) |
-| Covered branches: | 6260 |
-| Total branches: | 7396 |
+| Classes: | 252 |
+| Files: | 233 |
+| **Line coverage:** | 92.7% (13609 of 14674) |
+| Covered lines: | 13609 |
+| Uncovered lines: | 1065 |
+| Coverable lines: | 14674 |
+| Total lines: | 36696 |
+| **Branch coverage:** | 84.6% (6261 of 7398) |
+| Covered branches: | 6261 |
+| Total branches: | 7398 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
@@ -172,6 +172,7 @@
 |NexusLabs.Needlr.Generators.GenerateConstructorSuggestionAnalyzer|93.6%|84.5%|
 |NexusLabs.Needlr.Generators.GeneratedConstructorAnalyzer|94.9%|94.7%|
 |NexusLabs.Needlr.Generators.GeneratedConstructorGenerator|100%|50%|
+|NexusLabs.Needlr.Generators.GeneratedSourceText|50%|50%|
 |NexusLabs.Needlr.Generators.GenerateFactoryAttributeAnalyzer|87.3%|75%|
 |NexusLabs.Needlr.Generators.GeneratorHelpers|90%|81.2%|
 |NexusLabs.Needlr.Generators.Helpers.OptionsNamingHelper|100%|100%|
