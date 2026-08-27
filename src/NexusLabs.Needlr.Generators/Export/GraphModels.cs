@@ -10,7 +10,7 @@ namespace NexusLabs.Needlr.Generators.Export;
 internal sealed class NeedlrGraph
 {
     public string SchemaVersion { get; set; } = "1.0";
-    public string GeneratedAt { get; set; } = DateTime.UtcNow.ToString("O");
+    public string GeneratedAt { get; set; } = GraphExporter.GeneratedAtSentinel;
     public string? ProjectPath { get; set; }
     public string? AssemblyName { get; set; }
     public List<GraphService> Services { get; set; } = new();

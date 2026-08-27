@@ -58,13 +58,16 @@ public sealed class ServiceCatalogIntegrationTests
     }
 
     [Fact]
-    public void ServiceCatalog_GeneratedAt_HasValidFormat()
+    public void ServiceCatalog_ExposesNoGenerationTimestamp()
     {
         var catalog = GetCatalog();
-        
-        Assert.False(string.IsNullOrEmpty(catalog.GeneratedAt));
-        // Should be a valid UTC timestamp format: yyyy-MM-dd HH:mm:ss
-        Assert.Matches(@"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", catalog.GeneratedAt);
+
+        Assert.DoesNotContain(
+            typeof(IServiceCatalog).GetProperties(),
+            p => p.Name == "GeneratedAt");
+        Assert.DoesNotContain(
+            catalog.GetType().GetProperties(),
+            p => p.Name == "GeneratedAt");
     }
 
     [Fact]

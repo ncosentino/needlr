@@ -274,7 +274,10 @@ namespace TestApp
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.RoundtripKind,
                 out _),
-            "Expected generatedAt to be a round-trippable ISO 8601 timestamp");
+            "Expected generatedAt to remain a schema-valid ISO 8601 value");
+        Assert.Equal(
+            GraphExporter.GeneratedAtSentinel,
+            root.GetProperty("generatedAt").GetString());
         Assert.Equal(JsonValueKind.Null, root.GetProperty("projectPath").ValueKind);
         Assert.Equal("TestAssembly", root.GetProperty("assemblyName").GetString());
         Assert.Empty(root.GetProperty("services").EnumerateArray());

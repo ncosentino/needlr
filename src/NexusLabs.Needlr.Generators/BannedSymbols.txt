@@ -1,0 +1,16 @@
+; Ambient state that would make AddSource output vary between builds of identical
+; inputs, defeating <Deterministic>true</Deterministic> and content-addressed build
+; caches. Timestamps that are genuinely wanted must be stamped where the artifact is
+; written (MSBuild target or generated write method), never read inside the generator.
+; See docs/development/deterministic-generators.md.
+P:System.DateTime.Now;Reading the clock makes generated output non-deterministic. Stamp at write time instead.
+P:System.DateTime.UtcNow;Reading the clock makes generated output non-deterministic. Stamp at write time instead.
+P:System.DateTime.Today;Reading the clock makes generated output non-deterministic. Stamp at write time instead.
+P:System.DateTimeOffset.Now;Reading the clock makes generated output non-deterministic. Stamp at write time instead.
+P:System.DateTimeOffset.UtcNow;Reading the clock makes generated output non-deterministic. Stamp at write time instead.
+M:System.Guid.NewGuid;Random identifiers make generated output non-deterministic. Derive a stable identifier from the compilation instead.
+T:System.Random;Randomness makes generated output non-deterministic.
+P:System.Environment.MachineName;Host identity makes generated output non-deterministic and leaks build-machine details.
+P:System.Environment.UserName;Host identity makes generated output non-deterministic and leaks build-machine details.
+P:System.Environment.TickCount;Ambient timing makes generated output non-deterministic.
+P:System.Environment.ProcessId;Ambient process state makes generated output non-deterministic.

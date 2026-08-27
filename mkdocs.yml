@@ -96,6 +96,7 @@ nav:
       - HTTP Clients and Options: architecture/http-clients-and-options.md
     - Development:
       - .NET Engineering: development/dotnet-engineering.md
+      - Deterministic Generator Output: development/deterministic-generators.md
       - Roslyn Analyzers: development/roslyn-analyzers.md
       - Validation and Scheduling Boundaries: development/request-validation-and-jobs.md
       - Performance: performance/dotnet-performance.md
