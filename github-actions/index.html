@@ -1503,6 +1503,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#documentation-deployment-ownership" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation deployment ownership
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#free-tier-boundary" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5524,9 +5535,49 @@ publishing the example applications. Python and Node.js remain workflow-managed.
 <h2 id="pull-request-behavior">Pull-request behavior<a class="headerlink" href="#pull-request-behavior" title="Permanent link">&para;</a></h2>
 <p>Draft pull requests use the subset declared by <code>CI_DRAFT_MODE</code>. Marking a pull request
 ready starts the full validation set and publishes the stable <code>CI</code> check.</p>
+<p>Guidance-only pull requests use the <code>guidance</code> scope. They run structural guidance,
+documentation, and marketplace checks while skipping .NET build, package, and Native
+AOT jobs. The stable required check remains <code>CI</code>; only its internal evidence changes.</p>
 <p>Fork pull requests run within the same GitHub-hosted boundary as repository branches.
 Workflow changes still require careful review because an approved fork run executes the
 proposed workflow with the permissions GitHub grants to that event.</p>
+<h2 id="documentation-deployment-ownership">Documentation deployment ownership<a class="headerlink" href="#documentation-deployment-ownership" title="Permanent link">&para;</a></h2>
+<p>The main CI and release workflows both deploy to <code>gh-pages</code> with <code>keep_files: true</code>.
+Each owns a disjoint generated slice and removes the other workflow's slice from its
+local site output before deployment:</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Owner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/dev/*</code></td>
+<td><code>ci.yml</code></td>
+</tr>
+<tr>
+<td><code>/coverage/*</code></td>
+<td><code>ci.yml</code></td>
+</tr>
+<tr>
+<td><code>/api/stable/*</code></td>
+<td><code>release.yml</code></td>
+</tr>
+<tr>
+<td><code>/api/v&lt;version&gt;/*</code></td>
+<td><code>release.yml</code></td>
+</tr>
+<tr>
+<td>Home, feature pages, and navigation</td>
+<td>Both workflows, from identical sources</td>
+</tr>
+</tbody>
+</table>
+<p>Neither workflow writes generated API documentation back to <code>main</code>. Published
+<code>/api/v&lt;version&gt;/</code> directories are immutable. The versioned API catalog is derived from
+<code>git tag --list 'v*'</code>, not from ignored <code>docs/api/v*/</code> working-tree directories.</p>
 <h2 id="free-tier-boundary">Free-tier boundary<a class="headerlink" href="#free-tier-boundary" title="Permanent link">&para;</a></h2>
 <p>GitHub documents the Linux and Windows labels in Needlr's allowlist as standard
 GitHub-hosted runners whose use is free and unlimited for public repositories. Larger

@@ -5475,6 +5475,10 @@
 <p>Every change ships through a feature branch and a pull request. Direct updates or
 deletions of <code>main</code> are forbidden. Local checkpoint commits on a feature branch are
 unrestricted.</p>
+<p>Pull requests target <code>main</code> unless <code>.github/genesis-delivery.json</code> explicitly declares
+stack support. A feature-branch base is not a harmless review convenience: merging into
+an already-merged base can leave GitHub reporting a pull request as merged while its
+commit never reaches <code>main</code>.</p>
 <h2 id="draft-versus-ready">Draft versus ready<a class="headerlink" href="#draft-versus-ready" title="Permanent link">&para;</a></h2>
 <p><code>CI_DRAFT_MODE</code> controls how much validation a draft pull request runs. It is currently
 set to <code>subset</code>, so a draft skips <code>build-and-test</code>, the Native AOT jobs, and package
@@ -5487,6 +5491,9 @@ validation.</p>
 </ul>
 <p>A draft that is green has not been fully validated. Read the check list rather than the
 summary colour.</p>
+<p>Guidance-only changes use the <code>guidance</code> validation scope. They retain the stable <code>CI</code>
+check while skipping .NET build, packaging, and Native AOT jobs that cannot validate
+Markdown, instruction metadata, or generated guidance mirrors.</p>
 <h2 id="title-format">Title format<a class="headerlink" href="#title-format" title="Permanent link">&para;</a></h2>
 <p>Use a conventional pull request title no longer than 72 characters. GitHub uses the title
 as the squash commit subject and the body as the squash commit message, so both become
