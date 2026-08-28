@@ -1,0 +1,86 @@
+name: Guidance validation plan
+
+on:
+  workflow_call:
+    inputs:
+      event_name:
+        required: true
+        type: string
+      pull_request_number:
+        required: false
+        default: 0
+        type: number
+      is_draft:
+        required: false
+        default: false
+        type: boolean
+      requested_scope:
+        required: false
+        default: ''
+        type: string
+      draft_mode:
+        required: true
+        type: string
+    outputs:
+      scope:
+        value: ${{ jobs.plan.outputs.scope }}
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      scope: ${{ steps.scope.outputs.scope }}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        sparse-checkout: scripts/guidance/Resolve-ValidationScope.ps1
+        sparse-checkout-cone-mode: false
+
+    - name: Resolve validation scope
+      id: scope
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        EVENT_NAME: ${{ inputs.event_name }}
+        PR_NUMBER: ${{ inputs.pull_request_number }}
+        IS_DRAFT: ${{ inputs.is_draft }}
+        REQUESTED_SCOPE: ${{ inputs.requested_scope }}
+        DRAFT_MODE: ${{ inputs.draft_mode }}
+      run: |
+        $changedFiles = @()
+        $conservative = $false
+        if ($env:EVENT_NAME -eq 'pull_request') {
+          try {
+            $changedFiles = @(
+              & gh api `
+                --paginate `
+                "repos/$env:GH_REPO/pulls/$env:PR_NUMBER/files?per_page=100" `
+                --jq '.[] | .filename, (.previous_filename // empty)' 2>&1
+            )
+            if ($LASTEXITCODE -ne 0) {
+              $conservative = $true
+              $changedFiles = @()
+            }
+          } catch {
+            $conservative = $true
+            $changedFiles = @()
+          }
+        }
+
+        $scope = ./scripts/guidance/Resolve-ValidationScope.ps1 `
+          -EventName $env:EVENT_NAME `
+          -RequestedScope $env:REQUESTED_SCOPE `
+          -IsDraft ([bool]::Parse($env:IS_DRAFT)) `
+          -DraftMode $env:DRAFT_MODE `
+          -ChangedFiles $changedFiles `
+          -Conservative:$conservative
+
+        "scope=$scope" | Out-File $env:GITHUB_OUTPUT -Append
+        Write-Host "Validation scope: $scope"

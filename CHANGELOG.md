@@ -1,5 +1,15 @@
 ## [Unreleased]
 
+### Changed
+
+- Repository guidance now keeps project-owned instructions below the aggregate hard-context ceiling, validates roots, instruction metadata, documentation navigation, review wiring, and generated Claude mirrors through one structural gate, and routes guidance-only pull requests through a lightweight CI scope.
+- The project-local review procedure now rejects unsupported feature-branch pull-request bases and reports the full instruction-context distribution for guidance changes.
+
+### Fixed
+
+- Rebuilt the complete Claude rule mirror from its Copilot instruction sources, replacing the stale 60-file tree with a one-to-one generated mirror.
+- Corrected guidance that claimed strict MkDocs rejected unlisted pages; navigation completeness is now enforced explicitly because MkDocs reports that condition only at informational severity.
+
 ## [0.0.3-alpha.7] - 2026-08-26
 
 ### Changed
