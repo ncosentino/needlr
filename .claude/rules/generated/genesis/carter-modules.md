@@ -30,7 +30,7 @@ Endpoints must be thin:
 routeGroup.MapPost("create", async (
     HttpContext context,
     [FromBody] CreateThingRequest request,
-    CreateThingUnitOfWork createThingUow,
+    ICreateThingUnitOfWork createThingUow,
     CancellationToken cancellationToken) =>
 {
     var userId = context.GetRequiredUserId();
@@ -66,7 +66,7 @@ If an endpoint would contain:
 Id = Convert.ToString(id.Value, CultureInfo.InvariantCulture)
 ```
 
-This is because other languages have issues with hangling Int64.
+This is because other languages have issues with handling Int64.
 
 ## Request DTO → service-layer input translation
 
@@ -75,19 +75,19 @@ The Carter module owns the translation boundary between HTTP and the service lay
 Map from the request type to a service-layer `*Input` type before calling the UoW:
 
 ```csharp
-private static async Task<IResult> CreateSite(
+private static async Task<IResult> CreateOrder(
     HttpContext context,
-    CreateSiteRequest request,
-    ICreateSiteUnitOfWork unitOfWork,
+    CreateOrderRequest request,
+    ICreateOrderUnitOfWork unitOfWork,
     CancellationToken cancellationToken)
 {
     var userId = context.GetRequiredUserId();
-    var input = new CreateSiteInput(
-        SiteSlug: request.SiteSlug,
+    var input = new CreateOrderInput(
+        OrderNumber: request.OrderNumber,
         CompanyName: request.CompanyName,
         ...);
     var result = await unitOfWork.TryCreateAsync(input, userId.Value, cancellationToken);
-    return result.ConvertToResult(site => Results.Created(..., MapToResponse(site)));
+    return result.ConvertToResult(order => Results.Created(..., MapToResponse(order)));
 }
 ```
 

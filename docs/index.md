@@ -120,3 +120,18 @@ app.Run();
     [:octicons-arrow-right-24: Analyzers](analyzers/README.md)
 
 </div>
+
+## Contributor and maintainer documentation
+
+The main navigation is the complete documentation inventory. These entrypoints cover
+the repository contracts contributors need most often:
+
+- [Architecture decisions](architecture/decisions.md)
+- [Feature layer pattern](architecture/feature-layers.md)
+- [.NET engineering conventions](development/dotnet-engineering.md)
+- [Deterministic generator output](development/deterministic-generators.md)
+- [Pull request delivery](development/delivery.md)
+- [GitHub Actions CI/CD](github-actions.md)
+- [Building from source](building.md)
+- [Releasing Needlr](releasing.md)
+- [Testing and benchmarks](testing/evaluations-and-benchmarks.md)

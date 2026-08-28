@@ -1,13 +1,9 @@
 ---
 # AUTO-GENERATED from .github/instructions/models.instructions.md — do not edit
 paths:
-  - "**/Models/**/*.cs"
+  - "**/NexusLabs.Needlr.Generators/Models/**/*.cs"
 ---
 # Discovery Model Rules
-
-## One type per file
-
-Never put multiple types in one `.cs` file. Each `struct`, `enum`, or `class` gets its own file named after the type.
 
 ## Type shape
 
@@ -17,23 +13,7 @@ Never put multiple types in one `.cs` file. Each `struct`, `enum`, or `class` ge
 
 ## Folder organization
 
-Organize into logical subfolders by feature area when 2+ related types cluster:
-
-```
-Models/
-├── DiscoveryResult.cs          (top-level aggregator)
-├── DiscoveredType.cs           (standalone types at root)
-├── Options/                    (feature subfolder)
-│   ├── DiscoveredOptions.cs
-│   ├── OptionsPropertyInfo.cs
-│   └── ComplexTypeKind.cs
-├── HttpClients/
-│   ├── DiscoveredHttpClient.cs
-│   └── HttpClientCapabilities.cs
-└── Providers/
-    ├── DiscoveredProvider.cs
-    └── ProviderPropertyKind.cs
-```
+Organize into logical feature subfolders when two or more related models cluster.
 
 ## Namespace
 

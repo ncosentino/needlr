@@ -42,6 +42,17 @@ and `gh pr diff`.
 
 State the selected scope and changed files.
 
+### Resolve merge topology
+
+For coordinated pull requests, identify whether the repository uses one pull request
+with logical commits, separate default-base merge units, or a true stack. Read project
+delivery docs and `.github/genesis-delivery.json`; a feature-branch base is unsupported
+unless the executable contract declares stacks.
+
+Every stack layer is a merge unit. Request changes for a second aggregate merge pull
+request, issue-derived PR hierarchy, an unsupported base, or ready-layer behavior that
+contradicts the declared stack mode.
+
 ## 2. Resolve governing sources
 
 Resolve applicable instructions:
@@ -78,10 +89,14 @@ choosing commands.
 - Do not invent a command that the repository does not declare or document.
 - Do not run complete suites, browser/platform matrices, hosted scenarios, or
   credentialed/live checks on a workstation.
-- Pull request GitHub Actions CI owns complete and hosted evidence.
+- Pull request CI and declared runner profiles own complete and hosted evidence.
 - For a pull request, inspect `gh pr checks` instead of reproducing heavy work.
 
 Record every command/result and every required check that was not run.
+
+For instruction-context or guidance-budget changes, run
+`pwsh scripts/guidance/Get-InstructionContextReport.ps1` and report the full path
+distribution rather than a representative sample.
 
 ## 4. Review what gates do not prove
 

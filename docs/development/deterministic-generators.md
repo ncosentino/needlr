@@ -26,6 +26,15 @@ a clock read fails the build with `RS0030` rather than silently shipping.
 timestamp-shaped value, which also covers routes the banned-API list cannot see (for
 example, formatting a `DateTime` constructed by hand).
 
+Two seemingly general enforcement approaches do not work for generator culture:
+
+- `CA1305` does not report interpolated numeric values in this project.
+- Roslyn rule `RS1035` prohibits analyzers and generators from mutating
+  `CultureInfo.CurrentCulture`.
+
+The culture-invariance test therefore runs generation under multiple hostile locales
+and compares every generated file.
+
 !!! note "Why not just run the generator twice and compare?"
 
     A comparative test does not detect a clock read. Timestamps rendered at one-second
@@ -82,3 +91,14 @@ helper; the single sanctioned call inside the helper carries a documented
 
 Fixing this at the emitters was not viable: there are roughly 1,272 `AppendLine` call
 sites against 16 `AddSource` boundaries.
+
+Generator tests that compare multiline output normalize expected raw-string literals
+with `.ReplaceLineEndings("\n")`; otherwise the expectation inherits the checkout's
+line endings and agrees with broken platform-dependent output by coincidence.
+
+## Analyzer-config test doubles
+
+Roslyn compares analyzer-config keys case-insensitively through
+`AnalyzerConfigOptions.KeyComparer`. Test doubles use the same comparer. A default
+`Dictionary<string, string>` is case-sensitive and can make a test silently exercise
+the generator's "option absent" branch rather than the behavior it claims to verify.

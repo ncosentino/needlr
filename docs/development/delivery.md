@@ -4,6 +4,11 @@ Every change ships through a feature branch and a pull request. Direct updates o
 deletions of `main` are forbidden. Local checkpoint commits on a feature branch are
 unrestricted.
 
+Pull requests target `main` unless `.github/genesis-delivery.json` explicitly declares
+stack support. A feature-branch base is not a harmless review convenience: merging into
+an already-merged base can leave GitHub reporting a pull request as merged while its
+commit never reaches `main`.
+
 ## Draft versus ready
 
 `CI_DRAFT_MODE` controls how much validation a draft pull request runs. It is currently
@@ -17,6 +22,10 @@ validation.
 
 A draft that is green has not been fully validated. Read the check list rather than the
 summary colour.
+
+Guidance-only changes use the `guidance` validation scope. They retain the stable `CI`
+check while skipping .NET build, packaging, and Native AOT jobs that cannot validate
+Markdown, instruction metadata, or generated guidance mirrors.
 
 ## Title format
 

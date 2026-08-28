@@ -68,11 +68,16 @@ $guidancePatterns = @(
     '^AGENTS\.md$',
     '^CLAUDE\.md$',
     '^README\.md$',
+    '^mkdocs\.yml$',
+    '^\.claude/CLAUDE\.md$',
+    '^\.claude/rules/generated/',
+    '^\.github/agents/',
     '^\.github/copilot-instructions\.md$',
     '^\.github/genesis-guidance(?:\.schema)?\.json$',
     '^\.github/instructions/',
     '^\.github/skills/',
     '^docs/',
+    '^overrides/',
     '^scripts/guidance/'
 )
 $guidanceOnly = (
@@ -91,9 +96,6 @@ if ($guidanceOnly) {
 }
 
 if ($IsDraft) {
-    if ($DraftMode -eq 'subset') {
-        return 'full'
-    }
     return $DraftMode
 }
 return 'full'

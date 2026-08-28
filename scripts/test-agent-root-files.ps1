@@ -1,85 +1,83 @@
 <#
 .SYNOPSIS
-    Validates Needlr's agent root-file budget.
-
-.DESCRIPTION
-    AGENTS.md loads in every agent session, so every byte competes with the task for
-    context. The budget in .github/instructions/genesis/agent-root-files.instructions.md
-    caps it at 60 lines and 3072 UTF-8 bytes. Redirect files must stay redirects rather
-    than accumulating copies of guidance that already lives elsewhere.
-
-    Without this check the budget is advisory, and a file that every agent appends one
-    reasonable section to grows without bound.
+    Validates Needlr's agent root-file budget and redirect contract.
 #>
+[CmdletBinding()]
+param(
+    [string]$ProjectRoot = (Split-Path -Parent $PSScriptRoot)
+)
 
 $ErrorActionPreference = 'Stop'
 
-$repoRoot = Split-Path -Parent $PSScriptRoot
-$maximumLines = 60
-$maximumBytes = 3072
-$instructionsUrl = '.github/instructions/genesis/agent-root-files.instructions.md'
-
+$ProjectRoot = (Resolve-Path -LiteralPath $ProjectRoot).Path
+$contractPath = Join-Path (Join-Path $ProjectRoot '.github') 'genesis-guidance.json'
 $failures = [System.Collections.Generic.List[string]]::new()
 
-function Measure-File {
-    param(
-        [Parameter(Mandatory)]
-        [string]$RelativePath)
+function Measure-TextFile {
+    param([Parameter(Mandatory)][string]$RelativePath)
 
-    $fullPath = Join-Path $repoRoot $RelativePath
-    if (-not (Test-Path -LiteralPath $fullPath)) {
+    $fullPath = Join-Path $ProjectRoot $RelativePath
+    if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
         return $null
     }
 
-    $raw = Get-Content -LiteralPath $fullPath -Raw
+    $raw = Get-Content -LiteralPath $fullPath -Raw -Encoding UTF8
     if ($null -eq $raw) {
         $raw = ''
     }
+    $canonical = $raw.Replace("`r`n", "`n").Replace("`r", "`n")
 
-    return [pscustomobject]@{
-        Path  = $RelativePath
-        Lines = ($raw -split "`r?`n").Count
-        Bytes = [System.Text.Encoding]::UTF8.GetByteCount($raw)
-        Text  = $raw
+    [PSCustomObject]@{
+        Path = $RelativePath
+        Lines =
+            if ($canonical.Length -eq 0) { 0 }
+            else { ($canonical.TrimEnd("`n") -split "`n").Count }
+        Bytes = [Text.Encoding]::UTF8.GetByteCount($canonical)
+        Text = $canonical.TrimEnd("`n")
     }
 }
 
-$agents = Measure-File -RelativePath 'AGENTS.md'
-if ($null -eq $agents) {
-    $failures.Add('AGENTS.md is missing.')
-}
-else {
-    if ($agents.Lines -gt $maximumLines) {
+if (-not (Test-Path -LiteralPath $contractPath -PathType Leaf)) {
+    $failures.Add('.github/genesis-guidance.json is missing.')
+} else {
+    $contract = Get-Content -LiteralPath $contractPath -Raw -Encoding UTF8 |
+        ConvertFrom-Json
+    $agents = Measure-TextFile -RelativePath ([string]$contract.agents.path)
+    if ($null -eq $agents) {
+        $failures.Add("$($contract.agents.path) is missing.")
+    } else {
+        $maximumLines = [int]$contract.agents.maxLines
+        $maximumBytes = [int]$contract.agents.maxBytes
+        if ($agents.Lines -gt $maximumLines) {
+            $failures.Add(
+                "$($agents.Path) is $($agents.Lines) lines; the budget is $maximumLines.")
+        }
+        if ($agents.Bytes -gt $maximumBytes) {
+            $failures.Add(
+                "$($agents.Path) is $($agents.Bytes) UTF-8 bytes; the budget is $maximumBytes.")
+        }
+    }
+
+    $claude = Measure-TextFile -RelativePath ([string]$contract.agents.redirects.claude)
+    if ($null -eq $claude) {
+        $failures.Add("$($contract.agents.redirects.claude) is missing.")
+    } elseif ($claude.Text -cne '@AGENTS.md') {
         $failures.Add(
-            "AGENTS.md is $($agents.Lines) lines; the budget is $maximumLines. " +
-            "Move technical rules into a path-scoped file under .github/instructions/ " +
-            "whose glob matches the code the rule governs. See $instructionsUrl.")
+            "$($claude.Path) must be the exact one-line '@AGENTS.md' redirect.")
     }
 
-    if ($agents.Bytes -gt $maximumBytes) {
-        $failures.Add(
-            "AGENTS.md is $($agents.Bytes) UTF-8 bytes; the budget is $maximumBytes. " +
-            "Move architecture and rationale into docs/ and exact technical rules into " +
-            "path-scoped instructions. See $instructionsUrl.")
-    }
-}
-
-# Redirects exist to point at AGENTS.md. Duplicating guidance in them means an agent
-# reads the same rule twice and the copies drift apart.
-foreach ($redirect in @('CLAUDE.md', '.github/copilot-instructions.md')) {
-    $file = Measure-File -RelativePath $redirect
-    if ($null -eq $file) {
-        continue
-    }
-
-    if ($file.Text -notmatch 'AGENTS\.md') {
-        $failures.Add("$redirect must point at AGENTS.md.")
-    }
-
-    if ($file.Text -match '(?m)^\s*```') {
-        $failures.Add(
-            "$redirect contains a code block. Redirects must not restate build, test, " +
-            "or workflow guidance that belongs in AGENTS.md or a path-scoped instruction.")
+    $copilot = Measure-TextFile -RelativePath ([string]$contract.agents.redirects.copilot)
+    if ($null -eq $copilot) {
+        $failures.Add("$($contract.agents.redirects.copilot) is missing.")
+    } else {
+        if ($copilot.Lines -gt 3 -or $copilot.Bytes -gt 128) {
+            $failures.Add(
+                "$($copilot.Path) is $($copilot.Lines) lines/$($copilot.Bytes) bytes; " +
+                'the budget is 3 lines/128 bytes.')
+        }
+        if ($copilot.Text -notmatch 'AGENTS\.md') {
+            $failures.Add("$($copilot.Path) must point at AGENTS.md.")
+        }
     }
 }
 
@@ -91,11 +89,7 @@ if ($failures.Count -gt 0) {
     exit 1
 }
 
-$summary = if ($null -ne $agents) {
-    "AGENTS.md $($agents.Lines)/$maximumLines lines, $($agents.Bytes)/$maximumBytes bytes."
-}
-else {
-    'AGENTS.md not measured.'
-}
-
-Write-Host "Agent root-file policy satisfied. $summary" -ForegroundColor Green
+Write-Host (
+    "Agent root-file policy satisfied. AGENTS.md $($agents.Lines)/" +
+    "$maximumLines lines, $($agents.Bytes)/$maximumBytes bytes.") `
+    -ForegroundColor Green

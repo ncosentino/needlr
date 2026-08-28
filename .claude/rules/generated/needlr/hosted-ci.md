@@ -1,9 +1,6 @@
 ---
 # AUTO-GENERATED from .github/instructions/needlr/hosted-ci.instructions.md — do not edit
 paths:
-  - "**/*.csproj"
-  - "**/*.cs"
-  - "**/*.slnx"
   - ".github/workflows/**/*.yml"
   - ".github/workflows/**/*.yaml"
   - ".github/genesis-delivery.json"

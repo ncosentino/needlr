@@ -22,36 +22,16 @@ env:
 
 jobs:
   validation-plan:
-    name: Validation plan
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      scope: ${{ steps.scope.outputs.scope }}
-
-    steps:
-    - name: Resolve validation scope
-      id: scope
-      shell: bash
-      env:
-        EVENT_NAME: ${{ github.event_name }}
-        IS_DRAFT: ${{ github.event.pull_request.draft || false }}
-        DRAFT_MODE: ${{ vars.CI_DRAFT_MODE || 'subset' }}
-      run: |
-        scope=full
-        if [ "$EVENT_NAME" = "pull_request" ] && [ "$IS_DRAFT" = "true" ]; then
-          scope="$DRAFT_MODE"
-        fi
-
-        case "$scope" in
-          full|subset|ready-only) ;;
-          *)
-            echo "::error::Unsupported validation scope '$scope'."
-            exit 1
-            ;;
-        esac
-
-        echo "scope=$scope" >> "$GITHUB_OUTPUT"
-        echo "Validation scope: $scope"
+    permissions:
+      contents: read
+      pull-requests: read
+    uses: ./.github/workflows/guidance-validation-plan.yml
+    with:
+      event_name: ${{ github.event_name }}
+      pull_request_number: ${{ github.event.pull_request.number || 0 }}
+      is_draft: ${{ github.event.pull_request.draft || false }}
+      requested_scope: ''
+      draft_mode: ${{ vars.CI_DRAFT_MODE || 'subset' }}
 
   changes:
     runs-on: ubuntu-latest
@@ -101,10 +81,40 @@ jobs:
       shell: pwsh
       run: scripts/validate-agent-marketplace.ps1
 
+  guidance-validation:
+    needs: [validation-plan, changes]
+    if: needs.validation-plan.outputs.scope == 'guidance'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Validate guidance architecture
+      shell: pwsh
+      run: scripts/test-guidance.ps1
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Install documentation dependencies
+      run: python -m pip install -r docs/requirements.txt
+
+    - name: Build documentation
+      run: python -m mkdocs build --strict
+
   preflight:
     name: Delivery preflight
     needs: [validation-plan, changes, marketplace-validation]
-    if: always() && needs.validation-plan.outputs.scope != 'ready-only'
+    if: >-
+      always() &&
+      needs.validation-plan.outputs.scope != 'ready-only' &&
+      needs.validation-plan.outputs.scope != 'guidance'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
@@ -177,10 +187,10 @@ jobs:
       shell: pwsh
       run: scripts/test-hosted-runner-policy.ps1
 
-    - name: Validate agent root files
+    - name: Validate repository guidance
       if: needs.changes.outputs.source_required == 'true'
       shell: pwsh
-      run: scripts/test-agent-root-files.ps1
+      run: scripts/test-guidance.ps1
 
     - name: Validate mutation testing contract
       if: needs.changes.outputs.source_required == 'true'
@@ -580,6 +590,7 @@ jobs:
       - validation-plan
       - changes
       - marketplace-validation
+      - guidance-validation
       - preflight
       - build-and-test
       - package-validation
@@ -598,6 +609,7 @@ jobs:
         CHANGES_RESULT: ${{ needs.changes.result }}
         MARKETPLACE_REQUIRED: ${{ needs.changes.outputs.marketplace_required }}
         MARKETPLACE_RESULT: ${{ needs.marketplace-validation.result }}
+        GUIDANCE_RESULT: ${{ needs.guidance-validation.result }}
         PREFLIGHT_RESULT: ${{ needs.preflight.result }}
         BUILD_RESULT: ${{ needs.build-and-test.result }}
         PACKAGE_RESULT: ${{ needs.package-validation.result }}
@@ -632,6 +644,7 @@ jobs:
         case "$SCOPE" in
           ready-only)
             expect_result "marketplace-validation" "$MARKETPLACE_RESULT" "skipped"
+            expect_result "guidance-validation" "$GUIDANCE_RESULT" "skipped"
             expect_result "preflight" "$PREFLIGHT_RESULT" "skipped"
             expect_result "build-and-test" "$BUILD_RESULT" "skipped"
             expect_result "package-validation" "$PACKAGE_RESULT" "skipped"
@@ -640,7 +653,17 @@ jobs:
             ;;
           subset)
             validate_marketplace
+            expect_result "guidance-validation" "$GUIDANCE_RESULT" "skipped"
             expect_result "preflight" "$PREFLIGHT_RESULT" "success"
+            expect_result "build-and-test" "$BUILD_RESULT" "skipped"
+            expect_result "package-validation" "$PACKAGE_RESULT" "skipped"
+            expect_result "aot-console-app" "$AOT_CONSOLE_RESULT" "skipped"
+            expect_result "aot-web-app" "$AOT_WEB_RESULT" "skipped"
+            ;;
+          guidance)
+            expect_result "marketplace-validation" "$MARKETPLACE_RESULT" "skipped"
+            expect_result "guidance-validation" "$GUIDANCE_RESULT" "success"
+            expect_result "preflight" "$PREFLIGHT_RESULT" "skipped"
             expect_result "build-and-test" "$BUILD_RESULT" "skipped"
             expect_result "package-validation" "$PACKAGE_RESULT" "skipped"
             expect_result "aot-console-app" "$AOT_CONSOLE_RESULT" "skipped"
@@ -648,6 +671,7 @@ jobs:
             ;;
           full)
             validate_marketplace
+            expect_result "guidance-validation" "$GUIDANCE_RESULT" "skipped"
             expect_result "preflight" "$PREFLIGHT_RESULT" "success"
             expect_result "build-and-test" "$BUILD_RESULT" "success"
             expect_result "package-validation" "$PACKAGE_RESULT" "success"

@@ -55,9 +55,31 @@ publishing the example applications. Python and Node.js remain workflow-managed.
 Draft pull requests use the subset declared by `CI_DRAFT_MODE`. Marking a pull request
 ready starts the full validation set and publishes the stable `CI` check.
 
+Guidance-only pull requests use the `guidance` scope. They run structural guidance,
+documentation, and marketplace checks while skipping .NET build, package, and Native
+AOT jobs. The stable required check remains `CI`; only its internal evidence changes.
+
 Fork pull requests run within the same GitHub-hosted boundary as repository branches.
 Workflow changes still require careful review because an approved fork run executes the
 proposed workflow with the permissions GitHub grants to that event.
+
+## Documentation deployment ownership
+
+The main CI and release workflows both deploy to `gh-pages` with `keep_files: true`.
+Each owns a disjoint generated slice and removes the other workflow's slice from its
+local site output before deployment:
+
+| Path | Owner |
+| --- | --- |
+| `/api/dev/*` | `ci.yml` |
+| `/coverage/*` | `ci.yml` |
+| `/api/stable/*` | `release.yml` |
+| `/api/v<version>/*` | `release.yml` |
+| Home, feature pages, and navigation | Both workflows, from identical sources |
+
+Neither workflow writes generated API documentation back to `main`. Published
+`/api/v<version>/` directories are immutable. The versioned API catalog is derived from
+`git tag --list 'v*'`, not from ignored `docs/api/v*/` working-tree directories.
 
 ## Free-tier boundary
 
