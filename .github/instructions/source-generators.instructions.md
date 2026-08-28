@@ -4,10 +4,6 @@ applyTo: "**/*Generator.cs"
 
 # Needlr Source Generator Rules
 
-General source generator rules (class shape, structural discipline, netstandard2.0 constraints) are in `genesis/source-generators.instructions.md`. This file covers needlr-specific wiring only.
-
-Determinism rules for anything reaching `AddSource` are in `generator-determinism.instructions.md`. Never read the clock, randomness, or host identity while generating source.
-
 ## Bootstrap wiring
 
 - `NeedlrSourceGenBootstrap` (in `Generators.Attributes`) handles module-initializer registration for the main generator.

@@ -1,5 +1,5 @@
 ---
-applyTo: "**/*.csproj,**/*.cs,**/*.slnx,.github/workflows/**/*.yml,.github/workflows/**/*.yaml,.github/genesis-delivery.json,.github/genesis-delivery.schema.json,scripts/delivery/Configure-GitHubDelivery.ps1,scripts/test-hosted-runner-policy.ps1"
+applyTo: ".github/workflows/**/*.yml,.github/workflows/**/*.yaml,.github/genesis-delivery.json,.github/genesis-delivery.schema.json,scripts/delivery/Configure-GitHubDelivery.ps1,scripts/test-hosted-runner-policy.ps1"
 ---
 
 # Needlr hosted CI
