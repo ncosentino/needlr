@@ -30,4 +30,6 @@ ALL types in this project use namespace `NexusLabs.Needlr.Generators` — NOT `N
 
 ## XML documentation
 
-All public types and members require comprehensive XML docs including `<summary>`, `<remarks>`, and `<example>` blocks with working code samples.
+Public attributes and companion interfaces require `<remarks>` and a working `<example>`
+in addition to their caller-facing XML contract. Attribute behavior is difficult to
+infer from the constructor signature alone.

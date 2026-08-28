@@ -23,7 +23,7 @@ Service / Client / UnitOfWork
 
 - Not a web API response — use `*Response.cs` for Carter module boundaries
 - Not a MassTransit response — use `*ConsumerResponse.cs` for `context.RespondAsync()`
-- Not a domain entity — use a plain domain record (e.g., `ScheduledPost`, `Blog`) for persisted objects
+- Not a domain entity — use a plain domain record (e.g., `Order`, `Product`) for persisted objects
 
 ## Shape
 

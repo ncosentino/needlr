@@ -33,6 +33,5 @@ consumers of the produced NuGet package.
 ## Determinism
 
 `src/Directory.Build.props` sets `<Deterministic>true</Deterministic>` and enables
-`ContinuousIntegrationBuild` under CI. Do not disable either. That flag only constrains the
-compiler — see `generator-determinism.instructions.md` for the rules that keep generated
-source deterministic.
+`ContinuousIntegrationBuild` under CI. Do not disable either. Those properties constrain
+the compiler; generators must independently keep emitted source deterministic.

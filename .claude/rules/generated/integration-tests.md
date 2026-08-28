@@ -39,7 +39,10 @@ var configuration = new ConfigurationBuilder()
 
 ## Test types (options records, helper services)
 
-Co-locate test options records and helper service classes in the SAME file as the test class, after the closing brace. Do NOT put them in a separate `TestTypes/` file. This is the established house style.
+Needlr integration-test fixtures override the general top-level type-isolation default:
+a fixture owned by one test stays beside that test so source-generation discovery and
+the assertion remain visible together. Co-locate test-only options records and helper
+services after the test class; extract one only when another test file reuses it.
 
 ## Assembly-level attribute
 

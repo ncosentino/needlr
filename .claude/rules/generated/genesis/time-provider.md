@@ -3,54 +3,18 @@
 paths:
   - "**/*.cs"
 ---
-# Time Provider Rules
+# TimeProvider
 
-## NEVER use DateTime.Now, DateTime.UtcNow, DateTimeOffset.Now, or DateTimeOffset.UtcNow
-
-Direct access to system time is **FORBIDDEN** in production code. It makes code untestable because time cannot be controlled in tests.
-
-## Use TimeProvider instead
-
-Inject `TimeProvider` (built into .NET 8+) and call `_timeProvider.GetUtcNow()`:
-
-```csharp
-internal sealed class MyUnitOfWork(
-    ILogger<MyUnitOfWork> _logger,
-    TimeProvider _timeProvider,
-    MyRepository _repository) : IMyUnitOfWork
-{
-    public async Task<TriedEx<Thing>> TryCreateAsync(
-        CreateThingInput input,
-        string ownerUserId,
-        CancellationToken cancellationToken) => await
-    Try.GetAsync<Thing>(_logger, async () =>
-    {
-        var now = _timeProvider.GetUtcNow().DateTime;
-        // ...
-    });
-}
-```
-
-## Return types
-
-`GetUtcNow()` returns `DateTimeOffset`. Use:
-- `_timeProvider.GetUtcNow()` when you need `DateTimeOffset`
-- `_timeProvider.GetUtcNow().DateTime` when you need `DateTime`
-
-## Registration
-
-Register `TimeProvider.System` as a singleton in your DI setup:
-
-```csharp
-services.AddSingleton(TimeProvider.System);
-```
-
-## Test code
-
-Test code is exempt from this rule — use `FakeTimeProvider` from `Microsoft.Extensions.Time.Testing` to control time in tests:
-
-```csharp
-var fakeTime = new FakeTimeProvider();
-fakeTime.SetUtcNow(new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero));
-// inject fakeTime wherever TimeProvider is needed
-```
+- Production code never reads `DateTime.Now`, `DateTime.UtcNow`,
+  `DateTimeOffset.Now`, or `DateTimeOffset.UtcNow`.
+- Forward an in-scope `TimeProvider` to timestamp, delay, timeout, timer, periodic
+  timer, cancellation-timeout, and elapsed-time APIs. `NLF0025`/`NLF0026` enforce
+  missed forwarding.
+- Inject the BCL `TimeProvider` type. Do not create `ITimeProvider`, clock wrappers,
+  or delay abstractions; `NLF0027` rejects them.
+- Prefer `DateTimeOffset` for application values. Convert to `DateTime` only at an
+  external schema/API boundary.
+- Register `TimeProvider.System` once through the infrastructure-owning Needlr
+  `IServiceCollectionPlugin`; do not register it ad hoc in `Program.cs`.
+- Tests use `FakeTimeProvider`, seed time explicitly, and advance it only after the
+  system under test has registered the timer it awaits.

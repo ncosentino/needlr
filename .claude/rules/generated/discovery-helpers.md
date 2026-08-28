@@ -33,15 +33,6 @@ attributeClass.ToDisplayString() == "NexusLabs.Needlr.OptionsAttribute"
 
 Return `readonly struct` info types with nullable fields for optional data. These structs live in `Models/` (one per file).
 
-## Established per-feature helpers
-
-Each feature has its own discovery helper following this pattern:
-
-- `OptionsAttributeHelper` / `OptionsDiscoveryHelper`
-- `HttpClientOptionsAttributeHelper`
-- `FactoryDiscoveryHelper`
-- `ProviderDiscoveryHelper`
-- `InterceptorDiscoveryHelper`
-- `OpenDecoratorDiscoveryHelper`
-
-New features should create their own helper file rather than adding to an existing one.
+Before adding a helper, inspect current siblings matching `*DiscoveryHelper.cs` and
+`*AttributeHelper.cs`. New features get a dedicated helper rather than extending an
+unrelated feature's file.

@@ -14,7 +14,7 @@ internal sealed class MyFeatureJob(
     IJobProgressReporter _jobProgressReporter,
     ILogger<MyFeatureJob> _logger,
     MyFeatureService _service,
-    ITimeProvider _timeProvider)
+    TimeProvider _timeProvider)
     : BaseProgressJob(_jobProgressReporter, _logger)
 {
     protected override async Task<TriedEx<object>> ExecuteWithProgressAsync(
@@ -32,17 +32,26 @@ internal sealed class MyFeatureJob(
 Extract parameters from `context.MergedJobDataMap` using typed parsing with `CultureInfo.InvariantCulture`. Define keys as `private const string` fields:
 
 ```csharp
-private const string SOCIAL_ACCOUNT_ID_KEY = "SocialAccountId";
+private const string CUSTOMER_ID_KEY = "CustomerId";
 
 // In ExecuteWithProgressAsync:
-SocialAccountId socialAccountId = new(long.Parse(
-    (string)context.MergedJobDataMap.Get(SOCIAL_ACCOUNT_ID_KEY),
+CustomerId customerId = new(long.Parse(
+    (string)context.MergedJobDataMap.Get(CUSTOMER_ID_KEY),
     CultureInfo.InvariantCulture));
 ```
 
 ## Thin orchestrators
 
 Jobs should be thin orchestrators — delegate business logic to injected services or UnitOfWork classes. Do not put significant logic directly in `ExecuteWithProgressAsync`.
+
+## Cancellation and indivisible side effects
+
+- Thread `context.CancellationToken` through ordinary job work.
+- Prefer idempotent external operations or an outbox/durable state transition when a job combines an
+  external side effect with local bookkeeping.
+- If no stronger atomic mechanism exists and cancellation between a completed side effect and its
+  durable record would make retries unsafe, defer cancellation only across that smallest bookkeeping
+  region, then observe the token immediately.
 
 ## Return value
 
