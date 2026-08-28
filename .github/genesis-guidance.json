@@ -33,6 +33,13 @@
         "owner": "tag:dotnet"
       },
       {
+        "path": "docs/architecture/feature-layers.md",
+        "title": "Source-generated feature layers",
+        "section": "Architecture",
+        "order": 50,
+        "owner": "project:needlr"
+      },
+      {
         "path": "docs/development/dotnet-engineering.md",
         "title": ".NET engineering conventions",
         "section": "Development",
@@ -68,6 +75,20 @@
         "owner": "tag:dotnet"
       },
       {
+        "path": "docs/development/deterministic-generators.md",
+        "title": "Deterministic generator output",
+        "section": "Development",
+        "order": 60,
+        "owner": "project:needlr"
+      },
+      {
+        "path": "docs/development/delivery.md",
+        "title": "Pull request delivery",
+        "section": "Development",
+        "order": 70,
+        "owner": "project:needlr"
+      },
+      {
         "path": "docs/building.md",
         "title": "Building from Source",
         "section": "Guides",
@@ -94,6 +115,13 @@
         "section": "Guides",
         "order": 1000,
         "owner": "inferred:final-output"
+      },
+      {
+        "path": "docs/github-actions.md",
+        "title": "GitHub Actions CI/CD",
+        "section": "Guides",
+        "order": 1010,
+        "owner": "project:needlr"
       },
       {
         "path": "docs/ui/blazor-extensibility.md",
