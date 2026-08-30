@@ -10,7 +10,7 @@ WarmupCount=3
 
  Method                          | Mean        | Error     | StdDev    | Ratio | Rank | Gen0   | Allocated | Alloc Ratio |
 -------------------------------- |------------:|----------:|----------:|------:|-----:|-------:|----------:|------------:|
- Reflection_AssemblyListProvided | 11,740.4 ns | 120.45 ns |  18.64 ns |  1.00 |    2 | 0.1678 |    3005 B |        1.00 |
- SourceGen_AssemblyListProvided  | 26,166.9 ns | 267.79 ns |  69.55 ns |  2.23 |    3 | 1.5564 |   26528 B |        8.83 |
- SourceGen_EmptyAssemblyList     | 25,684.7 ns | 387.00 ns | 100.50 ns |  2.19 |    3 | 1.5259 |   25528 B |        8.50 |
- SourceGen_ParameterlessOverload |    468.9 ns |  12.55 ns |   1.94 ns |  0.04 |    1 | 0.0262 |     440 B |        0.15 |
+ Reflection_AssemblyListProvided | 11,787.1 ns | 272.97 ns |  42.24 ns |  1.00 |    2 | 0.1678 |    3005 B |        1.00 |
+ SourceGen_AssemblyListProvided  | 26,935.2 ns |  73.56 ns |  11.38 ns |  2.29 |    3 | 1.5564 |   26528 B |        8.83 |
+ SourceGen_EmptyAssemblyList     | 26,685.2 ns | 446.81 ns | 116.03 ns |  2.26 |    3 | 1.5259 |   25528 B |        8.50 |
+ SourceGen_ParameterlessOverload |    482.2 ns |   3.75 ns |   0.97 ns |  0.04 |    1 | 0.0257 |     440 B |        0.15 |

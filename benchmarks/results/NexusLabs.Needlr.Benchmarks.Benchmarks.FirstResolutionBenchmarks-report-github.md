@@ -12,6 +12,6 @@ LaunchCount=1  UnrollFactor=1  WarmupCount=3
 ```
 | Method                                 | Mean        | Error     | StdDev    | Ratio  | RatioSD | Rank | Allocated | Alloc Ratio |
 |--------------------------------------- |------------:|----------:|----------:|-------:|--------:|-----:|----------:|------------:|
-| ManualDI_BuildAndResolveFirst          |    26.08 μs |  0.732 μs |  0.113 μs |   1.00 |    0.01 |    1 |         - |          NA |
-| Needlr_Reflection_BuildAndResolveFirst | 5,806.27 μs | 99.458 μs | 25.829 μs | 222.62 |    1.25 |    3 | 1318656 B |          NA |
-| Needlr_SourceGen_BuildAndResolveFirst  |   477.55 μs | 73.223 μs | 19.016 μs |  18.31 |    0.67 |    2 |  217768 B |          NA |
+| ManualDI_BuildAndResolveFirst          |    26.53 μs |  11.55 μs |  1.787 μs |   1.00 |    0.08 |    1 |         - |          NA |
+| Needlr_Reflection_BuildAndResolveFirst | 6,128.07 μs | 196.99 μs | 51.158 μs | 231.70 |   13.13 |    3 | 1319664 B |          NA |
+| Needlr_SourceGen_BuildAndResolveFirst  |   491.34 μs |  86.21 μs | 22.390 μs |  18.58 |    1.30 |    2 |  217480 B |          NA |

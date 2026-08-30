@@ -10,6 +10,6 @@ WarmupCount=3
 
  Method                          | Mean     | Error    | StdDev   | Ratio | Rank | Allocated | Alloc Ratio |
 -------------------------------- |---------:|---------:|---------:|------:|-----:|----------:|------------:|
- ManualDI_ResolveSimple          | 15.15 ns | 0.043 ns | 0.007 ns |  1.00 |    1 |         - |          NA |
- Needlr_Reflection_ResolveSimple | 14.85 ns | 0.647 ns | 0.168 ns |  0.98 |    1 |         - |          NA |
- Needlr_SourceGen_ResolveSimple  | 15.22 ns | 0.034 ns | 0.005 ns |  1.00 |    1 |         - |          NA |
+ ManualDI_ResolveSimple          | 14.55 ns | 0.175 ns | 0.027 ns |  1.00 |    1 |         - |          NA |
+ Needlr_Reflection_ResolveSimple | 14.96 ns | 0.665 ns | 0.173 ns |  1.03 |    1 |         - |          NA |
+ Needlr_SourceGen_ResolveSimple  | 15.28 ns | 0.077 ns | 0.012 ns |  1.05 |    1 |         - |          NA |

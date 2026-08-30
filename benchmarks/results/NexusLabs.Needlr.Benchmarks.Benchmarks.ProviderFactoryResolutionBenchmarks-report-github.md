@@ -12,10 +12,10 @@ WarmupCount=3
 ```
 | Method                              | Mean      | Error     | StdDev    | Ratio | RatioSD | Rank | Gen0   | Allocated | Alloc Ratio |
 |------------------------------------ |----------:|----------:|----------:|------:|--------:|-----:|-------:|----------:|------------:|
-| ManualDI_FuncFactory_PreResolved    | 10.848 ns | 4.0514 ns | 1.0521 ns |  1.01 |    0.13 |    2 | 0.0019 |      32 B |        1.00 |
-| ManualDI_FuncFactory_WithResolution | 18.569 ns | 0.5444 ns | 0.1414 ns |  1.73 |    0.16 |    3 | 0.0019 |      32 B |        1.00 |
-| DirectFactory_PreResolved           |  8.439 ns | 0.2098 ns | 0.0545 ns |  0.78 |    0.07 |    1 | 0.0019 |      32 B |        1.00 |
-| DirectFactory_WithResolution        | 21.161 ns | 0.8265 ns | 0.2146 ns |  1.97 |    0.19 |    3 | 0.0019 |      32 B |        1.00 |
-| Provider_FactoryShorthand           | 15.311 ns | 3.5265 ns | 0.9158 ns |  1.42 |    0.15 |    3 | 0.0019 |      32 B |        1.00 |
-| Provider_FactoryInterface           | 17.337 ns | 5.3351 ns | 1.3855 ns |  1.61 |    0.19 |    3 | 0.0019 |      32 B |        1.00 |
-| Provider_MixedShorthand             | 17.091 ns | 2.5571 ns | 0.6641 ns |  1.59 |    0.16 |    3 | 0.0019 |      32 B |        1.00 |
+| ManualDI_FuncFactory_PreResolved    | 13.995 ns | 2.8594 ns | 0.7426 ns |  1.00 |    0.07 |    2 | 0.0019 |      32 B |        1.00 |
+| ManualDI_FuncFactory_WithResolution | 19.453 ns | 0.1348 ns | 0.0209 ns |  1.39 |    0.07 |    2 | 0.0019 |      32 B |        1.00 |
+| DirectFactory_PreResolved           |  9.376 ns | 0.3402 ns | 0.0526 ns |  0.67 |    0.03 |    1 | 0.0019 |      32 B |        1.00 |
+| DirectFactory_WithResolution        | 22.815 ns | 0.1861 ns | 0.0483 ns |  1.63 |    0.08 |    2 | 0.0019 |      32 B |        1.00 |
+| Provider_FactoryShorthand           | 15.843 ns | 7.1098 ns | 1.8464 ns |  1.13 |    0.13 |    2 | 0.0019 |      32 B |        1.00 |
+| Provider_FactoryInterface           | 14.001 ns | 5.4529 ns | 1.4161 ns |  1.00 |    0.10 |    2 | 0.0019 |      32 B |        1.00 |
+| Provider_MixedShorthand             | 19.544 ns | 3.8306 ns | 0.9948 ns |  1.40 |    0.09 |    2 | 0.0019 |      32 B |        1.00 |
