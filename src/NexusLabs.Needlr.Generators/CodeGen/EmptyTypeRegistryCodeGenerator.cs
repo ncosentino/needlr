@@ -3,6 +3,8 @@
 
 using System.Text;
 
+using NexusLabs.Needlr.Generators.Models;
+
 namespace NexusLabs.Needlr.Generators.CodeGen;
 
 /// <summary>
@@ -23,12 +25,15 @@ internal static class EmptyTypeRegistryCodeGenerator
     /// <summary>
     /// Emits the empty <c>TypeRegistry</c> exposing empty injectable and plugin providers.
     /// </summary>
-    /// <param name="assemblyName">The assembly the registry is generated for.</param>
+    /// <param name="registrationPlan">The normalized registration plan for the assembly.</param>
     /// <param name="breadcrumbs">The breadcrumb writer supplied by the orchestration method.</param>
     /// <returns>The generated C# source for the empty <c>TypeRegistry</c>.</returns>
-    internal static string GenerateTypeRegistrySource(string assemblyName, BreadcrumbWriter breadcrumbs)
+    internal static string GenerateTypeRegistrySource(
+        GeneratedRegistrationPlan registrationPlan,
+        BreadcrumbWriter breadcrumbs)
     {
         var builder = new StringBuilder();
+        var assemblyName = registrationPlan.AssemblyName;
         var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
 
         breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Type Registry (empty)");
@@ -63,7 +68,7 @@ internal static class EmptyTypeRegistryCodeGenerator
     /// Emits the module-initializer bootstrap that registers the empty providers with
     /// <c>NeedlrSourceGenBootstrap</c>.
     /// </summary>
-    /// <param name="assemblyName">The assembly the bootstrap is generated for.</param>
+    /// <param name="registrationPlan">The normalized registration plan for the assembly.</param>
     /// <param name="breadcrumbs">The breadcrumb writer supplied by the orchestration method.</param>
     /// <returns>The generated C# source for the module-initializer bootstrap.</returns>
     /// <remarks>
@@ -71,9 +76,12 @@ internal static class EmptyTypeRegistryCodeGenerator
     /// which takes no <c>IServiceCollection</c>/<c>IConfiguration</c> parameters and therefore keeps
     /// the emitted code free of any Microsoft.Extensions.DependencyInjection dependency.
     /// </remarks>
-    internal static string GenerateBootstrapSource(string assemblyName, BreadcrumbWriter breadcrumbs)
+    internal static string GenerateBootstrapSource(
+        GeneratedRegistrationPlan registrationPlan,
+        BreadcrumbWriter breadcrumbs)
     {
         var builder = new StringBuilder();
+        var assemblyName = registrationPlan.AssemblyName;
         var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
 
         breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Source-Gen Bootstrap (empty)");

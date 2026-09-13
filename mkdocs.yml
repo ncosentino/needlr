@@ -73,6 +73,7 @@ nav:
     - Generated Constructors: generated-constructors.md
     - Generated Record Constructor Overloads: generated-record-constructor-overloads.md
     - Service Catalog: service-catalog.md
+    - Analyzer-Readable Registrations: analyzer-readable-registrations.md
     - Breadcrumbs: breadcrumbs.md
     - SignalR: signalr.md
     - .NET MAUI: maui.md
@@ -208,6 +209,7 @@ nav:
     - ADR-0011 Adopt Advisory Mutation Testing: adr/adr-0011-adopt-advisory-mutation-testing.md
     - ADR-0012 Bound Mutation Testing to Runtime Projects: adr/adr-0012-bound-mutation-testing-to-runtime-projects.md
     - ADR-0013 Use GitHub-Hosted Runners for Public CI: adr/adr-0013-use-github-hosted-runners-for-public-ci.md
+    - ADR-0014 Expose Generated Registrations as Metadata: adr/adr-0014-expose-generated-registrations-as-metadata.md
 
 plugins:
   - search

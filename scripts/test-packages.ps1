@@ -118,9 +118,11 @@ $assertions = @(
         )
         FileChecks = @(
             @{ Entry = 'build/NexusLabs.Needlr.Build.props';             Content = 'NeedlrAutoGenerate';               Description = 'build/props defines NeedlrAutoGenerate' },
+            @{ Entry = 'build/NexusLabs.Needlr.Build.props';             Content = 'NeedlrEmitRegistrationManifest';   Description = 'build/props exposes opt-in registration metadata' },
             @{ Entry = 'build/NexusLabs.Needlr.Build.targets';           Content = 'RootNamespace';                    Description = 'build/targets falls back to RootNamespace for NeedlrNamespacePrefix' },
             @{ Entry = 'build/NexusLabs.Needlr.Build.targets';           Content = 'NeedlrWriteTypeRegistryAttributeFile'; Description = 'build/targets contains NeedlrWriteTypeRegistryAttributeFile target' },
             @{ Entry = 'buildTransitive/NexusLabs.Needlr.Build.props';   Content = 'NeedlrAutoGenerate';               Description = 'buildTransitive/props defines NeedlrAutoGenerate' },
+            @{ Entry = 'buildTransitive/NexusLabs.Needlr.Build.props';   Content = 'NeedlrEmitRegistrationManifest';   Description = 'buildTransitive/props exposes opt-in registration metadata' },
             @{ Entry = 'buildTransitive/NexusLabs.Needlr.Build.targets'; Content = 'RootNamespace';                    Description = 'buildTransitive/targets falls back to RootNamespace for NeedlrNamespacePrefix' },
             @{ Entry = 'buildTransitive/NexusLabs.Needlr.Build.targets'; Content = 'NeedlrWriteTypeRegistryAttributeFile'; Description = 'buildTransitive/targets contains NeedlrWriteTypeRegistryAttributeFile target' }
         )

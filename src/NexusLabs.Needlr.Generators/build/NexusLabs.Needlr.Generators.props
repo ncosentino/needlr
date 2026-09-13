@@ -14,6 +14,9 @@
     
     <!-- Enable IDE graph export (true/false). Default: false. Generates NeedlrGraph.g.cs for IDE tooling. -->
     <NeedlrExportGraph Condition="'$(NeedlrExportGraph)' == ''">false</NeedlrExportGraph>
+
+    <!-- Emit analyzer-readable registration metadata (true/false). Default: false. -->
+    <NeedlrEmitRegistrationManifest Condition="'$(NeedlrEmitRegistrationManifest)' == ''">false</NeedlrEmitRegistrationManifest>
   </PropertyGroup>
 
   <!-- Expose MSBuild properties to source generators via CompilerVisibleProperty -->
@@ -23,6 +26,7 @@
     <CompilerVisibleProperty Include="NeedlrDiagnosticsPath" />
     <CompilerVisibleProperty Include="NeedlrDiagnosticsFilter" />
     <CompilerVisibleProperty Include="NeedlrExportGraph" />
+    <CompilerVisibleProperty Include="NeedlrEmitRegistrationManifest" />
     <CompilerVisibleProperty Include="ProjectDir" />
   </ItemGroup>
 </Project>

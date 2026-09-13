@@ -74,6 +74,23 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 discoveryResult.MissingTypeRegistryPlugins.Count == 0 &&
                 referencedAssemblies.Count == 0;
 
+            var registrationPlan = GeneratedRegistrationPlanBuilder.Create(
+                assemblyName,
+                isAotProject,
+                registersServiceCatalog: !nothingDiscovered,
+                referencedAssemblies,
+                discoveryResult);
+            if (ShouldEmitRegistrationManifest(configOptions))
+            {
+                var registrationManifestSource =
+                    CodeGen.RegistrationManifestCodeGenerator.GenerateSource(
+                        registrationPlan,
+                        breadcrumbs);
+                spc.AddSource(
+                    "NeedlrRegistrationManifest.g.cs",
+                    GeneratedSourceText.Create(registrationManifestSource));
+            }
+
             // A type-less assembly that still carries [GenerateTypeRegistry] (guaranteed here by the
             // attributeInfo guard above) is a declared Needlr participant. Consumers force-load
             // typeof({Assembly}.Generated.TypeRegistry) for every attribute-carrying referenced
@@ -84,10 +101,16 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             // take a dependency it would not otherwise have.
             if (nothingDiscovered)
             {
-                var emptyRegistrySource = CodeGen.EmptyTypeRegistryCodeGenerator.GenerateTypeRegistrySource(assemblyName, breadcrumbs);
+                var emptyRegistrySource =
+                    CodeGen.EmptyTypeRegistryCodeGenerator.GenerateTypeRegistrySource(
+                        registrationPlan,
+                        breadcrumbs);
                 spc.AddSource("TypeRegistry.g.cs", GeneratedSourceText.Create(emptyRegistrySource));
 
-                var emptyBootstrapSource = CodeGen.EmptyTypeRegistryCodeGenerator.GenerateBootstrapSource(assemblyName, breadcrumbs);
+                var emptyBootstrapSource =
+                    CodeGen.EmptyTypeRegistryCodeGenerator.GenerateBootstrapSource(
+                        registrationPlan,
+                        breadcrumbs);
                 spc.AddSource("NeedlrSourceGenBootstrap.g.cs", GeneratedSourceText.Create(emptyBootstrapSource));
                 return;
             }
@@ -140,72 +163,122 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                     violation.SourceInterfaceName));
             }
 
-            var sourceText = GenerateTypeRegistrySource(discoveryResult, assemblyName, breadcrumbs, projectDirectory, isAotProject);
+            var sourceText = GenerateTypeRegistrySource(
+                registrationPlan,
+                breadcrumbs,
+                projectDirectory);
             spc.AddSource("TypeRegistry.g.cs", GeneratedSourceText.Create(sourceText));
 
-            var bootstrapText = CodeGen.BootstrapCodeGenerator.GenerateModuleInitializerBootstrapSource(assemblyName, referencedAssemblies, breadcrumbs, discoveryResult.Factories.Count > 0, discoveryResult.Options.Count > 0 || discoveryResult.HttpClients.Count > 0, discoveryResult.Providers.Count > 0);
+            var bootstrapText = CodeGen.BootstrapCodeGenerator.GenerateModuleInitializerBootstrapSource(
+                registrationPlan.AssemblyName,
+                registrationPlan.ReferencedRegistryAssemblies,
+                breadcrumbs,
+                registrationPlan.HasFactoryRegistrations,
+                registrationPlan.HasConfigBoundRegistrations,
+                registrationPlan.HasProviderRegistrations);
             spc.AddSource("NeedlrSourceGenBootstrap.g.cs", GeneratedSourceText.Create(bootstrapText));
 
             // Generate interceptor proxy classes if any were discovered
-            if (discoveryResult.InterceptedServices.Count > 0)
+            if (registrationPlan.DiscoveryResult.InterceptedServices.Count > 0)
             {
-                var interceptorProxiesText = CodeGen.InterceptorCodeGenerator.GenerateInterceptorProxiesSource(discoveryResult.InterceptedServices, assemblyName, breadcrumbs, projectDirectory);
+                var interceptorProxiesText = CodeGen.InterceptorCodeGenerator.GenerateInterceptorProxiesSource(
+                    registrationPlan.DiscoveryResult.InterceptedServices,
+                    registrationPlan.AssemblyName,
+                    breadcrumbs,
+                    projectDirectory);
                 spc.AddSource("InterceptorProxies.g.cs", GeneratedSourceText.Create(interceptorProxiesText));
             }
 
             // Generate factory classes if any were discovered
-            if (discoveryResult.Factories.Count > 0)
+            if (registrationPlan.HasFactoryRegistrations)
             {
-                var factoriesText = CodeGen.FactoryCodeGenerator.GenerateFactoriesSource(discoveryResult.Factories, assemblyName, breadcrumbs, projectDirectory);
+                var factoriesText = CodeGen.FactoryCodeGenerator.GenerateFactoriesSource(
+                    registrationPlan.EmittedFactories,
+                    registrationPlan.AssemblyName,
+                    breadcrumbs,
+                    projectDirectory);
                 spc.AddSource("Factories.g.cs", GeneratedSourceText.Create(factoriesText));
             }
 
             // Generate provider classes if any were discovered
-            if (discoveryResult.Providers.Count > 0)
+            if (registrationPlan.HasProviderRegistrations)
             {
                 // Interface-based providers go in the Generated namespace
-                var interfaceProviders = discoveryResult.Providers.Where(p => p.IsInterface).ToList();
+                var interfaceProviders = registrationPlan.EmittedProviders
+                    .Where(p => p.IsInterface)
+                    .ToList();
                 if (interfaceProviders.Count > 0)
                 {
-                    var providersText = CodeGen.ProviderCodeGenerator.GenerateProvidersSource(interfaceProviders, assemblyName, breadcrumbs, projectDirectory);
+                    var providersText = CodeGen.ProviderCodeGenerator.GenerateProvidersSource(
+                        interfaceProviders,
+                        registrationPlan.AssemblyName,
+                        breadcrumbs,
+                        projectDirectory);
                     spc.AddSource("Providers.g.cs", GeneratedSourceText.Create(providersText));
                 }
 
                 // Shorthand class providers need to be generated in their original namespace
-                var classProviders = discoveryResult.Providers.Where(p => !p.IsInterface && p.IsPartial).ToList();
+                var classProviders = registrationPlan.EmittedProviders
+                    .Where(p => !p.IsInterface && p.IsPartial)
+                    .ToList();
                 foreach (var provider in classProviders)
                 {
-                    var providerText = CodeGen.ProviderCodeGenerator.GenerateShorthandProviderSource(provider, assemblyName, breadcrumbs, projectDirectory);
+                    var providerText = CodeGen.ProviderCodeGenerator.GenerateShorthandProviderSource(
+                        provider,
+                        registrationPlan.AssemblyName,
+                        breadcrumbs,
+                        projectDirectory);
                     spc.AddSource($"Provider.{provider.SimpleTypeName}.g.cs", GeneratedSourceText.Create(providerText));
                 }
             }
 
             // Generate options validator classes if any have validation methods
-            var optionsWithValidators = discoveryResult.Options.Where(o => o.HasValidatorMethod).ToList();
+            var optionsWithValidators = registrationPlan.DiscoveryResult.Options
+                .Where(o => o.HasValidatorMethod)
+                .ToList();
             if (optionsWithValidators.Count > 0)
             {
-                var validatorsText = CodeGen.OptionsCodeGenerator.GenerateOptionsValidatorsSource(optionsWithValidators, assemblyName, breadcrumbs, projectDirectory);
+                var validatorsText = CodeGen.OptionsCodeGenerator.GenerateOptionsValidatorsSource(
+                    optionsWithValidators,
+                    registrationPlan.AssemblyName,
+                    breadcrumbs,
+                    projectDirectory);
                 spc.AddSource("OptionsValidators.g.cs", GeneratedSourceText.Create(validatorsText));
             }
 
             // Generate DataAnnotations validator classes if any have DataAnnotation attributes
-            var optionsWithDataAnnotations = discoveryResult.Options.Where(o => o.HasDataAnnotations).ToList();
+            var optionsWithDataAnnotations = registrationPlan.DiscoveryResult.Options
+                .Where(o => o.HasDataAnnotations)
+                .ToList();
             if (optionsWithDataAnnotations.Count > 0)
             {
-                var dataAnnotationsValidatorsText = CodeGen.OptionsCodeGenerator.GenerateDataAnnotationsValidatorsSource(optionsWithDataAnnotations, assemblyName, breadcrumbs, projectDirectory);
+                var dataAnnotationsValidatorsText = CodeGen.OptionsCodeGenerator.GenerateDataAnnotationsValidatorsSource(
+                    optionsWithDataAnnotations,
+                    registrationPlan.AssemblyName,
+                    breadcrumbs,
+                    projectDirectory);
                 spc.AddSource("OptionsDataAnnotationsValidators.g.cs", GeneratedSourceText.Create(dataAnnotationsValidatorsText));
             }
 
             // Generate parameterless constructors for partial positional records with [Options]
-            var optionsNeedingConstructors = discoveryResult.Options.Where(o => o.NeedsGeneratedConstructor).ToList();
+            var optionsNeedingConstructors = registrationPlan.DiscoveryResult.Options
+                .Where(o => o.NeedsGeneratedConstructor)
+                .ToList();
             if (optionsNeedingConstructors.Count > 0)
             {
-                var constructorsText = CodeGen.OptionsCodeGenerator.GeneratePositionalRecordConstructorsSource(optionsNeedingConstructors, assemblyName, breadcrumbs, projectDirectory);
+                var constructorsText = CodeGen.OptionsCodeGenerator.GeneratePositionalRecordConstructorsSource(
+                    optionsNeedingConstructors,
+                    registrationPlan.AssemblyName,
+                    breadcrumbs,
+                    projectDirectory);
                 spc.AddSource("OptionsConstructors.g.cs", GeneratedSourceText.Create(constructorsText));
             }
 
             // Generate ServiceCatalog for runtime introspection
-            var catalogText = CodeGen.ServiceCatalogCodeGenerator.GenerateServiceCatalogSource(discoveryResult, assemblyName, projectDirectory, breadcrumbs);
+            var catalogText = CodeGen.ServiceCatalogCodeGenerator.GenerateServiceCatalogSource(
+                registrationPlan,
+                projectDirectory,
+                breadcrumbs);
             spc.AddSource("ServiceCatalog.g.cs", GeneratedSourceText.Create(catalogText));
 
             // Generate diagnostic output files if configured
@@ -287,6 +360,17 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             return true;
         }
         return false;
+    }
+
+    private static bool ShouldEmitRegistrationManifest(
+        Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider configOptions)
+    {
+        return configOptions.GlobalOptions.TryGetValue(
+                "build_property.NeedlrEmitRegistrationManifest",
+                out var enabled) &&
+            enabled.Equals(
+                "true",
+                StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -846,13 +930,18 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         }
     }
 
-    private static string GenerateTypeRegistrySource(DiscoveryResult discoveryResult, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory, bool isAotProject)
+    private static string GenerateTypeRegistrySource(
+        GeneratedRegistrationPlan registrationPlan,
+        BreadcrumbWriter breadcrumbs,
+        string? projectDirectory)
     {
         var builder = new StringBuilder();
+        var discoveryResult = registrationPlan.DiscoveryResult;
+        var assemblyName = registrationPlan.AssemblyName;
         var safeAssemblyName = GeneratorHelpers.SanitizeIdentifier(assemblyName);
-        var hasOptions = discoveryResult.Options.Count > 0;
-        var hasHttpClients = discoveryResult.HttpClients.Count > 0;
-        var hasConfigBoundRegistrations = hasOptions || hasHttpClients;
+        var isAotProject = registrationPlan.IsAotProject;
+        var hasConfigBoundRegistrations =
+            registrationPlan.HasConfigBoundRegistrations;
 
         breadcrumbs.WriteFileHeader(builder, assemblyName, "Needlr Type Registry");
         builder.AppendLine("#nullable enable");
@@ -863,7 +952,8 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
         if (hasConfigBoundRegistrations)
         {
             builder.AppendLine("using Microsoft.Extensions.Configuration;");
-            if (isAotProject || hasHttpClients)
+            if (isAotProject ||
+                registrationPlan.HasHttpClientRegistrations)
             {
                 builder.AppendLine("using Microsoft.Extensions.Options;");
             }
@@ -906,10 +996,15 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             GenerateRegisterOptionsMethod(builder, discoveryResult.Options, discoveryResult.HttpClients, safeAssemblyName, breadcrumbs, projectDirectory, isAotProject);
         }
 
-        if (discoveryResult.Providers.Count > 0)
+        if (registrationPlan.HasProviderRegistrations)
         {
             builder.AppendLine();
-            CodeGen.DecoratorsCodeGenerator.GenerateRegisterProvidersMethod(builder, discoveryResult.Providers, safeAssemblyName, breadcrumbs, projectDirectory);
+            CodeGen.DecoratorsCodeGenerator.GenerateRegisterProvidersMethod(
+                builder,
+                registrationPlan.EmittedProviders,
+                safeAssemblyName,
+                breadcrumbs,
+                projectDirectory);
         }
 
         builder.AppendLine();

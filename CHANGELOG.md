@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Added
+
+- Source-generated assemblies can opt into publishing their exact normalized Needlr registration plan as deterministic, versioned JSON under the `NexusLabs.Needlr.RegistrationManifest` assembly-metadata key by setting `NeedlrEmitRegistrationManifest=true`. The default remains off to avoid a measured linear DLL-size cost for consumers that do not use compile-time metadata. Roslyn analyzers can consume injectable, decorator, hosted-service, interceptor, factory, provider, options, HTTP-client, composition, plugin, and referenced-registry metadata from ordinary PE references without loading assemblies or reproducing Needlr discovery.
+
 ### Changed
 
 - Repository guidance now keeps project-owned instructions below the aggregate hard-context ceiling, validates roots, instruction metadata, documentation navigation, review wiring, and generated Claude mirrors through one structural gate, and routes guidance-only pull requests through a lightweight CI scope.
@@ -7,6 +11,7 @@
 
 ### Fixed
 
+- Updated the pinned .NET SDK and `Microsoft.SourceLink.GitHub` to `10.0.303`, the patched feature-band release for `GHSA-23fw-v26w-5fgq`, so NuGet audit no longer blocks every restore on the vulnerable transitive `Microsoft.Build.Tasks.Git` 8.0.0 package.
 - Rebuilt the complete Claude rule mirror from its Copilot instruction sources, replacing the stale 60-file tree with a one-to-one generated mirror.
 - Corrected guidance that claimed strict MkDocs rejected unlisted pages; navigation completeness is now enforced explicitly because MkDocs reports that condition only at informational severity.
 

@@ -108,6 +108,19 @@ foreach (var opt in validatedOptions)
 - The catalog is registered as a singleton and is the same instance across resolutions
 - Interface names in the catalog include the `global::` prefix for fully qualified names
 
+## Compile-time tooling
+
+`IServiceCatalog` is a runtime API. Roslyn can inspect its property signatures in a
+referenced assembly but cannot evaluate the generated collection initializers from a PE
+reference.
+
+Analyzers and other compile-time tools should use the
+[analyzer-readable registration manifest](analyzer-readable-registrations.md) instead.
+That versioned metadata is emitted from the same normalized registration plan and can be
+read directly from `IAssemblySymbol` without loading the assembly. Manifest emission is
+opt-in through `NeedlrEmitRegistrationManifest=true` so ordinary applications carry no
+additional metadata payload.
+
 ## API Reference
 
 See the source code for full type definitions:

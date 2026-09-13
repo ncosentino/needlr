@@ -19,6 +19,13 @@
   <PropertyGroup Condition="'$(NeedlrExcludeNamespacePrefix)' == ''">
     <NeedlrExcludeNamespacePrefix></NeedlrExcludeNamespacePrefix>
   </PropertyGroup>
+  <!-- Analyzer-readable registration metadata is opt-in because its payload grows with the generated plan. -->
+  <PropertyGroup Condition="'$(NeedlrEmitRegistrationManifest)' == ''">
+    <NeedlrEmitRegistrationManifest>false</NeedlrEmitRegistrationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <CompilerVisibleProperty Include="NeedlrEmitRegistrationManifest" />
+  </ItemGroup>
   <!-- NeedlrAutoGenerateAttribute: controls whether NexusLabs.Needlr.Build automatically writes
        the [assembly: GenerateTypeRegistry] attribute file when NeedlrAutoGenerate=true.
        Set to 'false' if you declare the attribute yourself (avoids CS0579 duplicate attribute error).
