@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.0.3-alpha.8] - 2026-09-13
+
 ### Added
 
 - Source-generated assemblies can opt into publishing their exact normalized Needlr registration plan as deterministic, versioned JSON under the `NexusLabs.Needlr.RegistrationManifest` assembly-metadata key by setting `NeedlrEmitRegistrationManifest=true`. The default remains off to avoid a measured linear DLL-size cost for consumers that do not use compile-time metadata. Roslyn analyzers can consume injectable, decorator, hosted-service, interceptor, factory, provider, options, HTTP-client, composition, plugin, and referenced-registry metadata from ordinary PE references without loading assemblies or reproducing Needlr discovery.
