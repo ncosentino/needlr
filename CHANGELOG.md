@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Added
+
+- Source-generated assemblies now publish their exact normalized Needlr registration plan as deterministic, versioned JSON under the `NexusLabs.Needlr.RegistrationManifest` assembly-metadata key. Roslyn analyzers can consume injectable, decorator, hosted-service, interceptor, factory, provider, options, HTTP-client, composition, plugin, and referenced-registry metadata from ordinary PE references without loading assemblies or reproducing Needlr discovery.
+
 ### Changed
 
 - Repository guidance now keeps project-owned instructions below the aggregate hard-context ceiling, validates roots, instruction metadata, documentation navigation, review wiring, and generated Claude mirrors through one structural gate, and routes guidance-only pull requests through a lightweight CI scope.

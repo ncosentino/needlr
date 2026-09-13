@@ -118,6 +118,6 @@ public sealed class RegisterClosedOverImplementationsOfGeneratedConstructorTests
             .WithReference<RegisterClosedOverImplementationsOfAttribute>()
             .WithReference<GenerateConstructorAttribute>()
             .WithSource(source)
-            .RunTypeRegistryGenerator();
+            .GetTypeRegistryOutput();
     }
 }
