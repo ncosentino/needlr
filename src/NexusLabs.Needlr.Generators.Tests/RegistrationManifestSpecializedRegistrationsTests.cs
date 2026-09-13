@@ -327,6 +327,7 @@ public sealed class RegistrationManifestSpecializedRegistrationsTests
             .WithReference<IServiceCollection>()
             .WithReference<IConfiguration>()
             .WithReference<IServiceCatalog>()
+            .WithRegistrationManifest()
             .WithSource(source);
     }
 }

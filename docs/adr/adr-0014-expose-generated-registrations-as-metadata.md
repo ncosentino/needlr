@@ -40,6 +40,8 @@ code, or change the runtime dependency-injection behavior.
   C# or IL, or depend on reflection.
 - The representation must remain deterministic across builds, cultures, machines, and
   operating systems.
+- Assemblies that do not consume the compiler contract must not pay an unbounded
+  metadata-size cost.
 - Empty generated registries must be distinguishable from assemblies built before the
   contract existed.
 - Existing `IServiceCatalog` consumers and runtime registration behavior must remain
@@ -53,7 +55,10 @@ Needlr will construct one normalized `GeneratedRegistrationPlan` after discovery
 before source emission. Registration emitters and the analyzer-readable manifest consume
 that same plan. Needlr will not run a second classification pass for the manifest.
 
-Every assembly with `[GenerateTypeRegistry]` will receive one generated
+The manifest is opt-in through `NeedlrEmitRegistrationManifest=true`. Its default is
+`false`, so ordinary Needlr applications receive no additional assembly metadata.
+
+An enabled assembly with `[GenerateTypeRegistry]` will receive one generated
 `System.Reflection.AssemblyMetadataAttribute`. The key is
 `NexusLabs.Needlr.RegistrationManifest`; the value is deterministic JSON conforming to
 `schemas/needlr-registration-manifest-v1.schema.json`.
@@ -78,10 +83,11 @@ The metadata describes Needlr's generated plan before runtime customization.
 `ITypeFilterer` overrides, user callbacks, plugin-executed registrations, and
 registrations from other libraries remain outside the compile-time contract.
 
-An empty participant emits schema `1.0` with empty collections and no service-catalog
-registration. Absence of the metadata attribute means that the assembly is not a
-manifest-bearing Needlr participant; consumers must not silently reconstruct an
-authoritative result from naming conventions.
+An enabled empty participant emits schema `1.0` with empty collections and no
+service-catalog registration. Absence of the metadata attribute means emission was
+disabled, the assembly is not a manifest-bearing Needlr participant, or it predates the
+contract; consumers must not silently reconstruct an authoritative result from naming
+conventions.
 
 The metadata key and JSON schema are compatibility contracts. Additive schema changes
 increment the minor version. Removing fields or changing their meaning requires a new
@@ -90,6 +96,11 @@ major version.
 Needlr will not ship a diagnostic that interprets this metadata as a requirement to
 resolve services from a container. Downstream analyzers own their diagnostics,
 activation conditions, severities, exemptions, and repository policy.
+
+Release measurements show why emission is opt-in. A representative 102-entry manifest
+added 44,544 bytes to its DLL; a 1,002-entry manifest added 438,784 bytes, approximately
+438 bytes per injectable service. The test suite enforces a 450,000-byte ceiling for the
+representative 1,000-service payload and verifies approximately linear growth.
 
 ## Alternatives considered
 
@@ -127,6 +138,13 @@ the growing set of registration kinds would create a broad runtime public API th
 harder to evolve than a versioned data schema. A single BCL assembly-metadata attribute
 keeps the compatibility surface explicit and transport-neutral.
 
+### Emit the JSON manifest by default
+
+Always-on emission would make the contract immediately available to every downstream
+tool. It was rejected after Release measurements showed 44,544 bytes of additional DLL
+size for 102 entries and 438,784 bytes for 1,002 entries. Consumers that do not use the
+metadata should not pay that cost.
+
 ### Write a sidecar file
 
 A JSON file in the producer's intermediate output could avoid assembly metadata. It was
@@ -150,8 +168,8 @@ would reintroduce machine-specific coupling.
 ### Negative
 
 - Needlr assumes long-term compatibility responsibility for another versioned schema.
-- Every participating assembly gains a JSON metadata payload proportional to its
-  generated registration plan.
+- Enabled assemblies gain a JSON metadata payload proportional to their generated
+  registration plan.
 - Type identities are serialized strings; consumers must compare them using the
   documented Roslyn display format rather than receiving direct `ITypeSymbol` attribute
   arguments.
@@ -164,6 +182,8 @@ would reintroduce machine-specific coupling.
   represent distinct generated operations.
 - Older assemblies remain readable as ordinary references but do not retroactively gain
   a manifest.
+- Disabled assemblies have zero manifest payload and remain indistinguishable from older
+  or nonparticipating assemblies to downstream tools.
 - Runtime filters and callbacks can still change the final `IServiceCollection`; the
   manifest intentionally describes generated input, not post-runtime state.
 
@@ -181,6 +201,11 @@ syntax, file access, reflection, or assembly loading.
 Determinism tests cover the manifest with every other generated file under hostile
 cultures and LF normalization. The committed schema and manifest shape tests keep the
 public metadata contract synchronized.
+
+Size-budget tests serialize representative 100- and 1,000-service plans, enforce an
+upper bound for the latter, and reject superlinear growth. Package tests verify that both
+direct generator consumption and `NexusLabs.Needlr.Build` expose the opt-in MSBuild
+property to the compiler.
 
 ## References
 

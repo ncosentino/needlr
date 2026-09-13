@@ -400,7 +400,6 @@ public sealed class OptionsDataAnnotationsTests
             .WithSource(source)
             .WithAotMode(isAot)
             .WithBreadcrumbLevel("Minimal")
-            .RunTypeRegistryGeneratorExcluding(
-                "NeedlrRegistrationManifest.g.cs");
+            .RunTypeRegistryGenerator();
     }
 }

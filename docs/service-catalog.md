@@ -117,7 +117,9 @@ reference.
 Analyzers and other compile-time tools should use the
 [analyzer-readable registration manifest](analyzer-readable-registrations.md) instead.
 That versioned metadata is emitted from the same normalized registration plan and can be
-read directly from `IAssemblySymbol` without loading the assembly.
+read directly from `IAssemblySymbol` without loading the assembly. Manifest emission is
+opt-in through `NeedlrEmitRegistrationManifest=true` so ordinary applications carry no
+additional metadata payload.
 
 ## API Reference
 

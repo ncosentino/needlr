@@ -2,6 +2,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.Catalog;
+using NexusLabs.Needlr.Generators.Export;
+using NexusLabs.Needlr.Generators.Models;
 
 using Xunit;
 
@@ -9,6 +11,32 @@ namespace NexusLabs.Needlr.Generators.Tests;
 
 public sealed class RegistrationManifestGeneratorTests
 {
+    [Fact]
+    public void Manifest_IsDisabledByDefault()
+    {
+        var generated = GeneratorTestRunner.ForTypeRegistry()
+            .WithSource(
+                """
+                using NexusLabs.Needlr.Generators;
+
+                [assembly: GenerateTypeRegistry(
+                    IncludeNamespacePrefixes = new[] { "Example" })]
+
+                namespace Example;
+
+                public sealed class ExampleService
+                {
+                }
+                """)
+            .RunTypeRegistryGeneratorFiles();
+
+        Assert.DoesNotContain(
+            generated,
+            file => file.FilePath.EndsWith(
+                "NeedlrRegistrationManifest.g.cs",
+                StringComparison.Ordinal));
+    }
+
     [Fact]
     public void Manifest_RepresentsGeneratedServicesAndFactoryExclusions()
     {
@@ -317,12 +345,69 @@ public sealed class RegistrationManifestGeneratorTests
             service.GetProperty("implementationType").GetString());
     }
 
+    [Fact]
+    public void Manifest_SizeGrowthRemainsLinearAndWithinDocumentedBudget()
+    {
+        var hundredServices = GetSyntheticManifestSize(100);
+        var thousandServices = GetSyntheticManifestSize(1000);
+
+        Assert.InRange(hundredServices, 1, 50_000);
+        Assert.InRange(thousandServices, 1, 450_000);
+        Assert.True(
+            thousandServices <= hundredServices * 11,
+            $"Expected approximately linear manifest growth, but 100 services used " +
+            $"{hundredServices} bytes and 1,000 used {thousandServices} bytes.");
+    }
+
     private static GeneratorTestRunner CreateRunner(string source)
     {
         return GeneratorTestRunner.ForTypeRegistry()
             .WithReference<IServiceCollection>()
             .WithReference<IConfiguration>()
             .WithReference<IServiceCatalog>()
+            .WithRegistrationManifest()
             .WithSource(source);
+    }
+
+    private static int GetSyntheticManifestSize(int serviceCount)
+    {
+        var injectableTypes = Enumerable.Range(0, serviceCount)
+            .Select(index =>
+            {
+                var suffix = index.ToString(
+                    "D4",
+                    System.Globalization.CultureInfo.InvariantCulture);
+                return new DiscoveredType(
+                    $"global::Synthetic.Service{suffix}",
+                    [$"global::Synthetic.IService{suffix}"],
+                    "Synthetic",
+                    GeneratorLifetime.Singleton,
+                    [],
+                    []);
+            })
+            .ToArray();
+        var discoveryResult = new DiscoveryResult(
+            injectableTypes,
+            Array.Empty<DiscoveredPlugin>(),
+            Array.Empty<DiscoveredDecorator>(),
+            Array.Empty<InaccessibleType>(),
+            Array.Empty<MissingTypeRegistryPlugin>(),
+            Array.Empty<DiscoveredInterceptedService>(),
+            Array.Empty<DiscoveredFactory>(),
+            Array.Empty<DiscoveredOptions>(),
+            Array.Empty<DiscoveredHostedService>(),
+            Array.Empty<DiscoveredProvider>(),
+            Array.Empty<DiscoveredHttpClient>(),
+            Array.Empty<DiscoveredComposedRegistration>(),
+            Array.Empty<ComposedConstraintViolation>());
+        var plan = GeneratedRegistrationPlanBuilder.Create(
+            "Synthetic",
+            isAotProject: false,
+            registersServiceCatalog: true,
+            Array.Empty<string>(),
+            discoveryResult);
+
+        return System.Text.Encoding.UTF8.GetByteCount(
+            RegistrationManifestSerializer.Serialize(plan));
     }
 }

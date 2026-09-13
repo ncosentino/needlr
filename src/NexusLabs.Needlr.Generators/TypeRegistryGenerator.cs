@@ -80,13 +80,16 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 registersServiceCatalog: !nothingDiscovered,
                 referencedAssemblies,
                 discoveryResult);
-            var registrationManifestSource =
-                CodeGen.RegistrationManifestCodeGenerator.GenerateSource(
-                    registrationPlan,
-                    breadcrumbs);
-            spc.AddSource(
-                "NeedlrRegistrationManifest.g.cs",
-                GeneratedSourceText.Create(registrationManifestSource));
+            if (ShouldEmitRegistrationManifest(configOptions))
+            {
+                var registrationManifestSource =
+                    CodeGen.RegistrationManifestCodeGenerator.GenerateSource(
+                        registrationPlan,
+                        breadcrumbs);
+                spc.AddSource(
+                    "NeedlrRegistrationManifest.g.cs",
+                    GeneratedSourceText.Create(registrationManifestSource));
+            }
 
             // A type-less assembly that still carries [GenerateTypeRegistry] (guaranteed here by the
             // attributeInfo guard above) is a declared Needlr participant. Consumers force-load
@@ -357,6 +360,17 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
             return true;
         }
         return false;
+    }
+
+    private static bool ShouldEmitRegistrationManifest(
+        Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider configOptions)
+    {
+        return configOptions.GlobalOptions.TryGetValue(
+                "build_property.NeedlrEmitRegistrationManifest",
+                out var enabled) &&
+            enabled.Equals(
+                "true",
+                StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

@@ -78,6 +78,7 @@ public sealed class RegistrationManifestCrossAssemblyTests
             .WithReference<IServiceCollection>()
             .WithReference<IConfiguration>()
             .WithReference<IServiceCatalog>()
+            .WithRegistrationManifest()
             .WithSource(source);
     }
 }

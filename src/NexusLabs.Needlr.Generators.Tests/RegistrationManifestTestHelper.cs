@@ -12,6 +12,14 @@ internal static class RegistrationManifestTestHelper
     internal const string AssemblyMetadataKey =
         CodeGen.RegistrationManifestCodeGenerator.AssemblyMetadataKey;
 
+    internal static GeneratorTestRunner WithRegistrationManifest(
+        this GeneratorTestRunner runner)
+    {
+        return runner.WithAnalyzerConfigOption(
+            "build_property.NeedlrEmitRegistrationManifest",
+            "true");
+    }
+
     internal static JsonDocument ReadManifest(IAssemblySymbol assembly)
     {
         var manifestAttributes = assembly.GetAttributes()

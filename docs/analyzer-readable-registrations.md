@@ -14,9 +14,15 @@ source generation:
 <PackageReference Include="NexusLabs.Needlr.Build"
                   Version="x.x.x"
                   PrivateAssets="all" />
+
+<PropertyGroup>
+  <NeedlrEmitRegistrationManifest>true</NeedlrEmitRegistrationManifest>
+</PropertyGroup>
 ```
 
-The generator adds one `System.Reflection.AssemblyMetadataAttribute` whose key is
+The manifest is disabled by default so applications that do not consume compile-time
+registration metadata pay no assembly-size cost. When enabled, the generator adds one
+`System.Reflection.AssemblyMetadataAttribute` whose key is
 `NexusLabs.Needlr.RegistrationManifest`. Its value is JSON conforming to
 `schemas/needlr-registration-manifest-v1.schema.json`.
 
@@ -85,10 +91,31 @@ Specialized arrays can intentionally overlap. For example, a hosted or intercept
 type can also appear in `injectableTypes` because those are distinct registration
 operations emitted by Needlr.
 
-An assembly carrying `[GenerateTypeRegistry]` always receives a manifest. A valid
-manifest whose arrays are empty means the generator produced a supported empty plan.
-No manifest means the assembly either does not participate in Needlr source generation
-or was built with a version predating this contract.
+An assembly carrying `[GenerateTypeRegistry]` receives a manifest only when
+`NeedlrEmitRegistrationManifest=true`. A valid manifest whose arrays are empty means the
+generator produced a supported empty plan. No manifest means metadata emission was
+disabled, the assembly does not participate in Needlr source generation, or it was built
+with a version predating this contract.
+
+## Assembly size
+
+The schema is intentionally complete and therefore grows linearly with the generated
+registration plan. It repeats type identities and registration details that already
+exist elsewhere in generated code, so it is not enabled by default.
+
+Measured Release builds of the same source with and without schema `1.0` metadata:
+
+| Generated entries | JSON payload | DLL increase | PDB increase |
+|---:|---:|---:|---:|
+| 3 | 1,145 bytes | 1,024 bytes | 720 bytes |
+| 5 | 2,125 bytes | 2,048 bytes | 832 bytes |
+| 102 | 44,245 bytes | 44,544 bytes | 2,632 bytes |
+| 1,002 | 432,145 bytes | 438,784 bytes | 17,500 bytes |
+
+The 1,002-entry fixture measured approximately 438 additional DLL bytes per injectable
+service. Consumers should enable the manifest only in assemblies that compile-time tools
+actually inspect. The generator test suite fixes an upper budget of 450,000 UTF-8 bytes
+for a representative 1,000-service manifest and verifies approximately linear growth.
 
 ## Determinism and safety
 
@@ -107,6 +134,12 @@ information. Use Roslyn metadata only.
 | `System.Reflection.AssemblyMetadataAttribute` | Generated assembly | Carries the manifest under the `NexusLabs.Needlr.RegistrationManifest` key |
 
 Needlr does not introduce a user-authored attribute for this feature.
+
+## Configuration
+
+| MSBuild property | Default | Meaning |
+|---|---|---|
+| `NeedlrEmitRegistrationManifest` | `false` | Emit schema `1.0` metadata into the compiled assembly |
 
 ## Analyzers
 
