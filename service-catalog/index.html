@@ -16,7 +16,7 @@
         <link rel="prev" href="../generated-record-constructor-overloads/">
       
       
-        <link rel="next" href="../breadcrumbs/">
+        <link rel="next" href="../analyzer-readable-registrations/">
       
       
         
@@ -1234,6 +1234,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#compile-time-tooling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compile-time tooling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#api-reference" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1248,6 +1259,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analyzer-readable-registrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analyzer-Readable Registrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -5503,6 +5542,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/adr-0014-expose-generated-registrations-as-metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0014 Expose Generated Registrations as Metadata
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5615,6 +5689,16 @@
 <li>The catalog is registered as a singleton and is the same instance across resolutions</li>
 <li>Interface names in the catalog include the <code>global::</code> prefix for fully qualified names</li>
 </ul>
+<h2 id="compile-time-tooling">Compile-time tooling<a class="headerlink" href="#compile-time-tooling" title="Permanent link">&para;</a></h2>
+<p><code>IServiceCatalog</code> is a runtime API. Roslyn can inspect its property signatures in a
+referenced assembly but cannot evaluate the generated collection initializers from a PE
+reference.</p>
+<p>Analyzers and other compile-time tools should use the
+<a href="../analyzer-readable-registrations/">analyzer-readable registration manifest</a> instead.
+That versioned metadata is emitted from the same normalized registration plan and can be
+read directly from <code>IAssemblySymbol</code> without loading the assembly. Manifest emission is
+opt-in through <code>NeedlrEmitRegistrationManifest=true</code> so ordinary applications carry no
+additional metadata payload.</p>
 <h2 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h2>
 <p>See the source code for full type definitions:</p>
 <ul>
