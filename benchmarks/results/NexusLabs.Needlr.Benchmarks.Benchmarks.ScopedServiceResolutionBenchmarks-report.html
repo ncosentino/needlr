@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.ScopedServiceResolutionBenchmarks-20260830-031744</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.ScopedServiceResolutionBenchmarks-20260920-031747</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -13,11 +13,11 @@
 </head>
 <body>
 <pre><code>
-BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.302
-  [Host]   : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX2
+BenchmarkDotNet v0.14.0, Ubuntu 24.04.5 LTS (Noble Numbat)
+AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.303
+  [Host]   : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
+  ShortRun : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
 </code></pre>
 <pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
@@ -26,9 +26,9 @@ WarmupCount=3
 <table>
 <thead><tr><th>Method                           </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Rank</th><th>Gen0</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_CreateScopeAndResolve</td><td>2.158 &mu;s</td><td>0.0230 &mu;s</td><td>0.0060 &mu;s</td><td>1.00</td><td>1</td><td>0.0229</td><td>408 B</td><td>1.00</td>
-</tr><tr><td>Needlr_Reflection_CreateScopeAndResolve</td><td>2.164 &mu;s</td><td>0.0183 &mu;s</td><td>0.0028 &mu;s</td><td>1.00</td><td>1</td><td>0.0229</td><td>408 B</td><td>1.00</td>
-</tr><tr><td>Needlr_SourceGen_CreateScopeAndResolve</td><td>2.279 &mu;s</td><td>0.0389 &mu;s</td><td>0.0101 &mu;s</td><td>1.06</td><td>1</td><td>0.0229</td><td>408 B</td><td>1.00</td>
+</thead><tbody><tr><td>ManualDI_CreateScopeAndResolve</td><td>2.006 &mu;s</td><td>0.0320 &mu;s</td><td>0.0083 &mu;s</td><td>1.00</td><td>1</td><td>0.0229</td><td>408 B</td><td>1.00</td>
+</tr><tr><td>Needlr_Reflection_CreateScopeAndResolve</td><td>2.017 &mu;s</td><td>0.0165 &mu;s</td><td>0.0043 &mu;s</td><td>1.01</td><td>1</td><td>0.0229</td><td>408 B</td><td>1.00</td>
+</tr><tr><td>Needlr_SourceGen_CreateScopeAndResolve</td><td>2.271 &mu;s</td><td>0.0176 &mu;s</td><td>0.0046 &mu;s</td><td>1.13</td><td>1</td><td>0.0229</td><td>408 B</td><td>1.00</td>
 </tr></tbody></table>
 </body>
 </html>

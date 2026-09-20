@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.ProviderBuildBenchmarks-20260830-031505</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.ProviderBuildBenchmarks-20260920-031441</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -13,23 +13,23 @@
 </head>
 <body>
 <pre><code>
-BenchmarkDotNet v0.14.0, Ubuntu 24.04.4 LTS (Noble Numbat)
-AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.302
-  [Host]   : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX2
+BenchmarkDotNet v0.14.0, Ubuntu 24.04.5 LTS (Noble Numbat)
+AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.303
+  [Host]   : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
+  ShortRun : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
 </code></pre>
 <pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 </code></pre>
 
 <table>
-<thead><tr><th>Method                       </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Gen0</th><th>Gen1</th><th>Allocated</th><th>Alloc Ratio</th>
+<thead><tr><th>Method                       </th><th>Mean  </th><th>Error </th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Gen0</th><th>Gen1</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_ToServiceProvider</td><td>1.371 &mu;s</td><td>0.0647 &mu;s</td><td>0.0168 &mu;s</td><td>1.00</td><td>0.02</td><td>1</td><td>0.2689</td><td>0.0877</td><td>4.41 KB</td><td>1.00</td>
-</tr><tr><td>Needlr_Reflection_ToServiceProvider</td><td>804.686 &mu;s</td><td>230.3045 &mu;s</td><td>35.6399 &mu;s</td><td>586.90</td><td>24.03</td><td>3</td><td>11.7188</td><td>-</td><td>252.41 KB</td><td>57.28</td>
-</tr><tr><td>Needlr_SourceGen_ToServiceProvider</td><td>121.340 &mu;s</td><td>5.9670 &mu;s</td><td>1.5496 &mu;s</td><td>88.50</td><td>1.43</td><td>2</td><td>10.7422</td><td>0.9766</td><td>187.36 KB</td><td>42.52</td>
-</tr><tr><td>Needlr_SourceGen_ToProvider</td><td>134.795 &mu;s</td><td>45.7376 &mu;s</td><td>11.8779 &mu;s</td><td>98.31</td><td>7.99</td><td>2</td><td>10.7422</td><td>0.9766</td><td>188.75 KB</td><td>42.84</td>
+</thead><tbody><tr><td>ManualDI_ToServiceProvider</td><td>903.7 ns</td><td>32.02 ns</td><td>8.31 ns</td><td>1.00</td><td>0.01</td><td>1</td><td>0.2689</td><td>0.0887</td><td>4.41 KB</td><td>1.00</td>
+</tr><tr><td>Needlr_Reflection_ToServiceProvider</td><td>611,403.8 ns</td><td>13,790.12 ns</td><td>2,134.04 ns</td><td>676.64</td><td>6.11</td><td>3</td><td>13.6719</td><td>-</td><td>252.82 KB</td><td>57.38</td>
+</tr><tr><td>Needlr_SourceGen_ToServiceProvider</td><td>78,088.4 ns</td><td>2,398.46 ns</td><td>622.87 ns</td><td>86.42</td><td>0.96</td><td>2</td><td>11.2305</td><td>1.4648</td><td>184.08 KB</td><td>41.78</td>
+</tr><tr><td>Needlr_SourceGen_ToProvider</td><td>79,518.9 ns</td><td>3,523.00 ns</td><td>914.91 ns</td><td>88.00</td><td>1.19</td><td>2</td><td>11.2305</td><td>1.4648</td><td>188.75 KB</td><td>42.84</td>
 </tr></tbody></table>
 </body>
 </html>
