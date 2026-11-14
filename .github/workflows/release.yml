@@ -423,6 +423,9 @@ jobs:
 
   deploy-documentation:
     name: Deploy documentation
+    concurrency:
+      group: needlr-documentation-publication
+      cancel-in-progress: false
     # Documentation announces a shipped release, so it follows the registries the
     # way the previous single publication job did. Each destination stays
     # independently retryable because prepared artifacts outlive every attempt.

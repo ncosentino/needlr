@@ -78,8 +78,33 @@ local site output before deployment:
 | Home, feature pages, and navigation | Both workflows, from identical sources |
 
 Neither workflow writes generated API documentation back to `main`. Published
-`/api/v<version>/` directories are immutable. The versioned API catalog is derived from
+version-specific API content is immutable. The versioned API catalog is derived from
 `git tag --list 'v*'`, not from ignored `docs/api/v*/` working-tree directories.
+
+### Documentation-only title maintenance
+
+The **Documentation titles** workflow previews a title refresh against the published
+API snapshot without writing it. Dispatch it from `main` with
+`refresh_published_titles=true` to update stable and archived browser, Open Graph, and
+Twitter titles using the same rules as the MkDocs title hook.
+
+This maintenance operation changes only the three title values in each HTML head.
+API bodies, headings, navigation, canonicals, descriptions, assets, and version
+catalogs remain unchanged. It neither rebuilds historical source nor publishes
+packages or releases. The complete snapshot must validate before any title is written;
+missing or duplicate title fields fail the operation. Every transformed page is parsed
+again and compared byte-for-byte after excluding the three title values.
+
+All documentation publication jobs share one non-cancelling concurrency group.
+The refresh checks out the latest `gh-pages` snapshot inside that group and pushes
+without force, so a newer branch commit cannot be overwritten. Retry a failed
+publication against a fresh snapshot; already-refreshed titles are unchanged.
+
+Cloudflare deployment retains the existing newest-20 archive limit. The complete
+refreshed archive remains on `gh-pages`. Preview and publication receipts list
+changed paths and before/after SHA-256 digests, with one-day artifact retention.
+Receipts are separate for each run attempt, so retrying a failed publisher preserves
+earlier evidence instead of conflicting with an existing artifact.
 
 ## Free-tier boundary
 

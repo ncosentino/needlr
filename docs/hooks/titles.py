@@ -3,17 +3,15 @@
 from pathlib import PurePosixPath
 
 
-def on_page_markdown(markdown: str, page, config, files) -> str:
-    path = PurePosixPath(page.file.src_uri)
+def api_title(path: PurePosixPath) -> str | None:
     parts = path.parts
-    if parts[0] != 'api':
-        return markdown
+    if not parts or parts[0] != 'api':
+        return None
 
     if len(parts) == 2 and path.stem == 'index':
-        page.meta['title'] = 'API Reference'
-        return markdown
+        return 'API Reference'
     if len(parts) < 3:
-        return markdown
+        return None
 
     version = {'dev': 'Development', 'stable': 'Stable'}.get(parts[1], parts[1])
     name = '.'.join(parts[2:-1])
@@ -24,5 +22,11 @@ def on_page_markdown(markdown: str, page, config, files) -> str:
         qualified_name = '.'.join((*parts[2:-1], path.stem))
         title = f'{qualified_name} ({version} API)'
 
-    page.meta['title'] = title
+    return title
+
+
+def on_page_markdown(markdown: str, page, config, files) -> str:
+    title = api_title(PurePosixPath(page.file.src_uri))
+    if title is not None:
+        page.meta['title'] = title
     return markdown

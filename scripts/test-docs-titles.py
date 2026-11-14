@@ -1,15 +1,22 @@
 """Validate rendered API titles without changing visible headings or navigation."""
 
 from html.parser import HTMLParser
-from pathlib import Path
+import importlib.util
+from pathlib import Path, PurePosixPath
 import tempfile
 import unittest
 
 from mkdocs.commands.build import build
 from mkdocs.config import load_config
+import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
+spec = importlib.util.spec_from_file_location(
+    'refresh_docs_titles', ROOT / 'scripts' / 'refresh-docs-titles.py',
+)
+refresh = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(refresh)
 
 
 class MetadataParser(HTMLParser):
@@ -19,24 +26,29 @@ class MetadataParser(HTMLParser):
         self.headings = []
         self.meta = {}
         self._in_title = False
+        self._in_head = False
         self._in_heading = False
         self._in_permalink = False
 
     def handle_starttag(self, tag, attrs):
         attributes = dict(attrs)
-        if tag == 'title':
+        if tag == 'head':
+            self._in_head = True
+        elif tag == 'title' and self._in_head:
             self._in_title = True
         elif tag == 'h1':
             self._in_heading = True
             self.headings.append('')
         elif tag == 'a' and 'headerlink' in attributes.get('class', '').split():
             self._in_permalink = True
-        elif tag == 'meta':
+        elif tag == 'meta' and self._in_head:
             name = attributes.get('property') or attributes.get('name')
             self.meta[name] = attributes.get('content')
 
     def handle_endtag(self, tag):
-        if tag == 'title':
+        if tag == 'head':
+            self._in_head = False
+        elif tag == 'title':
             self._in_title = False
         elif tag == 'h1':
             self._in_heading = False
@@ -150,6 +162,160 @@ class DocumentationTitlesTests(unittest.TestCase):
                 page = self.read_page(source)
                 self.assertEqual(page.title.strip(), f'{expected} - Needlr')
                 self.assertEqual(page.headings, [expected])
+
+
+class PublishedTitlesRefreshTests(unittest.TestCase):
+    def html(self):
+        return (
+            '<!doctype html>\r\n<html><head>\r\n'
+            '<title>Index - Needlr</title>\r\n'
+            '<meta property="og:title" content="Index \u2013 Needlr" />\r\n'
+            '<meta name="twitter:title" content=\'Index \u2013 Needlr\' />\r\n'
+            '<meta name="description" content="Original API description" />\r\n'
+            '<link rel="canonical" href="https://example.test/api/old/" />\r\n'
+            '<script type="application/ld+json">{"name":"Original API"}</script>\r\n'
+            f'<script>const example = "</head>{"x" * 5000}";</script>\r\n'
+            '</head><body><h1>Index</h1><nav>Original navigation</nav>\r\n'
+            '<code>Original version: Factory&lt;T&gt; \u03bb</code>\r\n'
+            '<svg><title>Unchanged diagram title</title></svg>\r\n'
+            '</body></html>\r\n'
+        )
+
+    def test_refresh_changes_only_the_three_metadata_values(self):
+        original = self.html()
+        title = 'NexusLabs.Needlr API Reference (Stable)'
+        expected = original.replace('Index - Needlr', f'{title} - Needlr')
+        expected = expected.replace('Index \u2013 Needlr', f'{title} \u2013 Needlr')
+        self.assertEqual(
+            refresh.refresh_html(
+                original, PurePosixPath('api/stable/NexusLabs.Needlr/index.md'),
+            ),
+            expected,
+        )
+
+    def test_attribute_values_are_escaped_without_matching_nested_text(self):
+        original = self.html().replace(
+            'property="og:title"',
+            'data-note=\'content="not a title"\' property="og:title"',
+        )
+        result = refresh.refresh_html(
+            original, PurePosixPath('api/v1.0/NexusLabs.Needlr/Factory&T.md'),
+        )
+        parser = MetadataParser()
+        parser.feed(result)
+        expected = 'NexusLabs.Needlr.Factory&T (v1.0 API)'
+        self.assertEqual(parser.title, f'{expected} - Needlr')
+        self.assertEqual(parser.meta['og:title'], f'{expected} \u2013 Needlr')
+        self.assertIn('data-note=\'content="not a title"\'', result)
+        self.assertIn('Factory&amp;T', result)
+
+    def test_missing_or_duplicate_metadata_fails_loudly(self):
+        for malformed in (
+            self.html().replace('<title>Index - Needlr</title>', ''),
+            self.html().replace(
+                '<meta name="twitter:title" content=\'Index \u2013 Needlr\' />', '',
+            ),
+            self.html().replace(
+                '</head>', '<meta property="og:title" content="duplicate"></head>',
+            ),
+        ):
+            with self.subTest(html=malformed), self.assertRaises(ValueError):
+                refresh.refresh_html(
+                    malformed, PurePosixPath('api/stable/NexusLabs.Needlr/index.md'),
+                )
+
+    def make_site(self, root):
+        site = Path(root)
+        sources = (
+            'api/stable/NexusLabs.Needlr/index.html',
+            'api/v0.0.2-alpha.19/NexusLabs.Needlr/Factory_T_.Nested/index.html',
+            'api/dev/NexusLabs.Needlr/index.html',
+            'getting-started/index.html',
+        )
+        for source in sources:
+            path = site / source
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(self.html().encode('utf-8'))
+        return site, sources
+
+    def test_preview_apply_and_repeat_preserve_version_content_and_other_slices(self):
+        with tempfile.TemporaryDirectory() as directory:
+            site, sources = self.make_site(directory)
+            before = {source: (site / source).read_bytes() for source in sources}
+            preview = refresh.refresh_site(site)
+            self.assertEqual(preview['scanned'], 2)
+            self.assertEqual(preview['changed'], 2)
+            for source in sources:
+                self.assertEqual((site / source).read_bytes(), before[source])
+
+            applied = refresh.refresh_site(site, apply=True)
+            self.assertEqual(applied, preview)
+            for source, expected in (
+                (sources[0], 'NexusLabs.Needlr API Reference (Stable)'),
+                (sources[1], 'NexusLabs.Needlr.Factory_T_.Nested (v0.0.2-alpha.19 API)'),
+            ):
+                result = (site / source).read_bytes()
+                expected_html = before[source].decode('utf-8')
+                expected_html = expected_html.replace(
+                    'Index - Needlr', f'{expected} - Needlr',
+                ).replace('Index \u2013 Needlr', f'{expected} \u2013 Needlr')
+                self.assertEqual(result, expected_html.encode('utf-8'))
+            for source in sources[2:]:
+                self.assertEqual((site / source).read_bytes(), before[source])
+            self.assertEqual(refresh.refresh_site(site)['changed'], 0)
+
+    def test_every_page_is_validated_before_any_file_is_changed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            site, sources = self.make_site(directory)
+            valid = site / sources[0]
+            malformed = site / sources[1]
+            before = valid.read_bytes()
+            malformed.write_text('<html><head></head></html>', encoding='utf-8')
+            with self.assertRaises(ValueError):
+                refresh.refresh_site(site, apply=True)
+            self.assertEqual(valid.read_bytes(), before)
+
+    def test_symlinks_cannot_redirect_refresh_writes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            site, sources = self.make_site(Path(directory) / 'site')
+            outside = Path(directory) / 'outside.html'
+            outside.write_bytes(self.html().encode('utf-8'))
+            target = site / sources[0]
+            target.unlink()
+            target.symlink_to(outside)
+            before = outside.read_bytes()
+            with self.assertRaises(ValueError):
+                refresh.refresh_site(site, apply=True)
+            self.assertEqual(outside.read_bytes(), before)
+
+
+class DocumentationPublishingContractTests(unittest.TestCase):
+    def workflow(self, name):
+        return yaml.safe_load(
+            (ROOT / '.github' / 'workflows' / name).read_text(encoding='utf-8'),
+        )
+
+    def test_all_documentation_publishers_share_a_non_cancelling_lock(self):
+        publishers = (
+            self.workflow('ci.yml')['jobs']['deploy-documentation'],
+            self.workflow('release.yml')['jobs']['deploy-documentation'],
+            self.workflow('docs-titles.yml')['jobs']['refresh-published-titles'],
+        )
+        locks = [publisher['concurrency'] for publisher in publishers]
+        self.assertTrue(locks[0]['group'])
+        for lock in locks:
+            self.assertEqual(lock['group'], locks[0]['group'])
+            self.assertFalse(lock['cancel-in-progress'])
+
+    def test_title_receipts_do_not_conflict_when_a_publication_job_is_retried(self):
+        jobs = self.workflow('docs-titles.yml')['jobs']
+        uploads = [
+            step for job in jobs.values() for step in job['steps']
+            if step.get('uses', '').startswith('actions/upload-artifact@')
+        ]
+        self.assertEqual(len(uploads), 2)
+        for upload in uploads:
+            self.assertIn('${{ github.run_attempt }}', upload['with']['name'])
 
 
 if __name__ == '__main__':
