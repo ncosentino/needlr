@@ -1,5 +1,16 @@
 ## [Unreleased]
 
+## [0.0.3-alpha.9] - 2026-11-14
+
+### Fixed
+
+- Services consuming a Needlr-generated interface factory from the same compilation are now automatically discovered and registered. Discovery binds against the shared generated interface declarations rather than rejecting their unresolved input-compilation symbols. This covers primary and generated constructors, preserves namespace and factory-mode exclusions, and includes the consumer's bound constructor types in AOT activation and opt-in registration manifests.
+- API reference pages now use page-specific, namespace-qualified titles instead of repeating the site title. Published stable and archived API title metadata can be refreshed without regenerating historical APIs or changing their URLs.
+
+### Changed
+
+- Updated the pinned .NET SDK to `10.0.404` and replaced the SignalR test project's obsolete `Microsoft.AspNetCore.SignalR` package with the ASP.NET Core shared-framework reference, removing the legacy dependency chain while retaining NuGet auditing and warnings-as-errors.
+
 ## [0.0.3-alpha.8] - 2026-09-13
 
 ### Added
