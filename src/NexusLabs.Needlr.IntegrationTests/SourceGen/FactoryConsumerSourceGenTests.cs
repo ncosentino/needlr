@@ -27,6 +27,8 @@ public sealed class FactoryConsumerSourceGenTests
         Assert.Equal(1, first.Number);
         Assert.Equal(2, second.Number);
         Assert.NotSame(first, second);
+        Assert.Same(provider.GetRequiredService<IFactoryDependency>(), first.Dependency);
+        Assert.Same(first.Dependency, second.Dependency);
         Assert.Same(consumer, provider.GetRequiredService<FactoryWidgetConsumer>());
         Assert.Null(provider.GetService<FactoryWidget>());
         Assert.Same(
@@ -52,6 +54,7 @@ public sealed class FactoryConsumerSourceGenTests
 public interface IFactoryWidget
 {
     int Number { get; }
+    IFactoryDependency Dependency { get; }
 }
 
 [GenerateConstructor]
@@ -59,8 +62,10 @@ public interface IFactoryWidget
 public sealed partial class FactoryWidget : IFactoryWidget
 {
     private readonly int _number;
+    private readonly IFactoryDependency _dependency;
 
     public int Number => _number;
+    public IFactoryDependency Dependency => _dependency;
 }
 
 public sealed class FactoryWidgetConsumer(IFactoryWidgetFactory factory)

@@ -1,4 +1,5 @@
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using NexusLabs.Needlr.Catalog;
@@ -20,6 +21,7 @@ public sealed class FactoryConsumerGeneratorTests
     {
         var compilation = GeneratorTestRunner.ForFactory()
             .WithReference<IServiceCollection>()
+            .WithReference<IConfiguration>()
             .WithReference<IServiceCatalog>()
             .WithRegistrationManifest()
             .WithAotMode(aot)
@@ -41,7 +43,7 @@ public sealed class FactoryConsumerGeneratorTests
                 """)
             .RunGeneratorCompilation(new TypeRegistryGenerator());
 
-        Assert.Empty(compilation.GetDiagnostics()
+        Assert.Empty(compilation.GetDiagnostics(TestContext.Current.CancellationToken)
             .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error));
 
         using var manifest = RegistrationManifestTestHelper.ReadManifest(compilation.Assembly);
@@ -83,7 +85,7 @@ public sealed class FactoryConsumerGeneratorTests
 
         using var manifest = RegistrationManifestTestHelper.ReadManifest(compilation.Assembly);
         Assert.Empty(manifest.RootElement.GetProperty("injectableTypes").EnumerateArray());
-        Assert.Contains(compilation.GetDiagnostics(),
+        Assert.Contains(compilation.GetDiagnostics(TestContext.Current.CancellationToken),
             diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
     }
 
