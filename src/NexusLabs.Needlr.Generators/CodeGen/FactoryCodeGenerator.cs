@@ -216,8 +216,28 @@ internal static class FactoryCodeGenerator
     }
 
     /// <summary>
-    /// Generates the complete Factories.g.cs source file containing factory
-    /// interfaces, implementations, and the FactoryRegistrations helper.
+    /// Generates the interface declarations shared by semantic discovery and final output.
+    /// </summary>
+    internal static string GenerateFactoryInterfacesSource(IReadOnlyList<DiscoveredFactory> factories, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine($"namespace {GeneratorHelpers.SanitizeIdentifier(assemblyName)}.Generated;");
+        builder.AppendLine();
+
+        foreach (var factory in factories)
+        {
+            if (factory.GenerateInterface)
+            {
+                GenerateFactoryInterface(builder, factory, breadcrumbs, projectDirectory);
+                builder.AppendLine();
+            }
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Generates factory interfaces, implementations, and the registration helper.
     /// </summary>
     internal static string GenerateFactoriesSource(IReadOnlyList<DiscoveredFactory> factories, string assemblyName, BreadcrumbWriter breadcrumbs, string? projectDirectory)
     {
@@ -231,16 +251,12 @@ internal static class FactoryCodeGenerator
         builder.AppendLine();
         builder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
         builder.AppendLine();
-        builder.AppendLine($"namespace {safeAssemblyName}.Generated;");
-        builder.AppendLine();
+        builder.Append(GenerateFactoryInterfacesSource(factories, assemblyName, breadcrumbs, projectDirectory));
 
-        // Generate factory interfaces and implementations for each type
         foreach (var factory in factories)
         {
             if (factory.GenerateInterface)
             {
-                GenerateFactoryInterface(builder, factory, breadcrumbs, projectDirectory);
-                builder.AppendLine();
                 GenerateFactoryImplementation(builder, factory, breadcrumbs, projectDirectory);
                 builder.AppendLine();
             }

@@ -49,6 +49,21 @@ public sealed class TypeRegistryGenerator : IIncrementalGenerator
                 info.ExcludeNamespacePrefixes,
                 info.IncludeSelf);
 
+            var boundCompilation = FactoryConsumerDiscoveryHelper.BindFactoryConsumers(
+                compilation,
+                discoveryResult.Factories,
+                assemblyName,
+                breadcrumbs,
+                projectDirectory);
+            if (!ReferenceEquals(boundCompilation, compilation))
+            {
+                discoveryResult = DiscoverTypes(
+                    boundCompilation,
+                    info.NamespacePrefixes,
+                    info.ExcludeNamespacePrefixes,
+                    info.IncludeSelf);
+            }
+
             // Discover referenced assemblies with [GenerateTypeRegistry] for forced loading.
             // Done early so the empty-result check below can include this in its decision.
             // Note: Order of force-loading doesn't matter; ordering is applied at service registration time
