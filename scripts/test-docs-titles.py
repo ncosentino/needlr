@@ -2,7 +2,9 @@
 
 from html.parser import HTMLParser
 import importlib.util
+import json
 from pathlib import Path, PurePosixPath
+import re
 import tempfile
 from types import SimpleNamespace
 import unittest
@@ -19,6 +21,7 @@ spec = importlib.util.spec_from_file_location(
 refresh = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(refresh)
 import metadata
+import schema
 
 
 class MetadataParser(HTMLParser):
@@ -294,6 +297,21 @@ class DocumentationMetadataPolicyTests(unittest.TestCase):
         parser = MetadataParser()
         parser.feed(f'<head><meta name="description" content="{context["page"].meta["description"]}"></head>')
         self.assertEqual(parser.meta['description'], description)
+
+    def test_generated_description_is_safe_in_existing_howto_json_ld(self):
+        page = self.page()
+        page.url = 'getting-started/'
+        config = SimpleNamespace(site_name='Needlr')
+        content = '<h2>Configure</h2><p>Use <code>&lt;/script&gt;</code> &amp; "plugins".</p>'
+        metadata.on_page_content(content, page, config, None)
+        rendered = schema.on_page_content(content, page, config, None)
+        scripts = re.findall(
+            r'<script type="application/ld\+json">\n(.*?)\n</script>',
+            rendered, re.DOTALL,
+        )
+        self.assertEqual(len(scripts), 1)
+        self.assertNotIn('</script>', scripts[0])
+        self.assertEqual(json.loads(scripts[0])['description'], page.meta['description'])
 
 
 class PublishedTitlesRefreshTests(unittest.TestCase):
