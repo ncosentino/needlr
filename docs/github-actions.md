@@ -103,6 +103,8 @@ publication against a fresh snapshot; already-refreshed titles are unchanged.
 Cloudflare deployment retains the existing newest-20 archive limit. The complete
 refreshed archive remains on `gh-pages`. Preview and publication receipts list
 changed paths and before/after SHA-256 digests, with one-day artifact retention.
+Receipts are separate for each run attempt, so retrying a failed publisher preserves
+earlier evidence instead of conflicting with an existing artifact.
 
 ## Free-tier boundary
 

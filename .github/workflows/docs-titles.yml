@@ -60,7 +60,7 @@ jobs:
       - name: Retain bounded title-refresh preview
         uses: actions/upload-artifact@v4
         with:
-          name: published-title-preview
+          name: published-title-preview-${{ github.run_attempt }}
           path: published-title-preview.json
           retention-days: 1
           if-no-files-found: error
@@ -100,7 +100,7 @@ jobs:
       - name: Retain bounded publication receipt
         uses: actions/upload-artifact@v4
         with:
-          name: published-title-refresh
+          name: published-title-refresh-${{ github.run_attempt }}
           path: published-title-refresh.json
           retention-days: 1
           if-no-files-found: error

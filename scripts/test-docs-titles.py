@@ -8,6 +8,7 @@ import unittest
 
 from mkdocs.commands.build import build
 from mkdocs.config import load_config
+import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -280,6 +281,35 @@ class PublishedTitlesRefreshTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 refresh.refresh_site(site, apply=True)
             self.assertEqual(outside.read_bytes(), before)
+
+
+class DocumentationPublishingContractTests(unittest.TestCase):
+    def workflow(self, name):
+        return yaml.safe_load(
+            (ROOT / '.github' / 'workflows' / name).read_text(encoding='utf-8'),
+        )
+
+    def test_all_documentation_publishers_share_a_non_cancelling_lock(self):
+        publishers = (
+            self.workflow('ci.yml')['jobs']['deploy-documentation'],
+            self.workflow('release.yml')['jobs']['deploy-documentation'],
+            self.workflow('docs-titles.yml')['jobs']['refresh-published-titles'],
+        )
+        locks = [publisher['concurrency'] for publisher in publishers]
+        self.assertTrue(locks[0]['group'])
+        for lock in locks:
+            self.assertEqual(lock['group'], locks[0]['group'])
+            self.assertFalse(lock['cancel-in-progress'])
+
+    def test_title_receipts_do_not_conflict_when_a_publication_job_is_retried(self):
+        jobs = self.workflow('docs-titles.yml')['jobs']
+        uploads = [
+            step for job in jobs.values() for step in job['steps']
+            if step.get('uses', '').startswith('actions/upload-artifact@')
+        ]
+        self.assertEqual(len(uploads), 2)
+        for upload in uploads:
+            self.assertIn('${{ github.run_attempt }}', upload['with']['name'])
 
 
 if __name__ == '__main__':
