@@ -4,6 +4,7 @@ from html.parser import HTMLParser
 import importlib.util
 from pathlib import Path, PurePosixPath
 import tempfile
+from types import SimpleNamespace
 import unittest
 
 from mkdocs.commands.build import build
@@ -17,6 +18,7 @@ spec = importlib.util.spec_from_file_location(
 )
 refresh = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(refresh)
+import metadata
 
 
 class MetadataParser(HTMLParser):
@@ -87,6 +89,10 @@ class DocumentationTitlesTests(unittest.TestCase):
                 '---\ndescription: \'Explicit "quoted" <T> & safe summary.\'\n---\n'
                 '# Authored Summary\n\nDo not select this prose.\n'
             ),
+            'guides/blank.md': (
+                "---\ndescription: '   '\n---\n"
+                '# Blank Description\n\nRegister application services.\n'
+            ),
             'guides/long.md': (
                 '# Lifecycle\n\n' + 'Register services and manage application lifetimes. ' * 15
             ),
@@ -131,7 +137,7 @@ class DocumentationTitlesTests(unittest.TestCase):
 
     def read_page(self, source):
         path = self.site / source.removesuffix('.md') / 'index.html'
-        if source.endswith('/index.md'):
+        if source == 'index.md' or source.endswith('/index.md'):
             path = self.site / source
             path = path.with_suffix('.html')
         parser = MetadataParser()
@@ -244,6 +250,12 @@ class DocumentationTitlesTests(unittest.TestCase):
             'Opinionated fluent dependency injection for .NET with source generation',
         )
 
+    def test_blank_authored_description_uses_the_guide_intro(self):
+        self.assert_description(
+            'guides/blank.md',
+            'Blank Description. Register application services.',
+        )
+
     def test_generated_long_descriptions_end_at_a_word_boundary(self):
         page = self.read_page('guides/long.md')
         description = page.meta['description']
@@ -253,6 +265,35 @@ class DocumentationTitlesTests(unittest.TestCase):
         self.assertRegex(description.removesuffix('...'), r'(Register|services|and|manage|application|lifetimes\.)$')
         self.assertEqual(page.meta['og:description'], description)
         self.assertEqual(page.meta['twitter:description'], description)
+
+
+class DocumentationMetadataPolicyTests(unittest.TestCase):
+    def page(self, description=None):
+        return SimpleNamespace(
+            file=SimpleNamespace(src_uri='guide.md'),
+            meta={} if description is None else {'description': description},
+            title='Guide',
+            is_homepage=False,
+        )
+
+    def test_invalid_authored_descriptions_fail_with_the_source_path(self):
+        for authored in (42, ['summary'], {'summary': 'text'}):
+            with self.subTest(description=authored):
+                with self.assertRaisesRegex(ValueError, 'guide.md: description must be a string'):
+                    metadata.on_page_content('<p>Intro.</p>', self.page(authored), None, None)
+
+    def test_generation_and_rendering_do_not_modify_content_or_source_metadata(self):
+        page = self.page()
+        config = SimpleNamespace(site_name='Needlr')
+        content = '<p>Use <code>Factory&lt;T&gt;</code> &amp; "plugins".</p>'
+        self.assertEqual(metadata.on_page_content(content, page, config, None), content)
+        description = 'Guide. Use Factory<T> & "plugins".'
+        self.assertEqual(page.meta['description'], description)
+        context = metadata.on_page_context({'page': page}, page, config, None)
+        self.assertEqual(page.meta['description'], description)
+        parser = MetadataParser()
+        parser.feed(f'<head><meta name="description" content="{context["page"].meta["description"]}"></head>')
+        self.assertEqual(parser.meta['description'], description)
 
 
 class PublishedTitlesRefreshTests(unittest.TestCase):
