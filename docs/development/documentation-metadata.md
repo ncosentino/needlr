@@ -44,8 +44,10 @@ normalization.
 
 The same description supplies the ordinary HTML, Open Graph and Twitter metadata.
 Escaping is applied only to the rendering context because MkDocs templates do not
-autoescape by default. Source metadata remains plain text, and rendered page
-content is returned unchanged.
+autoescape by default. Source metadata remains plain text for other build hooks,
+including structured data and `llms.txt`, and the metadata hook returns rendered
+page content unchanged. JSON-LD serialization escapes HTML-sensitive delimiters
+without changing the decoded description.
 
 The hosted Documentation metadata workflow exercises rendered metadata,
 explicit-description precedence, API/version identity, introductory-prose
