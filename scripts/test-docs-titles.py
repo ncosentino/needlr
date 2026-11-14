@@ -105,17 +105,21 @@ class DocumentationTitlesTests(unittest.TestCase):
             'api/stable/NexusLabs.Needlr/index.md': '# Index\n',
             'api/v0.0.3-alpha.8/NexusLabs.Needlr/index.md': '# Index\n',
             'api/dev/NexusLabs.Needlr/Plugin.md': (
-                '# Plugin\n\nRegisters services for an application.\n\n'
+                '# Plugin\n\n#### NexusLabs.Needlr\n\n### NexusLabs.Needlr\n\n'
+                '## Plugin Interface\n\nRegisters services for an application.\n\n'
                 '```csharp\npublic interface Plugin {}\n```\n'
             ),
             'api/dev/NexusLabs.Needlr.AspNet/Plugin.md': (
-                '# Plugin\n\nRegisters services for an application.\n'
+                '# Plugin\n\n#### NexusLabs.Needlr.AspNet\n\n### NexusLabs.Needlr.AspNet\n\n'
+                '## Plugin Interface\n\nRegisters services for an application.\n'
             ),
             'api/stable/NexusLabs.Needlr/Plugin.md': (
-                '# Plugin\n\nRegisters services for an application.\n'
+                '# Plugin\n\n#### NexusLabs.Needlr\n\n### NexusLabs.Needlr\n\n'
+                '## Plugin Interface\n\nRegisters services for an application.\n'
             ),
             'api/dev/NexusLabs.Needlr/Factory_T_.md': (
-                '# Factory<T>\n\n```csharp\npublic class Factory<T> {}\n```\n\n'
+                '# Factory<T>\n\n#### NexusLabs.Needlr\n\n## Factory Class\n\n'
+                '```csharp\npublic class Factory<T> {}\n```\n\n'
                 'Inheritance Object. This is not a type summary.\n\n'
                 '## Remarks\n\nDo not use member remarks as a type introduction.\n'
             ),
