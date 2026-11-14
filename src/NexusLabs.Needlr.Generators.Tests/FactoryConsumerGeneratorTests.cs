@@ -30,7 +30,7 @@ public sealed class FactoryConsumerGeneratorTests
                 using NexusLabs.Needlr.Generators;
                 {{import}}
 
-                [assembly: GenerateTypeRegistry]
+                [assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { "Example" })]
 
                 namespace Example.Nested;
 
@@ -72,7 +72,7 @@ public sealed class FactoryConsumerGeneratorTests
                 $$"""
                 using NexusLabs.Needlr.Generators;
 
-                [assembly: GenerateTypeRegistry]
+                [assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { "Example" })]
 
                 namespace Example;
 
@@ -92,7 +92,7 @@ public sealed class FactoryConsumerGeneratorTests
     [Theory]
     [InlineData("FactoryGenerationMode.Func", "int number", "")]
     [InlineData("FactoryGenerationMode.Interface", "", "")]
-    [InlineData("FactoryGenerationMode.Interface", "int number", """ExcludeNamespacePrefixes = new[] { "Example.Products" }""")]
+    [InlineData("FactoryGenerationMode.Interface", "int number", """, ExcludeNamespacePrefixes = new[] { "Example.Products" }""")]
     public void FactoryConsumer_InterfaceNotEmitted_RemainsExcluded(
         string mode,
         string parameters,
@@ -105,7 +105,7 @@ public sealed class FactoryConsumerGeneratorTests
                 using NexusLabs.Needlr.Generators;
                 using TestAssembly.Generated;
 
-                [assembly: GenerateTypeRegistry({{registryOptions}})]
+                [assembly: GenerateTypeRegistry(IncludeNamespacePrefixes = new[] { "Example" }{{registryOptions}})]
 
                 namespace Example.Products
                 {
