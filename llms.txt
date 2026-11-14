@@ -16,32 +16,32 @@ Author: Nick Cosentino (https://www.devleader.ca).
 - [Service Registration](https://www.devleader.ca/projects/needlr/register-as/) -- Use the RegisterAs attribute to control exactly which interfaces a class is registered as in .NET dependency injection, overriding Needlr's default all-interface registration.
 - [Hosted Services](https://www.devleader.ca/projects/needlr/hosted-services/) -- Automatically discover and register IHostedService and BackgroundService implementations in .NET using Needlr -- no attributes required for hosted service auto-discovery.
 - [Keyed Services](https://www.devleader.ca/projects/needlr/keyed-services/) -- Register and resolve multiple implementations of the same interface in .NET 8+ using Needlr's Keyed attribute -- keyed service support with source generation and reflection.
-- [Options Binding](https://www.devleader.ca/projects/needlr/options/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Options Binding](https://www.devleader.ca/projects/needlr/options/) -- Options Binding. The [Options] attribute provides automatic configuration binding for your options classes, integrating with Microsoft's Options pattern.
 - [HttpClient Options](https://www.devleader.ca/projects/needlr/http-clients/) -- Source-generated named HttpClient registration in Needlr via the [HttpClientOptions] attribute. Reuses the [Options] configuration-binding story, uses marker interfaces for capability composition, and is extensible to resilience and handler chains without breaking existing consumers.
 - [Factories](https://www.devleader.ca/projects/needlr/factories/) -- Generate factory interfaces and delegates for .NET classes that require runtime constructor parameters using Needlr's GenerateFactory attribute -- source generation only.
-- [Providers](https://www.devleader.ca/projects/needlr/providers/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Providers](https://www.devleader.ca/projects/needlr/providers/) -- Providers. Providers offer a strongly-typed alternative to the service locator pattern (IServiceProvider.GetService<T>()). Instead of relying on runtime type resolution, providers give you compile-time guarantees and IntelliSense for the...
 - [Interceptors](https://www.devleader.ca/projects/needlr/interceptors/) -- Add cross-cutting concerns to .NET services using Needlr interceptors -- intercept method calls with a single implementation that works across any service without modifying business logic.
 - [Open Generic Decorators](https://www.devleader.ca/projects/needlr/open-generic-decorators/) -- Define a single decorator class that automatically wraps all closed implementations of an open generic interface in .NET using Needlr's open generic decorator support -- source generation only.
 - [Compose and Expose Closed Generics](https://www.devleader.ca/projects/needlr/composed-closed-generics/) -- Source-generate a registration of an open generic composition type closed over the type argument of every discovered implementation of another open generic interface, exposed as a non-generic facade -- source generation only.
-- [Cancellation-Aware Logging](https://www.devleader.ca/projects/needlr/cancellation-aware-logging/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Cancellation-Aware Logging](https://www.devleader.ca/projects/needlr/cancellation-aware-logging/) -- Cancellation-Aware Logging. NexusLabs.Needlr.Logging adds the [NeedlrLoggerMessage] attribute: source-generated logging methods with the same ergonomics and performance as .NET's built-in [LoggerMessage], plus one extra behavior — logs...
 - [Generated Constructors](https://www.devleader.ca/projects/needlr/generated-constructors/) -- Source-generate a public constructor, field assignments, and guard clauses for a partial class from its eligible fields using Needlr's [GenerateConstructor] and [ConstructorGuard] attributes -- source generation only, no reflection.
 - [Generated Record Constructor Overloads](https://www.devleader.ca/projects/needlr/generated-record-constructor-overloads/) -- Generate one guarded forwarding constructor overload for a partial positional record from explicitly marked properties.
-- [Service Catalog](https://www.devleader.ca/projects/needlr/service-catalog/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Analyzer-Readable Registrations](https://www.devleader.ca/projects/needlr/analyzer-readable-registrations/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Breadcrumbs](https://www.devleader.ca/projects/needlr/breadcrumbs/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Service Catalog](https://www.devleader.ca/projects/needlr/service-catalog/) -- Service Catalog. The Service Catalog provides compile-time metadata about all services discovered and registered by Needlr. It allows you to query your DI registrations at runtime without reflection.
+- [Analyzer-Readable Registrations](https://www.devleader.ca/projects/needlr/analyzer-readable-registrations/) -- Analyzer-Readable Registrations. Needlr embeds its source-generated registration plan into each participating assembly as deterministic JSON metadata. Roslyn analyzers and other compile-time tools can read that plan from a normal PE...
+- [Breadcrumbs](https://www.devleader.ca/projects/needlr/breadcrumbs/) -- Breadcrumbs. Needlr's source generator can include helpful documentation comments (breadcrumbs) in generated code to help developers understand why and how code was generated. This is particularly useful for debugging, learning, and...
 - [SignalR](https://www.devleader.ca/projects/needlr/signalr/) -- Register ASP.NET Core SignalR services with Needlr and map hubs through either source-generated AOT-safe endpoints or an explicit reflection fallback.
-- [.NET MAUI](https://www.devleader.ca/projects/needlr/maui/) -- Opinionated fluent dependency injection for .NET with source generation
+- [.NET MAUI](https://www.devleader.ca/projects/needlr/maui/) -- .NET MAUI. NexusLabs.Needlr.Maui integrates Needlr's source-generated dependency injection into a .NET MAUI application. Your App, pages, and view models — plus every Needlr-discovered service across your solution — resolve from MAUI's...
 
 ## Advanced
 
 - [Advanced Usage](https://www.devleader.ca/projects/needlr/advanced-usage/) -- Advanced patterns for Needlr -- custom assembly scanning, conditional registration, multi-project setups, and edge cases for complex .NET dependency injection scenarios.
 - [Serilog Bootstrap](https://www.devleader.ca/projects/needlr/serilog/) -- Serilog integration for Needlr — zero-ceremony plugin for ILogger<T> wiring, config-driven setup from appsettings.json, override patterns, and bootstrapper lifecycle management.
 - [Plugin Development](https://www.devleader.ca/projects/needlr/plugin-development/) -- Build modular .NET applications with Needlr plugins -- implement IServiceCollectionPlugin and IWebApplicationPlugin to encapsulate service registration and configuration in reusable units.
-- [Solution-Wide Source Generation](https://www.devleader.ca/projects/needlr/solution-wide-source-generation/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Solution-Wide Source Generation](https://www.devleader.ca/projects/needlr/solution-wide-source-generation/) -- Solution-Wide Source Generation. When you have multiple projects in a solution and want Needlr source generation to work consistently across all of them, the recommended approach is to use the NexusLabs.Needlr.Build MSBuild package.
 - [Cross-Generator Plugins](https://www.devleader.ca/projects/needlr/cross-generator-plugins/) -- Register plugin types emitted by a second source generator with Needlr using RegisterPlugins() and a module initializer, bypassing the Roslyn generator isolation boundary.
 - [IDE Extensions](https://www.devleader.ca/projects/needlr/ide-extensions/) -- Configure Needlr dependency-graph export for the VS Code and Visual Studio extensions.
 - [GitHub Actions CI/CD](https://www.devleader.ca/projects/needlr/github-actions/) -- Run Needlr CI/CD on standard GitHub-hosted runners.
-- [Releasing Needlr](https://www.devleader.ca/projects/needlr/releasing/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Releasing Needlr](https://www.devleader.ca/projects/needlr/releasing/) -- Releasing Needlr. This is the authoritative maintainer guide for cutting a Needlr release. The fast-lookup checklist is RELEASING.md.
 
 ## Contributor Guidance
 
@@ -51,139 +51,140 @@ Author: Nick Cosentino (https://www.devleader.ca).
 
 ## Architecture
 
-- [Architecture Decisions](https://www.devleader.ca/projects/needlr/architecture/decisions/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Project Structure](https://www.devleader.ca/projects/needlr/architecture/project-structure/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Data Access Boundary](https://www.devleader.ca/projects/needlr/architecture/data-access/) -- Opinionated fluent dependency injection for .NET with source generation
-- [HTTP Clients and Options](https://www.devleader.ca/projects/needlr/architecture/http-clients-and-options/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Feature Layer Pattern](https://www.devleader.ca/projects/needlr/architecture/feature-layers/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Architecture Decisions](https://www.devleader.ca/projects/needlr/architecture/decisions/) -- Architecture Decisions. Architecture Decision Records preserve significant decisions that future contributors must understand without reconstructing issue, pull-request, or conversation history.
+- [Project Structure](https://www.devleader.ca/projects/needlr/architecture/project-structure/) -- Project Structure. Needlr is a package family rather than one application. Project boundaries separate runtime abstractions, discovery strategies, compile-time tooling, and optional framework integrations.
+- [Data Access Boundary](https://www.devleader.ca/projects/needlr/architecture/data-access/) -- Data Access Boundary. Needlr deliberately does not define persistence, repository, transaction, cache, or database-provider abstractions. Those concerns belong to the consuming application or to a dedicated library that owns the storage...
+- [HTTP Clients and Options](https://www.devleader.ca/projects/needlr/architecture/http-clients-and-options/) -- HTTP Clients and Options. Needlr source generation can bind typed options and register named HttpClient instances without a handwritten registration plugin. The consumer-facing Options Binding and Named HttpClient Registration pages are...
+- [Feature Layer Pattern](https://www.devleader.ca/projects/needlr/architecture/feature-layers/) -- Feature Layer Pattern. Needlr's source-generated features follow one consistent shape. A feature that skips a layer is incomplete, even when it works.
 
 ## Development
 
-- [.NET Engineering](https://www.devleader.ca/projects/needlr/development/dotnet-engineering/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Deterministic Generator Output](https://www.devleader.ca/projects/needlr/development/deterministic-generators/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Pull Request Delivery](https://www.devleader.ca/projects/needlr/development/delivery/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Roslyn Analyzers](https://www.devleader.ca/projects/needlr/development/roslyn-analyzers/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Validation and Scheduling Boundaries](https://www.devleader.ca/projects/needlr/development/request-validation-and-jobs/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Performance](https://www.devleader.ca/projects/needlr/performance/dotnet-performance/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Testing and Benchmarks](https://www.devleader.ca/projects/needlr/testing/evaluations-and-benchmarks/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Blazor Boundary](https://www.devleader.ca/projects/needlr/ui/blazor-extensibility/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Benchmarks](https://www.devleader.ca/projects/needlr/benchmarks/) -- Opinionated fluent dependency injection for .NET with source generation
+- [.NET Engineering](https://www.devleader.ca/projects/needlr/development/dotnet-engineering/) -- .NET Engineering. Needlr favors analyzable, deterministic code because much of its behavior executes at compile time and must remain compatible with trimming and Native AOT.
+- [Documentation Metadata](https://www.devleader.ca/projects/needlr/development/documentation-metadata/) -- Maintain documentation descriptions at their source and let the documentation build produce consistent page and social metadata.
+- [Deterministic Generator Output](https://www.devleader.ca/projects/needlr/development/deterministic-generators/) -- Deterministic Generator Output. Needlr sets <Deterministic>true</Deterministic> in src/Directory.Build.props. That flag only guarantees the compiler is a pure function of its inputs — it cannot detect a source generator that reads...
+- [Pull Request Delivery](https://www.devleader.ca/projects/needlr/development/delivery/) -- Pull Request Delivery. Every change ships through a feature branch and a pull request. Direct updates or deletions of main are forbidden. Local checkpoint commits on a feature branch are unrestricted.
+- [Roslyn Analyzers](https://www.devleader.ca/projects/needlr/development/roslyn-analyzers/) -- Roslyn Analyzers. Analyzer diagnostics are APIs consumed by IDEs, CI logs, humans, and coding agents. Their identifiers and visible messages need the same stability and clarity as other public contracts.
+- [Validation and Scheduling Boundaries](https://www.devleader.ca/projects/needlr/development/request-validation-and-jobs/) -- Validation and Scheduling Boundaries. Needlr does not define HTTP request-validation or job-scheduling abstractions. Those behaviors remain application concerns and should not be added to the core dependency injection packages.
+- [Performance](https://www.devleader.ca/projects/needlr/performance/dotnet-performance/) -- Performance. Needlr's primary performance boundary is discovery and container construction. Source generation moves discovery work to compile time; reflection remains an explicit runtime option for dynamic scenarios.
+- [Testing and Benchmarks](https://www.devleader.ca/projects/needlr/testing/evaluations-and-benchmarks/) -- Testing and Benchmarks. Needlr uses deterministic tests to protect behavior and BenchmarkDotNet measurements to evaluate performance. Tests remain the correctness authority; benchmarks compare equivalent production paths after...
+- [Blazor Boundary](https://www.devleader.ca/projects/needlr/ui/blazor-extensibility/) -- Blazor Boundary. Needlr does not currently ship a Blazor-specific integration package. Blazor applications can use the normal Needlr ASP.NET Core, hosting, and service-registration packages, but component rendering and component...
+- [Benchmarks](https://www.devleader.ca/projects/needlr/benchmarks/) -- Benchmarks. Performance comparison between source-generated and reflection-based dependency injection.
 
 ## Analyzers
 
 
 ## Core Analyzers
 
-- [NDLRCOR001](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR001/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRCOR002](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR002/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRCOR003](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR003/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRCOR004](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR004/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRCOR005](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR005/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRCOR006](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR006/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRCOR007](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR007/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRCOR008](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR008/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRCOR009](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR009/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRCOR010](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR010/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRCOR011](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR011/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRCOR012](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR012/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRCOR015](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR015/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRCOR016](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR016/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRCOR001](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR001/) -- NDLRCOR001. You are using a reflection-based Needlr API in a project that has AOT (Ahead-of-Time) compilation or trimming enabled.
+- [NDLRCOR002](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR002/) -- NDLRCOR002. A class implementing IServiceCollectionPlugin or IPostBuildServiceCollectionPlugin has a constructor with parameters but no public parameterless constructor.
+- [NDLRCOR003](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR003/) -- NDLRCOR003. A [DeferToContainer] attribute was found in generated code (a .g.cs, .generated.cs, or .designer.cs file, or in an obj/*/generated/ folder).
+- [NDLRCOR004](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR004/) -- NDLRCOR004. A type that appears to be designed for dependency injection is defined in the global namespace (no namespace declaration), but the assembly's [GenerateTypeRegistry] attribute has IncludeNamespacePrefixes set to values that...
+- [NDLRCOR005](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR005/) -- NDLRCOR005. A service with a longer lifetime (e.g., Singleton) has a constructor dependency on a service with a shorter lifetime (e.g., Scoped or Transient). This creates a "captive dependency" where the shorter-lived service is captured...
+- [NDLRCOR006](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR006/) -- NDLRCOR006. A service directly or indirectly depends on itself, creating a circular reference chain. This will cause a runtime exception when the dependency injection container attempts to resolve the service.
+- [NDLRCOR007](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR007/) -- NDLRCOR007. A type used in an [Intercept] or [Intercept<T>] attribute does not implement the IMethodInterceptor interface.
+- [NDLRCOR008](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR008/) -- NDLRCOR008. An [Intercept] or [Intercept<T>] attribute is applied to a class that does not implement any user-defined interfaces.
+- [NDLRCOR009](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR009/) -- Needlr: NDLRCOR009.
+- [NDLRCOR010](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR010/) -- Needlr: NDLRCOR010.
+- [NDLRCOR011](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR011/) -- NDLRCOR011. A constructor parameter uses [FromKeyedServices("key")] to resolve a keyed service, but no [Keyed("key")] registration was found in the compilation.
+- [NDLRCOR012](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR012/) -- NDLRCOR012. A service with a longer lifetime holds a reference to an IDisposable or IAsyncDisposable dependency with a shorter lifetime. When the shorter-lived scope ends, the dependency will be disposed while the longer-lived service...
+- [NDLRCOR015](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR015/) -- Needlr: NDLRCOR015.
+- [NDLRCOR016](https://www.devleader.ca/projects/needlr/analyzers/NDLRCOR016/) -- NDLRCOR016. A class that implements a Needlr plugin interface has [DoNotAutoRegister] applied directly. This attribute is already present on the plugin interface itself and does not need to be repeated on implementing classes.
 
 ## Generator Analyzers
 
-- [NDLRGEN001](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN001/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN002](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN002/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN003](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN003/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN004](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN004/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN005](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN005/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN006](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN006/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN007](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN007/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN008](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN008/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN014](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN014/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN015](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN015/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN016](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN016/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN017](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN017/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN018](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN018/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN019](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN019/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN020](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN020/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN021](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN021/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN022](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN022/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN031](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN031/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN032](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN032/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN033](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN033/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN034](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN034/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN035](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN035/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN036](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN036/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN037](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN037/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN038](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN038/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN039](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN039/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN040](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN040/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN041](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN041/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN042](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN042/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN043](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN043/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN044](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN044/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN045](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN045/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN046](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN046/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN047](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN047/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN048](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN048/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN049](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN049/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN050](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN050/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN051](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN051/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN052](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN052/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN053](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN053/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN054](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN054/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN055](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN055/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN056](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN056/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN057](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN057/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN058](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN058/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN059](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN059/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN060](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN060/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN061](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN061/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN062](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN062/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRGEN063](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN063/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRGEN001](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN001/) -- NDLRGEN001. You are scanning a namespace that contains internal types in a referenced assembly, but those types cannot be registered because they are not accessible from the generated code.
+- [NDLRGEN002](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN002/) -- NDLRGEN002. A referenced assembly contains internal types that implement Needlr plugin interfaces (e.g., IServiceCollectionPlugin), but the assembly does not have a [GenerateTypeRegistry] attribute.
+- [NDLRGEN003](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN003/) -- NDLRGEN003. This warning is raised when a class marked with [GenerateFactory] has a constructor where all parameters are injectable types (interfaces or classes). In this case, the factory provides no additional value since the type...
+- [NDLRGEN004](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN004/) -- NDLRGEN004. This warning is raised when a class marked with [GenerateFactory] has a constructor where no parameters are injectable types. The factory will still work, but it provides low value since there are no dependencies to inject -...
+- [NDLRGEN005](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN005/) -- NDLRGEN005. This error is raised when a class uses [GenerateFactory<T>] with a type parameter T that the class does not implement. The generic type must be an interface or base class that the decorated class implements or inherits from.
+- [NDLRGEN006](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN006/) -- NDLRGEN006. The type argument passed to [OpenDecoratorFor] is not an open generic interface (unbound generic type).
+- [NDLRGEN007](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN007/) -- NDLRGEN007. A class marked with [OpenDecoratorFor(typeof(IInterface<>))] is either: 1. Not a generic class, or 2. Has a different number of type parameters than the interface
+- [NDLRGEN008](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN008/) -- NDLRGEN008. A class marked with [OpenDecoratorFor(typeof(IInterface<>))] does not implement the open generic interface specified in the attribute.
+- [NDLRGEN014](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN014/) -- NDLRGEN014. A type specified in [Options(Validator = typeof(...))] does not have a valid validation method.
+- [NDLRGEN015](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN015/) -- NDLRGEN015. A validator's generic type parameter doesn't match the options type it's applied to.
+- [NDLRGEN016](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN016/) -- NDLRGEN016. The ValidateMethod specified in [Options] does not exist on the target type.
+- [NDLRGEN017](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN017/) -- NDLRGEN017. A validation method exists but has an incorrect signature.
+- [NDLRGEN018](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN018/) -- NDLRGEN018. A Validator is specified but ValidateOnStart is false, so the validator will never be invoked.
+- [NDLRGEN019](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN019/) -- NDLRGEN019. A ValidateMethod is specified but ValidateOnStart is false, so the validation method will never be invoked.
+- [NDLRGEN020](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN020/) -- NDLRGEN020. A class has the [Options] attribute but is in a project with PublishAot=true or IsAotCompatible=true.
+- [NDLRGEN021](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN021/) -- NDLRGEN021. A positional record (a record with primary constructor parameters) has the [Options] attribute but is not declared as partial.
+- [NDLRGEN022](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN022/) -- NDLRGEN022. A longer-lived service captures a shorter-lived service that implements IDisposable or IAsyncDisposable. This is a "captive dependency" anti-pattern that can cause ObjectDisposedException at runtime.
+- [NDLRGEN031](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN031/) -- NDLRGEN031. This error is raised when a class has the [Provider] attribute but is not declared with the partial modifier. The generator needs to add an interface implementation and constructor to the class, which requires it to be partial.
+- [NDLRGEN032](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN032/) -- NDLRGEN032. This error is raised when a [Provider] interface contains members other than get-only properties. Provider interfaces should only have read-only properties representing the services to be resolved.
+- [NDLRGEN033](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN033/) -- NDLRGEN033. This warning is raised when a provider property uses a concrete class type instead of an interface. While this works, using interfaces is generally preferred for better testability and flexibility.
+- [NDLRGEN034](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN034/) -- NDLRGEN034. This error is raised when providers reference each other in a way that creates a circular dependency. This would cause a stack overflow at runtime when attempting to construct the providers.
+- [NDLRGEN035](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN035/) -- NDLRGEN035. The first type argument passed to [RegisterClosedOverImplementationsOf] is not an open generic interface (unbound generic type).
+- [NDLRGEN036](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN036/) -- NDLRGEN036. The class annotated with [RegisterClosedOverImplementationsOf] is not an open generic class, or its type-parameter count does not match the source open generic interface's arity.
+- [NDLRGEN037](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN037/) -- NDLRGEN037. The class annotated with [RegisterClosedOverImplementationsOf] either does not specify an As service type, or specifies one it does not implement.
+- [NDLRGEN038](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN038/) -- NDLRGEN038. An implementation of the designated open generic interface was discovered whose type argument(s) do not satisfy the composition type's generic constraints. The corresponding registration is skipped and this warning is reported.
+- [NDLRGEN039](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN039/) -- NDLRGEN039. A class uses [GenerateConstructor], or has a field with a positive constructor guard trigger, but the class itself is not declared partial.
+- [NDLRGEN040](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN040/) -- NDLRGEN040. A record type or a nested type carries [GenerateConstructor], or has a field with a positive constructor guard trigger.
+- [NDLRGEN041](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN041/) -- NDLRGEN041. A class that uses [GenerateConstructor], or has a field with a positive constructor guard trigger, already declares its own explicit instance constructor.
+- [NDLRGEN042](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN042/) -- NDLRGEN042. A class using generated-constructor generation derives from a base type that has no accessible parameterless constructor.
+- [NDLRGEN043](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN043/) -- NDLRGEN043. A class uses [GenerateConstructor], but declares no field eligible to become a constructor parameter.
+- [NDLRGEN044](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN044/) -- NDLRGEN044. Two or more eligible fields on the same class normalize to the same generated constructor parameter name.
+- [NDLRGEN045](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN045/) -- NDLRGEN045. A field carries [ConstructorIgnore] or [ConstructorGuard(ConstructorGuardKind.None)], but the containing class has no [GenerateConstructor] and no other field has a positive constructor guard trigger -- so no constructor is...
+- [NDLRGEN046](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN046/) -- NDLRGEN046. A [ConstructorGuard], [ConstructorIgnore], or alias guard attribute is applied to a field that cannot participate in generated-constructor generation at all.
+- [NDLRGEN047](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN047/) -- NDLRGEN047. A [GenerateConstructor] or [ConstructorGuard] argument supplies a ConstructorNullGuardMode or ConstructorGuardKind value that is not one of the enum's defined members -- for example, a value produced by casting an...
+- [NDLRGEN048](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN048/) -- NDLRGEN048. A built-in [ConstructorGuard] kind is applied to a participating field or record property whose type it cannot validate:
+- [NDLRGEN049](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN049/) -- NDLRGEN049. The guardType argument passed to [ConstructorGuard(typeof(...))] (or the type referenced by a [ConstructorGuardDefinition] alias) cannot be resolved, or is not accessible from the generated constructor.
+- [NDLRGEN050](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN050/) -- NDLRGEN050. An explicit custom guard method name -- the second argument to [ConstructorGuard(typeof(...), methodName)] or [ConstructorGuardDefinition(typeof(...), methodName)] -- is empty or consists only of white space.
+- [NDLRGEN051](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN051/) -- NDLRGEN051. No accessible static method matching the required guard-method shape was found on the referenced guard type for the guarded field or property type.
+- [NDLRGEN052](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN052/) -- NDLRGEN052. More than one accessible static method with the guard's method name is compatible with the guarded field or property type on the referenced guard type.
+- [NDLRGEN053](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN053/) -- NDLRGEN053. [ConstructorGuardDefinition] decorates a type that is not a usable constructor-guard alias: it is not derived from System.Attribute, or its own [AttributeUsage] allows neither AttributeTargets.Field nor...
+- [NDLRGEN054](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN054/) -- NDLRGEN054. The guard type and/or method referenced by [ConstructorGuardDefinition] do not resolve to a valid guard method contract -- the same contract required by a direct [ConstructorGuard(typeof(...))] usage.
+- [NDLRGEN055](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN055/) -- NDLRGEN055. A parameterized custom guard alias usage (e.g. [MinCount(3)]) supplies a positional constructor argument, or a named argument/property, that this version of Needlr does not forward to the resolved guard method.
+- [NDLRGEN056](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN056/) -- NDLRGEN056. The guard method resolved for a parameterized custom guard alias usage does not have exactly one middle parameter per forwarded argument, or one of its middle parameters is not compatible with the type of the argument...
+- [NDLRGEN057](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN057/) -- NDLRGEN057. A property uses [RecordConstructorOverloadParameter], but its positional record is not declared partial.
+- [NDLRGEN058](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN058/) -- NDLRGEN058. [RecordConstructorOverloadParameter] is used outside a supported top-level partial positional record class.
+- [NDLRGEN059](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN059/) -- NDLRGEN059. A marked property cannot be represented safely by the generated public forwarding constructor.
+- [NDLRGEN060](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN060/) -- NDLRGEN060. A property has [ConstructorGuard] or a constructor-guard alias without [RecordConstructorOverloadParameter].
+- [NDLRGEN061](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN061/) -- NDLRGEN061. The same type combines [RecordConstructorOverloadParameter] with [GenerateConstructor] or a positive field-level generated-constructor trigger.
+- [NDLRGEN062](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN062/) -- NDLRGEN062. The proposed forwarding constructor has the same C# signature as an existing explicit or synthesized constructor.
+- [NDLRGEN063](https://www.devleader.ca/projects/needlr/analyzers/NDLRGEN063/) -- NDLRGEN063. A top-level non-record class declares one public constructor whose parameter signature, supported guard calls, and private readonly field assignments exactly match a constructor that Needlr can generate.
 
 ## SignalR Analyzers
 
-- [NDLRSIG001](https://www.devleader.ca/projects/needlr/analyzers/NDLRSIG001/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRSIG002](https://www.devleader.ca/projects/needlr/analyzers/NDLRSIG002/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRSIG003](https://www.devleader.ca/projects/needlr/analyzers/NDLRSIG003/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRSIG001](https://www.devleader.ca/projects/needlr/analyzers/NDLRSIG001/) -- NDLRSIG001. The hubPath parameter of HubPathAttribute is not a compile-time constant expression.
+- [NDLRSIG002](https://www.devleader.ca/projects/needlr/analyzers/NDLRSIG002/) -- NDLRSIG002. The hubType parameter of HubPathAttribute is not a typeof() expression.
+- [NDLRSIG003](https://www.devleader.ca/projects/needlr/analyzers/NDLRSIG003/) -- NDLRSIG003. A class implementing IHubRegistrationPlugin is eligible for Needlr's generated-constructor generation -- it carries [GenerateConstructor], or a field has a positive constructor guard trigger.
 
 ## Logging Analyzers
 
-- [NDLRLOG001](https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG001/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRLOG002](https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG002/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRLOG003](https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG003/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRLOG004](https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG004/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRLOG005](https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG005/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRLOG006](https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG006/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRLOG001](https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG001/) -- NDLRLOG001. A method marked with [NeedlrLoggerMessage] is not declared partial.
+- [NDLRLOG002](https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG002/) -- NDLRLOG002. A method marked with [NeedlrLoggerMessage] returns something other than void.
+- [NDLRLOG003](https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG003/) -- NDLRLOG003. A method marked with [NeedlrLoggerMessage] declares type parameters.
+- [NDLRLOG004](https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG004/) -- NDLRLOG004. A method marked with [NeedlrLoggerMessage] lives in a type that is not declared partial.
+- [NDLRLOG005](https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG005/) -- NDLRLOG005. A method marked with [NeedlrLoggerMessage] has no logger to use.
+- [NDLRLOG006](https://www.devleader.ca/projects/needlr/analyzers/NDLRLOG006/) -- NDLRLOG006. A method marked with [NeedlrLoggerMessage] has more than six message parameters (parameters other than the logger and the exception).
 
 ## HttpClient Analyzers
 
-- [NDLRHTTP001](https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP001/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRHTTP002](https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP002/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRHTTP003](https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP003/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRHTTP004](https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP004/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRHTTP005](https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP005/) -- Opinionated fluent dependency injection for .NET with source generation
-- [NDLRHTTP006](https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP006/) -- Opinionated fluent dependency injection for .NET with source generation
+- [NDLRHTTP001](https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP001/) -- NDLRHTTP001. A class decorated with [HttpClientOptions] does not implement the INamedHttpClientOptions marker interface (directly or transitively via IStandardHttpClientOptions).
+- [NDLRHTTP002](https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP002/) -- NDLRHTTP002. A [HttpClientOptions] type specifies a client name in both the attribute's Name argument and a ClientName property on the type, and the two values disagree.
+- [NDLRHTTP003](https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP003/) -- NDLRHTTP003. A [HttpClientOptions] type has a ClientName property whose body cannot be statically evaluated to a string literal at compile time, and the attribute does not supply a Name argument as a fallback.
+- [NDLRHTTP004](https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP004/) -- NDLRHTTP004. A [HttpClientOptions] type has no attribute Name argument, no literal ClientName property, and the type name produces an empty string when the generator's suffix-stripping inference runs.
+- [NDLRHTTP005](https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP005/) -- NDLRHTTP005. Two or more [HttpClientOptions] types in the same compilation resolve to the same HttpClient name.
+- [NDLRHTTP006](https://www.devleader.ca/projects/needlr/analyzers/NDLRHTTP006/) -- NDLRHTTP006. A [HttpClientOptions] type has a ClientName property that is not an instance property of type string with a readable get accessor.
 
 ## API Reference
 
-- [Overview](https://www.devleader.ca/projects/needlr/api/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Development](https://www.devleader.ca/projects/needlr/api/dev/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Stable](https://www.devleader.ca/projects/needlr/api/stable/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Coverage](https://www.devleader.ca/projects/needlr/coverage/) -- Opinionated fluent dependency injection for .NET with source generation
-- [Video Tutorials](https://www.devleader.ca/projects/needlr/video-tutorials/) -- Opinionated fluent dependency injection for .NET with source generation
+- [Overview](https://www.devleader.ca/projects/needlr/api/) -- API Reference. Select a version:
+- [Development](https://www.devleader.ca/projects/needlr/api/dev/) -- API Reference (Development). This documentation is auto-generated from the latest main branch.
+- [Stable](https://www.devleader.ca/projects/needlr/api/stable/) -- API Reference (Stable). The latest stable API reference is published on the generated documentation site. This placeholder exists only so the mkdocs source build has a valid file to render.
+- [Coverage](https://www.devleader.ca/projects/needlr/coverage/) -- Coverage. The detailed code coverage report shows test coverage for all Needlr packages.
+- [Video Tutorials](https://www.devleader.ca/projects/needlr/video-tutorials/) -- Video Tutorials. A collection of video tutorials and demonstrations to help developers learn and use Needlr effectively.
 
 ## Architecture Decisions
 
-- [ADR-0004 Extract AI Platform to Foundry](https://www.devleader.ca/projects/needlr/adr/adr-0004-extract-ai-platform-to-foundry/) -- Opinionated fluent dependency injection for .NET with source generation
-- [ADR-0005 Generate Guarded Constructors](https://www.devleader.ca/projects/needlr/adr/adr-0005-generate-guarded-constructors/) -- Opinionated fluent dependency injection for .NET with source generation
-- [ADR-0006 Generate Record Constructor Overloads](https://www.devleader.ca/projects/needlr/adr/adr-0006-generate-record-constructor-overloads/) -- Opinionated fluent dependency injection for .NET with source generation
-- [ADR-0007 Own Graph Source Locations Per Project](https://www.devleader.ca/projects/needlr/adr/adr-0007-own-graph-source-locations-per-project/) -- Opinionated fluent dependency injection for .NET with source generation
-- [ADR-0008 Own a Version-Aware Agent Marketplace](https://www.devleader.ca/projects/needlr/adr/adr-0008-own-version-aware-agent-marketplace/) -- Opinionated fluent dependency injection for .NET with source generation
-- [ADR-0009 Stage Release Publication](https://www.devleader.ca/projects/needlr/adr/adr-0009-stage-release-publication/) -- Opinionated fluent dependency injection for .NET with source generation
-- [ADR-0010 Own a Repository Runner Image](https://www.devleader.ca/projects/needlr/adr/adr-0010-own-repository-runner-image/) -- Opinionated fluent dependency injection for .NET with source generation
-- [ADR-0011 Adopt Advisory Mutation Testing](https://www.devleader.ca/projects/needlr/adr/adr-0011-adopt-advisory-mutation-testing/) -- Opinionated fluent dependency injection for .NET with source generation
-- [ADR-0012 Bound Mutation Testing to Runtime Projects](https://www.devleader.ca/projects/needlr/adr/adr-0012-bound-mutation-testing-to-runtime-projects/) -- Opinionated fluent dependency injection for .NET with source generation
-- [ADR-0013 Use GitHub-Hosted Runners for Public CI](https://www.devleader.ca/projects/needlr/adr/adr-0013-use-github-hosted-runners-for-public-ci/) -- Opinionated fluent dependency injection for .NET with source generation
-- [ADR-0014 Expose Generated Registrations as Metadata](https://www.devleader.ca/projects/needlr/adr/adr-0014-expose-generated-registrations-as-metadata/) -- Opinionated fluent dependency injection for .NET with source generation
+- [ADR-0004 Extract AI Platform to Foundry](https://www.devleader.ca/projects/needlr/adr/adr-0004-extract-ai-platform-to-foundry/) -- ADR-0004 Extract AI Platform to Foundry. Needlr is an opinionated dependency-injection, plugin, and source-generation framework. Its AI and agentic packages grew into a separate platform covering Microsoft Agent Framework,...
+- [ADR-0005 Generate Guarded Constructors](https://www.devleader.ca/projects/needlr/adr/adr-0005-generate-guarded-constructors/) -- ADR-0005 Generate Guarded Constructors. C# primary constructors reduce constructor syntax when parameters can be used directly by the type. They do not provide a constructor body in which developers can place guard clauses. Enforcing...
+- [ADR-0006 Generate Record Constructor Overloads](https://www.devleader.ca/projects/needlr/adr/adr-0006-generate-record-constructor-overloads/) -- ADR-0006 Generate Record Constructor Overloads. Positional records provide a concise primary constructor and value-oriented data model. Some records also need additional stored properties that should be supplied during construction and...
+- [ADR-0007 Own Graph Source Locations Per Project](https://www.devleader.ca/projects/needlr/adr/adr-0007-own-graph-source-locations-per-project/) -- ADR-0007 Own Graph Source Locations Per Project. Needlr can emit a dependency graph for IDE tooling. The graph includes services, interfaces, dependencies, lifetimes, and optional source locations used for CodeLens placement and...
+- [ADR-0008 Own a Version-Aware Agent Marketplace](https://www.devleader.ca/projects/needlr/adr/adr-0008-own-version-aware-agent-marketplace/) -- ADR-0008 Own a Version-Aware Agent Marketplace. Needlr has enough domain-specific behavior that a generic .NET or dependency-injection assistant cannot reliably infer its registration conventions, source-generation architecture, plugin...
+- [ADR-0009 Stage Release Publication](https://www.devleader.ca/projects/needlr/adr/adr-0009-stage-release-publication/) -- ADR-0009 Stage Release Publication. Needlr publishes from a version tag. The tag workflow first confirms that the exact tagged commit already completed a successful main CI run, which restores, builds, runs the test suite, validates...
+- [ADR-0010 Own a Repository Runner Image](https://www.devleader.ca/projects/needlr/adr/adr-0010-own-repository-runner-image/) -- ADR-0010 Own a Repository Runner Image. Needlr's trusted Linux validation and release jobs use ephemeral PitCrew workers. Those jobs repeatedly acquire the .NET SDK and install Native AOT prerequisites even though the required toolchain...
+- [ADR-0011 Adopt Advisory Mutation Testing](https://www.devleader.ca/projects/needlr/adr/adr-0011-adopt-advisory-mutation-testing/) -- ADR-0011 Adopt Advisory Mutation Testing. Needlr's unit and integration tests verify expected behavior, but line coverage cannot show whether an assertion would detect a plausible defect. Mutation testing provides that additional signal...
+- [ADR-0012 Bound Mutation Testing to Runtime Projects](https://www.devleader.ca/projects/needlr/adr/adr-0012-bound-mutation-testing-to-runtime-projects/) -- ADR-0012 Bound Mutation Testing to Runtime Projects. ADR-0011 introduced advisory mutation testing with runtime and direct generator implementation scopes. Hosted evidence showed that the runtime model works but the generator model is...
+- [ADR-0013 Use GitHub-Hosted Runners for Public CI](https://www.devleader.ca/projects/needlr/adr/adr-0013-use-github-hosted-runners-for-public-ci/) -- ADR-0013 Use GitHub-Hosted Runners for Public CI. Needlr is a public GitHub repository. Its workflows nevertheless carried two self-hosted execution paths: a general-purpose PitCrew fallback and a specialized needlr-ci profile backed by...
+- [ADR-0014 Expose Generated Registrations as Metadata](https://www.devleader.ca/projects/needlr/adr/adr-0014-expose-generated-registrations-as-metadata/) -- ADR-0014 Expose Generated Registrations as Metadata. Needlr's source generator discovers types and builds the registration information used to emit type registries, decorators, hosted services, interceptor proxies, factories, providers,...
