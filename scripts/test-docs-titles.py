@@ -1,4 +1,4 @@
-"""Validate rendered API titles without changing visible headings or navigation."""
+"""Validate rendered documentation metadata without changing page content."""
 
 from html.parser import HTMLParser
 import importlib.util
@@ -72,16 +72,44 @@ class DocumentationTitlesTests(unittest.TestCase):
         cls.site = root / 'site'
         pages = {
             'index.md': '# Needlr\n',
-            'getting-started.md': '# Getting Started\n',
+            'getting-started.md': (
+                '---\ndescription: Register services and build your first application.\n---\n'
+                '# Getting Started\n\nThis introduction must not replace the authored summary.\n'
+            ),
+            'guides/intro.md': (
+                '# Service Registration\n\n'
+                '> This note must not become the page description.\n\n'
+                '![Diagram](https://example.test/diagram.png)\n\n'
+                'Use `Factory<T>` to register **services** &amp; configure "plugins".\n\n'
+                'This second paragraph is not the introduction.\n'
+            ),
+            'guides/override.md': (
+                '---\ndescription: \'Explicit "quoted" <T> & safe summary.\'\n---\n'
+                '# Authored Summary\n\nDo not select this prose.\n'
+            ),
+            'guides/long.md': (
+                '# Lifecycle\n\n' + 'Register services and manage application lifetimes. ' * 15
+            ),
             'api/index.md': '# API Reference\n',
             'api/dev/index.md': '# API Reference (Development)\n',
             'api/dev/NexusLabs.Needlr/index.md': '# Index\n',
             'api/stable/NexusLabs.Needlr/index.md': '# Index\n',
             'api/v0.0.3-alpha.8/NexusLabs.Needlr/index.md': '# Index\n',
-            'api/dev/NexusLabs.Needlr/Plugin.md': '# Plugin\n',
-            'api/dev/NexusLabs.Needlr.AspNet/Plugin.md': '# Plugin\n',
-            'api/stable/NexusLabs.Needlr/Plugin.md': '# Plugin\n',
-            'api/dev/NexusLabs.Needlr/Factory_T_.md': '# Factory<T>\n',
+            'api/dev/NexusLabs.Needlr/Plugin.md': (
+                '# Plugin\n\nRegisters services for an application.\n\n'
+                '```csharp\npublic interface Plugin {}\n```\n'
+            ),
+            'api/dev/NexusLabs.Needlr.AspNet/Plugin.md': (
+                '# Plugin\n\nRegisters services for an application.\n'
+            ),
+            'api/stable/NexusLabs.Needlr/Plugin.md': (
+                '# Plugin\n\nRegisters services for an application.\n'
+            ),
+            'api/dev/NexusLabs.Needlr/Factory_T_.md': (
+                '# Factory<T>\n\n```csharp\npublic class Factory<T> {}\n```\n\n'
+                'Inheritance Object. This is not a type summary.\n\n'
+                '## Remarks\n\nDo not use member remarks as a type introduction.\n'
+            ),
         }
         for source, markdown in pages.items():
             path = docs / source
@@ -162,6 +190,69 @@ class DocumentationTitlesTests(unittest.TestCase):
                 page = self.read_page(source)
                 self.assertEqual(page.title.strip(), f'{expected} - Needlr')
                 self.assertEqual(page.headings, [expected])
+
+    def assert_description(self, source, expected):
+        page = self.read_page(source)
+        for name in ('description', 'og:description', 'twitter:description'):
+            with self.subTest(source=source, tag=name):
+                self.assertEqual(page.meta[name], expected)
+        return page
+
+    def test_api_summaries_include_package_and_version_identity(self):
+        for version, package, label in (
+            ('dev', 'NexusLabs.Needlr', 'Development'),
+            ('dev', 'NexusLabs.Needlr.AspNet', 'Development'),
+            ('stable', 'NexusLabs.Needlr', 'Stable'),
+        ):
+            with self.subTest(version=version, package=package):
+                self.assert_description(
+                    f'api/{version}/{package}/Plugin.md',
+                    f'{package}.Plugin ({label} API). '
+                    'Registers services for an application.',
+                )
+
+    def test_reference_indexes_and_missing_type_summaries_have_truthful_fallbacks(self):
+        self.assert_description(
+            'api/dev/NexusLabs.Needlr/index.md',
+            'Needlr: NexusLabs.Needlr API Reference (Development).',
+        )
+        self.assert_description(
+            'api/dev/NexusLabs.Needlr/Factory_T_.md',
+            'Needlr: NexusLabs.Needlr.Factory_T_ (Development API).',
+        )
+
+    def test_guide_intro_skips_notes_images_and_preserves_inline_text(self):
+        page = self.assert_description(
+            'guides/intro.md',
+            'Service Registration. Use Factory<T> to register services & configure "plugins".',
+        )
+        self.assertEqual(page.headings, ['Service Registration'])
+
+    def test_authored_descriptions_take_precedence_and_are_safely_escaped(self):
+        self.assert_description(
+            'getting-started.md',
+            'Register services and build your first application.',
+        )
+        self.assert_description(
+            'guides/override.md',
+            'Explicit "quoted" <T> & safe summary.',
+        )
+
+    def test_homepage_retains_the_project_description(self):
+        self.assert_description(
+            'index.md',
+            'Opinionated fluent dependency injection for .NET with source generation',
+        )
+
+    def test_generated_long_descriptions_end_at_a_word_boundary(self):
+        page = self.read_page('guides/long.md')
+        description = page.meta['description']
+        self.assertTrue(description.startswith('Lifecycle. Register services'))
+        self.assertLessEqual(len(description), 240)
+        self.assertTrue(description.endswith('...'))
+        self.assertRegex(description.removesuffix('...'), r'(Register|services|and|manage|application|lifetimes\.)$')
+        self.assertEqual(page.meta['og:description'], description)
+        self.assertEqual(page.meta['twitter:description'], description)
 
 
 class PublishedTitlesRefreshTests(unittest.TestCase):
