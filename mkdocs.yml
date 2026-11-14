@@ -223,6 +223,7 @@ extra_javascript:
   - javascripts/api-version-switcher.js
 
 hooks:
+  - docs/hooks/titles.py
   - docs/hooks/schema.py
   - docs/hooks/llms_txt.py
 

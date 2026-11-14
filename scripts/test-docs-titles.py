@@ -20,6 +20,7 @@ class MetadataParser(HTMLParser):
         self.meta = {}
         self._in_title = False
         self._in_heading = False
+        self._in_permalink = False
 
     def handle_starttag(self, tag, attrs):
         attributes = dict(attrs)
@@ -28,6 +29,8 @@ class MetadataParser(HTMLParser):
         elif tag == 'h1':
             self._in_heading = True
             self.headings.append('')
+        elif tag == 'a' and 'headerlink' in attributes.get('class', '').split():
+            self._in_permalink = True
         elif tag == 'meta':
             name = attributes.get('property') or attributes.get('name')
             self.meta[name] = attributes.get('content')
@@ -37,11 +40,13 @@ class MetadataParser(HTMLParser):
             self._in_title = False
         elif tag == 'h1':
             self._in_heading = False
+        elif tag == 'a':
+            self._in_permalink = False
 
     def handle_data(self, data):
         if self._in_title:
             self.title += data
-        if self._in_heading:
+        if self._in_heading and not self._in_permalink:
             self.headings[-1] += data
 
 
