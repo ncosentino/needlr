@@ -33,7 +33,6 @@
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.7.115" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.303" />
     <!-- ASP.NET packages -->
-    <PackageVersion Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="10.0.0" />
     <!-- Testing packages -->
     <PackageVersion Include="xunit.v3" Version="3.0.0" />
