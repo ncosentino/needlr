@@ -1539,6 +1539,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Documentation deployment ownership">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#documentation-only-title-maintenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation-only title maintenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -5639,8 +5656,28 @@ local site output before deployment:</p>
 </tbody>
 </table>
 <p>Neither workflow writes generated API documentation back to <code>main</code>. Published
-<code>/api/v&lt;version&gt;/</code> directories are immutable. The versioned API catalog is derived from
+version-specific API content is immutable. The versioned API catalog is derived from
 <code>git tag --list 'v*'</code>, not from ignored <code>docs/api/v*/</code> working-tree directories.</p>
+<h3 id="documentation-only-title-maintenance">Documentation-only title maintenance<a class="headerlink" href="#documentation-only-title-maintenance" title="Permanent link">&para;</a></h3>
+<p>The <strong>Documentation titles</strong> workflow previews a title refresh against the published
+API snapshot without writing it. Dispatch it from <code>main</code> with
+<code>refresh_published_titles=true</code> to update stable and archived browser, Open Graph, and
+Twitter titles using the same rules as the MkDocs title hook.</p>
+<p>This maintenance operation changes only the three title values in each HTML head.
+API bodies, headings, navigation, canonicals, descriptions, assets, and version
+catalogs remain unchanged. It neither rebuilds historical source nor publishes
+packages or releases. The complete snapshot must validate before any title is written;
+missing or duplicate title fields fail the operation. Every transformed page is parsed
+again and compared byte-for-byte after excluding the three title values.</p>
+<p>All documentation publication jobs share one non-cancelling concurrency group.
+The refresh checks out the latest <code>gh-pages</code> snapshot inside that group and pushes
+without force, so a newer branch commit cannot be overwritten. Retry a failed
+publication against a fresh snapshot; already-refreshed titles are unchanged.</p>
+<p>Cloudflare deployment retains the existing newest-20 archive limit. The complete
+refreshed archive remains on <code>gh-pages</code>. Preview and publication receipts list
+changed paths and before/after SHA-256 digests, with one-day artifact retention.
+Receipts are separate for each run attempt, so retrying a failed publisher preserves
+earlier evidence instead of conflicting with an existing artifact.</p>
 <h2 id="free-tier-boundary">Free-tier boundary<a class="headerlink" href="#free-tier-boundary" title="Permanent link">&para;</a></h2>
 <p>GitHub documents the Linux and Windows labels in Needlr's allowlist as standard
 GitHub-hosted runners whose use is free and unlimited for public repositories. Larger
