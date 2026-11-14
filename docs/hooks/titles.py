@@ -6,15 +6,23 @@ from pathlib import PurePosixPath
 def on_page_markdown(markdown: str, page, config, files) -> str:
     path = PurePosixPath(page.file.src_uri)
     parts = path.parts
-    if len(parts) < 4 or parts[0] != 'api':
+    if parts[0] != 'api':
+        return markdown
+
+    if len(parts) == 2 and path.stem == 'index':
+        page.meta['title'] = 'API Reference'
+        return markdown
+    if len(parts) < 3:
         return markdown
 
     version = {'dev': 'Development', 'stable': 'Stable'}.get(parts[1], parts[1])
     name = '.'.join(parts[2:-1])
     if path.stem == 'index':
-        title = f'{name} API Reference ({version})'
+        prefix = f'{name} ' if name else ''
+        title = f'{prefix}API Reference ({version})'
     else:
-        title = f'{name}.{path.stem} ({version} API)'
+        qualified_name = '.'.join((*parts[2:-1], path.stem))
+        title = f'{qualified_name} ({version} API)'
 
     page.meta['title'] = title
     return markdown

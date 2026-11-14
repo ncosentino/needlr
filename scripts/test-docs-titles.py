@@ -61,6 +61,7 @@ class DocumentationTitlesTests(unittest.TestCase):
         pages = {
             'index.md': '# Needlr\n',
             'getting-started.md': '# Getting Started\n',
+            'api/index.md': '# API Reference\n',
             'api/dev/index.md': '# API Reference (Development)\n',
             'api/dev/NexusLabs.Needlr/index.md': '# Index\n',
             'api/stable/NexusLabs.Needlr/index.md': '# Index\n',
@@ -80,7 +81,10 @@ class DocumentationTitlesTests(unittest.TestCase):
             docs_dir=str(docs),
             site_dir=str(cls.site),
             site_url='https://example.test/reference/',
-            nav=list(pages),
+            nav=[
+                {'Overview': source} if source == 'api/index.md' else source
+                for source in pages
+            ],
             extra_javascript=[],
         )
         build(config)
@@ -113,6 +117,10 @@ class DocumentationTitlesTests(unittest.TestCase):
                     f'NexusLabs.Needlr API Reference ({label})',
                 )
                 self.assertEqual(page.headings, ['Index'])
+
+    def test_api_overview_title_is_not_the_generic_navigation_label(self):
+        page = self.assert_api_title('api/index.md', 'API Reference')
+        self.assertEqual(page.headings, ['API Reference'])
 
     def test_same_named_types_include_package_and_version(self):
         for version, package, label in (
