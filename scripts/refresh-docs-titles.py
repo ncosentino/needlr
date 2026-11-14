@@ -35,6 +35,14 @@ class TitleSpans(HTMLParser):
         line, column = self.getpos()
         return self.offsets[line - 1] + column
 
+    def read_head(self, html):
+        for start in range(0, len(html), 4096):
+            self.feed(html[start:start + 4096])
+            if self.closed_heads:
+                break
+        self.close()
+        self.validate()
+
     def handle_starttag(self, tag, attrs):
         if tag == 'head':
             self.heads += 1
@@ -106,9 +114,7 @@ def refresh_html(html: str, source: PurePosixPath) -> str:
     if metadata is None:
         raise ValueError(f'Not an API documentation source: {source}')
     parser = TitleSpans(html)
-    parser.feed(html)
-    parser.close()
-    parser.validate()
+    parser.read_head(html)
     start, end, _ = parser.spans['title'][0]
     existing = unescape(html[start:end]).strip()
     _, separator, brand = existing.rpartition(' - ')
@@ -128,9 +134,7 @@ def refresh_html(html: str, source: PurePosixPath) -> str:
     for start, end, value in sorted(replacements, reverse=True):
         html = html[:start] + value + html[end:]
     updated = TitleSpans(html)
-    updated.feed(html)
-    updated.close()
-    updated.validate()
+    updated.read_head(html)
     if without_title_values(original, parser) != without_title_values(html, updated):
         raise ValueError('Refresh changed bytes outside title metadata values.')
     return html

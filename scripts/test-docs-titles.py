@@ -26,24 +26,29 @@ class MetadataParser(HTMLParser):
         self.headings = []
         self.meta = {}
         self._in_title = False
+        self._in_head = False
         self._in_heading = False
         self._in_permalink = False
 
     def handle_starttag(self, tag, attrs):
         attributes = dict(attrs)
-        if tag == 'title':
+        if tag == 'head':
+            self._in_head = True
+        elif tag == 'title' and self._in_head:
             self._in_title = True
         elif tag == 'h1':
             self._in_heading = True
             self.headings.append('')
         elif tag == 'a' and 'headerlink' in attributes.get('class', '').split():
             self._in_permalink = True
-        elif tag == 'meta':
+        elif tag == 'meta' and self._in_head:
             name = attributes.get('property') or attributes.get('name')
             self.meta[name] = attributes.get('content')
 
     def handle_endtag(self, tag):
-        if tag == 'title':
+        if tag == 'head':
+            self._in_head = False
+        elif tag == 'title':
             self._in_title = False
         elif tag == 'h1':
             self._in_heading = False
@@ -169,6 +174,7 @@ class PublishedTitlesRefreshTests(unittest.TestCase):
             '<meta name="description" content="Original API description" />\r\n'
             '<link rel="canonical" href="https://example.test/api/old/" />\r\n'
             '<script type="application/ld+json">{"name":"Original API"}</script>\r\n'
+            f'<script>const example = "</head>{"x" * 5000}";</script>\r\n'
             '</head><body><h1>Index</h1><nav>Original navigation</nav>\r\n'
             '<code>Original version: Factory&lt;T&gt; \u03bb</code>\r\n'
             '<svg><title>Unchanged diagram title</title></svg>\r\n'
@@ -196,7 +202,7 @@ class PublishedTitlesRefreshTests(unittest.TestCase):
             original, PurePosixPath('api/v1.0/NexusLabs.Needlr/Factory&T.md'),
         )
         parser = MetadataParser()
-        parser.feed(result.split('</head>', 1)[0])
+        parser.feed(result)
         expected = 'NexusLabs.Needlr.Factory&T (v1.0 API)'
         self.assertEqual(parser.title, f'{expected} - Needlr')
         self.assertEqual(parser.meta['og:title'], f'{expected} \u2013 Needlr')
