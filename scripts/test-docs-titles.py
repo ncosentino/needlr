@@ -195,7 +195,7 @@ class PublishedTitlesRefreshTests(unittest.TestCase):
             original, PurePosixPath('api/v1.0/NexusLabs.Needlr/Factory&T.md'),
         )
         parser = MetadataParser()
-        parser.feed(result)
+        parser.feed(result.split('</head>', 1)[0])
         expected = 'NexusLabs.Needlr.Factory&T (v1.0 API)'
         self.assertEqual(parser.title, f'{expected} - Needlr')
         self.assertEqual(parser.meta['og:title'], f'{expected} \u2013 Needlr')
@@ -221,7 +221,7 @@ class PublishedTitlesRefreshTests(unittest.TestCase):
         site = Path(root)
         sources = (
             'api/stable/NexusLabs.Needlr/index.html',
-            'api/v0.0.2-alpha.19/NexusLabs.Needlr/Factory_T_/index.html',
+            'api/v0.0.2-alpha.19/NexusLabs.Needlr/Factory_T_.Nested/index.html',
             'api/dev/NexusLabs.Needlr/index.html',
             'getting-started/index.html',
         )
@@ -245,7 +245,7 @@ class PublishedTitlesRefreshTests(unittest.TestCase):
             self.assertEqual(applied, preview)
             for source, expected in (
                 (sources[0], 'NexusLabs.Needlr API Reference (Stable)'),
-                (sources[1], 'NexusLabs.Needlr.Factory_T_ (v0.0.2-alpha.19 API)'),
+                (sources[1], 'NexusLabs.Needlr.Factory_T_.Nested (v0.0.2-alpha.19 API)'),
             ):
                 result = (site / source).read_bytes()
                 expected_html = before[source].decode('utf-8')
@@ -267,6 +267,19 @@ class PublishedTitlesRefreshTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 refresh.refresh_site(site, apply=True)
             self.assertEqual(valid.read_bytes(), before)
+
+    def test_symlinks_cannot_redirect_refresh_writes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            site, sources = self.make_site(Path(directory) / 'site')
+            outside = Path(directory) / 'outside.html'
+            outside.write_bytes(self.html().encode('utf-8'))
+            target = site / sources[0]
+            target.unlink()
+            target.symlink_to(outside)
+            before = outside.read_bytes()
+            with self.assertRaises(ValueError):
+                refresh.refresh_site(site, apply=True)
+            self.assertEqual(outside.read_bytes(), before)
 
 
 if __name__ == '__main__':

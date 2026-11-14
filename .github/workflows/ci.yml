@@ -685,6 +685,9 @@ jobs:
 
   deploy-documentation:
     name: Deploy documentation
+    concurrency:
+      group: needlr-documentation-publication
+      cancel-in-progress: false
     needs:
       - validation-plan
       - changes

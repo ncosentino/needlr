@@ -22,6 +22,11 @@ on:
       - 'scripts/refresh-docs-titles.py'
       - '.github/workflows/docs-titles.yml'
   workflow_dispatch:
+    inputs:
+      refresh_published_titles:
+        description: Refresh stable/archive title metadata and deploy (main only)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -43,3 +48,85 @@ jobs:
         run: python -m pip install -r docs/requirements.txt
       - name: Validate rendered documentation titles
         run: python scripts/test-docs-titles.py
+      - name: Checkout published API snapshot for read-only validation
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: published-preview
+          persist-credentials: false
+          sparse-checkout: api
+      - name: Preview published title refresh
+        run: python scripts/refresh-docs-titles.py published-preview --report published-title-preview.json
+      - name: Retain bounded title-refresh preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-title-preview
+          path: published-title-preview.json
+          retention-days: 1
+          if-no-files-found: error
+
+  refresh-published-titles:
+    needs: titles
+    if: github.event_name == 'workflow_dispatch' && inputs.refresh_published_titles
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    concurrency:
+      group: needlr-documentation-publication
+      cancel-in-progress: false
+    steps:
+      - name: Require default-branch maintenance
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          test "$REF" = refs/heads/main
+      - name: Checkout title refresh implementation
+        uses: actions/checkout@v4
+        with:
+          path: source
+          persist-credentials: false
+      - name: Checkout complete current published site
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: published
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Validate and apply title-only changes
+        run: python source/scripts/refresh-docs-titles.py published --apply --report published-title-refresh.json
+      - name: Retain bounded publication receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-title-refresh
+          path: published-title-refresh.json
+          retention-days: 1
+          if-no-files-found: error
+      - name: Publish refreshed titles without overwriting newer commits
+        working-directory: published
+        run: |
+          set -euo pipefail
+          git add -- api/stable ':(glob)api/v*/**/*.html'
+          if git diff --cached --quiet; then
+            echo "Published titles already match; no branch commit required."
+          else
+            status=$?
+            test "$status" -eq 1
+            git config user.name github-actions[bot]
+            git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+            git -c commit.gpgsign=false commit -m "docs: refresh published API title metadata"
+            git push origin HEAD:gh-pages
+          fi
+      - name: Trim mirror using the existing archive retention policy
+        run: python source/scripts/trim-cloudflare-mirror.py published --keep 20
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Deploy refreshed documentation to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy published --project-name=needlr --branch=main --commit-dirty=true
