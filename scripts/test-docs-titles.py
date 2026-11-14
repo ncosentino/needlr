@@ -1,9 +1,12 @@
-"""Validate rendered API titles without changing visible headings or navigation."""
+"""Validate rendered documentation metadata without changing page content."""
 
 from html.parser import HTMLParser
 import importlib.util
+import json
 from pathlib import Path, PurePosixPath
+import re
 import tempfile
+from types import SimpleNamespace
 import unittest
 
 from mkdocs.commands.build import build
@@ -17,6 +20,8 @@ spec = importlib.util.spec_from_file_location(
 )
 refresh = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(refresh)
+import metadata
+import schema
 
 
 class MetadataParser(HTMLParser):
@@ -72,16 +77,52 @@ class DocumentationTitlesTests(unittest.TestCase):
         cls.site = root / 'site'
         pages = {
             'index.md': '# Needlr\n',
-            'getting-started.md': '# Getting Started\n',
+            'getting-started.md': (
+                '---\ndescription: Register services and build your first application.\n---\n'
+                '# Getting Started\n\nThis introduction must not replace the authored summary.\n'
+            ),
+            'guides/intro.md': (
+                '# Service Registration\n\n'
+                '> This note must not become the page description.\n\n'
+                '![Diagram](https://example.test/diagram.png)\n\n'
+                'Use `Factory<T>` to register **services** &amp; configure "plugins".\n\n'
+                'This second paragraph is not the introduction.\n'
+            ),
+            'guides/override.md': (
+                '---\ndescription: \'Explicit "quoted" <T> & safe summary.\'\n---\n'
+                '# Authored Summary\n\nDo not select this prose.\n'
+            ),
+            'guides/blank.md': (
+                "---\ndescription: '   '\n---\n"
+                '# Blank Description\n\nRegister application services.\n'
+            ),
+            'guides/long.md': (
+                '# Lifecycle\n\n' + 'Register services and manage application lifetimes. ' * 15
+            ),
             'api/index.md': '# API Reference\n',
             'api/dev/index.md': '# API Reference (Development)\n',
             'api/dev/NexusLabs.Needlr/index.md': '# Index\n',
             'api/stable/NexusLabs.Needlr/index.md': '# Index\n',
             'api/v0.0.3-alpha.8/NexusLabs.Needlr/index.md': '# Index\n',
-            'api/dev/NexusLabs.Needlr/Plugin.md': '# Plugin\n',
-            'api/dev/NexusLabs.Needlr.AspNet/Plugin.md': '# Plugin\n',
-            'api/stable/NexusLabs.Needlr/Plugin.md': '# Plugin\n',
-            'api/dev/NexusLabs.Needlr/Factory_T_.md': '# Factory<T>\n',
+            'api/dev/NexusLabs.Needlr/Plugin.md': (
+                '# Plugin\n\n#### NexusLabs.Needlr\n\n### NexusLabs.Needlr\n\n'
+                '## Plugin Interface\n\nRegisters services for an application.\n\n'
+                '```csharp\npublic interface Plugin {}\n```\n'
+            ),
+            'api/dev/NexusLabs.Needlr.AspNet/Plugin.md': (
+                '# Plugin\n\n#### NexusLabs.Needlr.AspNet\n\n### NexusLabs.Needlr.AspNet\n\n'
+                '## Plugin Interface\n\nRegisters services for an application.\n'
+            ),
+            'api/stable/NexusLabs.Needlr/Plugin.md': (
+                '# Plugin\n\n#### NexusLabs.Needlr\n\n### NexusLabs.Needlr\n\n'
+                '## Plugin Interface\n\nRegisters services for an application.\n'
+            ),
+            'api/dev/NexusLabs.Needlr/Factory_T_.md': (
+                '# Factory<T>\n\n#### NexusLabs.Needlr\n\n## Factory Class\n\n'
+                '```csharp\npublic class Factory<T> {}\n```\n\n'
+                'Inheritance Object. This is not a type summary.\n\n'
+                '## Remarks\n\nDo not use member remarks as a type introduction.\n'
+            ),
         }
         for source, markdown in pages.items():
             path = docs / source
@@ -103,7 +144,7 @@ class DocumentationTitlesTests(unittest.TestCase):
 
     def read_page(self, source):
         path = self.site / source.removesuffix('.md') / 'index.html'
-        if source.endswith('/index.md'):
+        if source == 'index.md' or source.endswith('/index.md'):
             path = self.site / source
             path = path.with_suffix('.html')
         parser = MetadataParser()
@@ -162,6 +203,119 @@ class DocumentationTitlesTests(unittest.TestCase):
                 page = self.read_page(source)
                 self.assertEqual(page.title.strip(), f'{expected} - Needlr')
                 self.assertEqual(page.headings, [expected])
+
+    def assert_description(self, source, expected):
+        page = self.read_page(source)
+        for name in ('description', 'og:description', 'twitter:description'):
+            with self.subTest(source=source, tag=name):
+                self.assertEqual(page.meta[name], expected)
+        return page
+
+    def test_api_summaries_include_package_and_version_identity(self):
+        for version, package, label in (
+            ('dev', 'NexusLabs.Needlr', 'Development'),
+            ('dev', 'NexusLabs.Needlr.AspNet', 'Development'),
+            ('stable', 'NexusLabs.Needlr', 'Stable'),
+        ):
+            with self.subTest(version=version, package=package):
+                self.assert_description(
+                    f'api/{version}/{package}/Plugin.md',
+                    f'{package}.Plugin ({label} API). '
+                    'Registers services for an application.',
+                )
+
+    def test_reference_indexes_and_missing_type_summaries_have_truthful_fallbacks(self):
+        self.assert_description(
+            'api/dev/NexusLabs.Needlr/index.md',
+            'Needlr: NexusLabs.Needlr API Reference (Development).',
+        )
+        self.assert_description(
+            'api/dev/NexusLabs.Needlr/Factory_T_.md',
+            'Needlr: NexusLabs.Needlr.Factory_T_ (Development API).',
+        )
+
+    def test_guide_intro_skips_notes_images_and_preserves_inline_text(self):
+        page = self.assert_description(
+            'guides/intro.md',
+            'Service Registration. Use Factory<T> to register services & configure "plugins".',
+        )
+        self.assertEqual(page.headings, ['Service Registration'])
+
+    def test_authored_descriptions_take_precedence_and_are_safely_escaped(self):
+        self.assert_description(
+            'getting-started.md',
+            'Register services and build your first application.',
+        )
+        self.assert_description(
+            'guides/override.md',
+            'Explicit "quoted" <T> & safe summary.',
+        )
+
+    def test_homepage_retains_the_project_description(self):
+        self.assert_description(
+            'index.md',
+            'Opinionated fluent dependency injection for .NET with source generation',
+        )
+
+    def test_blank_authored_description_uses_the_guide_intro(self):
+        self.assert_description(
+            'guides/blank.md',
+            'Blank Description. Register application services.',
+        )
+
+    def test_generated_long_descriptions_end_at_a_word_boundary(self):
+        page = self.read_page('guides/long.md')
+        description = page.meta['description']
+        self.assertTrue(description.startswith('Lifecycle. Register services'))
+        self.assertLessEqual(len(description), 240)
+        self.assertTrue(description.endswith('...'))
+        self.assertRegex(description.removesuffix('...'), r'(Register|services|and|manage|application|lifetimes\.)$')
+        self.assertEqual(page.meta['og:description'], description)
+        self.assertEqual(page.meta['twitter:description'], description)
+
+
+class DocumentationMetadataPolicyTests(unittest.TestCase):
+    def page(self, description=None):
+        return SimpleNamespace(
+            file=SimpleNamespace(src_uri='guide.md'),
+            meta={} if description is None else {'description': description},
+            title='Guide',
+            is_homepage=False,
+        )
+
+    def test_invalid_authored_descriptions_fail_with_the_source_path(self):
+        for authored in (42, ['summary'], {'summary': 'text'}):
+            with self.subTest(description=authored):
+                with self.assertRaisesRegex(ValueError, 'guide.md: description must be a string'):
+                    metadata.on_page_content('<p>Intro.</p>', self.page(authored), None, None)
+
+    def test_generation_and_rendering_do_not_modify_content_or_source_metadata(self):
+        page = self.page()
+        config = SimpleNamespace(site_name='Needlr')
+        content = '<p>Use <code>Factory&lt;T&gt;</code> &amp; "plugins".</p>'
+        self.assertEqual(metadata.on_page_content(content, page, config, None), content)
+        description = 'Guide. Use Factory<T> & "plugins".'
+        self.assertEqual(page.meta['description'], description)
+        context = metadata.on_page_context({'page': page}, page, config, None)
+        self.assertEqual(page.meta['description'], description)
+        parser = MetadataParser()
+        parser.feed(f'<head><meta name="description" content="{context["page"].meta["description"]}"></head>')
+        self.assertEqual(parser.meta['description'], description)
+
+    def test_generated_description_is_safe_in_existing_howto_json_ld(self):
+        page = self.page()
+        page.url = 'getting-started/'
+        config = SimpleNamespace(site_name='Needlr')
+        content = '<h2>Configure</h2><p>Use <code>&lt;/script&gt;</code> &amp; "plugins".</p>'
+        metadata.on_page_content(content, page, config, None)
+        rendered = schema.on_page_content(content, page, config, None)
+        scripts = re.findall(
+            r'<script type="application/ld\+json">\n(.*?)\n</script>',
+            rendered, re.DOTALL,
+        )
+        self.assertEqual(len(scripts), 1)
+        self.assertNotIn('</script>', scripts[0])
+        self.assertEqual(json.loads(scripts[0])['description'], page.meta['description'])
 
 
 class PublishedTitlesRefreshTests(unittest.TestCase):

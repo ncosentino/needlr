@@ -98,6 +98,7 @@ nav:
       - Feature Layer Pattern: architecture/feature-layers.md
     - Development:
       - .NET Engineering: development/dotnet-engineering.md
+      - Documentation Metadata: development/documentation-metadata.md
       - Deterministic Generator Output: development/deterministic-generators.md
       - Pull Request Delivery: development/delivery.md
       - Roslyn Analyzers: development/roslyn-analyzers.md
@@ -223,7 +224,7 @@ extra_javascript:
   - javascripts/api-version-switcher.js
 
 hooks:
-  - docs/hooks/titles.py
+  - docs/hooks/metadata.py
   - docs/hooks/schema.py
   - docs/hooks/llms_txt.py
 

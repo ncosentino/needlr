@@ -1,4 +1,4 @@
-name: Documentation titles
+name: Documentation metadata
 
 on:
   pull_request:
@@ -46,8 +46,13 @@ jobs:
           python-version: '3.x'
       - name: Install documentation dependencies
         run: python -m pip install -r docs/requirements.txt
-      - name: Validate rendered documentation titles
+      - name: Validate rendered documentation titles and descriptions
         run: python scripts/test-docs-titles.py
+      - name: Validate documentation contributor guidance
+        shell: pwsh
+        run: scripts/test-guidance.ps1
+      - name: Build authored documentation with the metadata policy
+        run: python -m mkdocs build --strict
       - name: Checkout published API snapshot for read-only validation
         uses: actions/checkout@v4
         with:

@@ -24,6 +24,12 @@ def _extract_h2_sections(html: str) -> list[tuple[str, str]]:
     return sections
 
 
+def _schema_script(schema: dict) -> str:
+    # JSON strings must not terminate the enclosing HTML script element.
+    payload = json.dumps(schema, indent=2, ensure_ascii=False).replace('<', '\\u003c')
+    return '<script type="application/ld+json">\n' + payload + '\n</script>\n'
+
+
 def on_page_content(html: str, page, config, files) -> str:
     """Inject structured data JSON-LD blocks based on page URL."""
     url = page.url or ''
@@ -65,12 +71,7 @@ def _inject_howto_schema(html: str, page) -> str:
         'step': steps,
     }
 
-    script_tag = (
-        '<script type="application/ld+json">\n'
-        + json.dumps(schema, indent=2, ensure_ascii=False)
-        + '\n</script>\n'
-    )
-    return html + script_tag
+    return html + _schema_script(schema)
 
 
 def _inject_faq_schema(html: str, page) -> str:
@@ -113,9 +114,4 @@ def _inject_faq_schema(html: str, page) -> str:
         'mainEntity': questions,
     }
 
-    script_tag = (
-        '<script type="application/ld+json">\n'
-        + json.dumps(schema, indent=2, ensure_ascii=False)
-        + '\n</script>\n'
-    )
-    return html + script_tag
+    return html + _schema_script(schema)
