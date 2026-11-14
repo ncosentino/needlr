@@ -88,6 +88,19 @@ class TitleSpans(HTMLParser):
                 raise ValueError(f'Expected exactly one head {name}.')
 
 
+def without_title_values(html: str, parser: TitleSpans) -> str:
+    spans = []
+    for name, values in parser.spans.items():
+        start, end, unquoted = values[0]
+        if name != 'title' and not unquoted:
+            start -= 1
+            end += 1
+        spans.append((start, end))
+    for start, end in sorted(spans, reverse=True):
+        html = html[:start] + html[end:]
+    return html
+
+
 def refresh_html(html: str, source: PurePosixPath) -> str:
     metadata = api_title(source)
     if metadata is None:
@@ -111,8 +124,15 @@ def refresh_html(html: str, source: PurePosixPath) -> str:
         start, end, unquoted = spans[0]
         value = escape(titles[name], quote=True)
         replacements.append((start, end, f'"{value}"' if unquoted else value))
+    original = html
     for start, end, value in sorted(replacements, reverse=True):
         html = html[:start] + value + html[end:]
+    updated = TitleSpans(html)
+    updated.feed(html)
+    updated.close()
+    updated.validate()
+    if without_title_values(original, parser) != without_title_values(html, updated):
+        raise ValueError('Refresh changed bytes outside title metadata values.')
     return html
 
 

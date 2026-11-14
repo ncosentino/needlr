@@ -92,7 +92,8 @@ This maintenance operation changes only the three title values in each HTML head
 API bodies, headings, navigation, canonicals, descriptions, assets, and version
 catalogs remain unchanged. It neither rebuilds historical source nor publishes
 packages or releases. The complete snapshot must validate before any title is written;
-missing or duplicate title fields fail the operation.
+missing or duplicate title fields fail the operation. Every transformed page is parsed
+again and compared byte-for-byte after excluding the three title values.
 
 All documentation publication jobs share one non-cancelling concurrency group.
 The refresh checks out the latest `gh-pages` snapshot inside that group and pushes
