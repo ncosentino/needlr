@@ -1,15 +1,15 @@
 
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.5 LTS (Noble Numbat)
-AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.303
-  [Host]   : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
-  ShortRun : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.404
+  [Host]   : .NET 10.0.15 (10.0.1526.53008), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.15 (10.0.1526.53008), X64 RyuJIT AVX2
 
 Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 
  Method                           | Mean     | Error    | StdDev   | Ratio | Rank | Allocated | Alloc Ratio |
 --------------------------------- |---------:|---------:|---------:|------:|-----:|----------:|------------:|
- ManualDI_ResolveOptions          | 19.05 ns | 0.062 ns | 0.016 ns |  1.00 |    1 |         - |          NA |
- Needlr_Reflection_ResolveOptions | 18.64 ns | 0.072 ns | 0.019 ns |  0.98 |    1 |         - |          NA |
- Needlr_SourceGen_ResolveOptions  | 18.79 ns | 0.053 ns | 0.014 ns |  0.99 |    1 |         - |          NA |
+ ManualDI_ResolveOptions          | 16.83 ns | 0.393 ns | 0.102 ns |  1.00 |    1 |         - |          NA |
+ Needlr_Reflection_ResolveOptions | 17.91 ns | 0.494 ns | 0.128 ns |  1.06 |    1 |         - |          NA |
+ Needlr_SourceGen_ResolveOptions  | 16.70 ns | 0.210 ns | 0.032 ns |  0.99 |    1 |         - |          NA |

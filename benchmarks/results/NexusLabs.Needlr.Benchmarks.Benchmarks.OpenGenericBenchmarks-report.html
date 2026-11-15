@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.OpenGenericBenchmarks-20260920-031340</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.OpenGenericBenchmarks-20261115-031028</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,10 +14,10 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.5 LTS (Noble Numbat)
-AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.303
-  [Host]   : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
-  ShortRun : .NET 10.0.11 (10.0.1126.37416), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
+AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.404
+  [Host]   : .NET 10.0.15 (10.0.1526.53008), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.15 (10.0.1526.53008), X64 RyuJIT AVX2
 </code></pre>
 <pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
@@ -26,9 +26,9 @@ WarmupCount=3
 <table>
 <thead><tr><th>Method                        </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Rank</th><th>Gen0</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_ResolveOpenGeneric</td><td>17.86 ns</td><td>0.401 ns</td><td>0.062 ns</td><td>1.00</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
-</tr><tr><td>Needlr_Reflection_ResolveOpenGeneric</td><td>16.53 ns</td><td>0.489 ns</td><td>0.127 ns</td><td>0.93</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
-</tr><tr><td>Needlr_SourceGen_ResolveOpenGeneric</td><td>18.08 ns</td><td>0.289 ns</td><td>0.045 ns</td><td>1.01</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
+</thead><tbody><tr><td>ManualDI_ResolveOpenGeneric</td><td>19.87 ns</td><td>0.233 ns</td><td>0.061 ns</td><td>1.00</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
+</tr><tr><td>Needlr_Reflection_ResolveOpenGeneric</td><td>20.78 ns</td><td>0.945 ns</td><td>0.246 ns</td><td>1.05</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
+</tr><tr><td>Needlr_SourceGen_ResolveOpenGeneric</td><td>21.81 ns</td><td>0.692 ns</td><td>0.180 ns</td><td>1.10</td><td>1</td><td>0.0014</td><td>24 B</td><td>1.00</td>
 </tr></tbody></table>
 </body>
 </html>
