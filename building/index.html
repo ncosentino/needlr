@@ -53,6 +53,8 @@
       
     
     
+      <link rel="stylesheet" href="../stylesheets/layout.css">
+    
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -1660,6 +1662,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#layout-checks-and-review-screenshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layout checks and review screenshots
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -5548,6 +5567,19 @@ package, documentation, integration, and Native AOT gates.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>docs/requirements.txt
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>python<span class="w"> </span>-m<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>--strict
 </span></code></pre></div>
+<h3 id="layout-checks-and-review-screenshots">Layout checks and review screenshots<a class="headerlink" href="#layout-checks-and-review-screenshots" title="Permanent link">&para;</a></h3>
+<p>The hosted Documentation layout job covers both full CI and documentation-only
+guidance validation. It checks the actual built homepage at 375px and 1440px in
+both themes. It holds image responses, compares geometry before
+and after release, and requires separate 44px footer targets with 4px gaps.
+The regression checks use deliberately wide synthetic badges so they do not
+depend on external badge services.</p>
+<p>Manually dispatching CI on a feature branch additionally captures real-image
+homepage loading states and footer screenshots for human review. Screenshots
+are evidence, never screenshot assertions or pixel-comparison baselines.
+The <code>documentation-layout</code> artifact retains bounded JSON and PNG evidence for
+one day, capped at 20 MiB per run; ordinary regression evidence is much smaller.
+Feature-branch validation does not deploy documentation.</p>
 
 
 
@@ -5588,7 +5620,7 @@ package, documentation, integration, and Native AOT gates.</p>
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      &copy; Nick Cosentino <br> <a href="https://www.devleader.ca">Dev Leader: software engineering blog and C# tutorials by Nick Cosentino</a> <br> <a href="https://links.devleader.ca">Dev Leader links: videos, courses, Discord, and social channels</a> <br>
+      &copy; Nick Cosentino <nav class="doc-footer-links" aria-label="Related sites"> <a href="https://www.devleader.ca">Dev Leader: software engineering blog and C# tutorials by Nick Cosentino</a> <a href="https://links.devleader.ca">Dev Leader links: videos, courses, Discord, and social channels</a> </nav>
 
     </div>
   

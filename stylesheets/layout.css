@@ -1,0 +1,19 @@
+.md-typeset img.doc-badge {
+    height: 20px;
+    object-fit: contain;
+}
+
+.doc-footer-links {
+    display: grid;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.doc-footer-links a {
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    max-width: 100%;
+    min-width: 44px;
+    min-height: 44px;
+}
