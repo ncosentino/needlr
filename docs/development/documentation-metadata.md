@@ -49,18 +49,35 @@ including structured data and `llms.txt`, and the metadata hook returns rendered
 page content unchanged. JSON-LD serialization escapes HTML-sensitive delimiters
 without changing the decoded description.
 
-The hosted Documentation metadata workflow exercises rendered metadata,
-explicit-description precedence, API/version identity, introductory-prose
-selection, safe escaping and unchanged titles/headings. These checks enforce
-mechanical contracts; reviewers still need to verify that source prose accurately
-describes the API or guide.
+API pages also emit one [APIReference](https://schema.org/APIReference) JSON-LD
+document through `docs/hooks/schema.py`. Its name reuses the qualified,
+version-aware page title; its `@id` and `url` identify the canonical documentation
+page, not the package search. Its description consumes the same plain-text
+metadata as the HTML and social tags. There is no separate API-description store
+or semantic inference from symbol names. The generic `SoftwareSourceCode` record
+is not emitted for a reference document, and non-API markup is unchanged.
+
+The hosted Documentation metadata workflow builds the Injection project and its
+dependencies, passes their compiler XML and assemblies through DefaultDocumentation,
+and builds the resulting Markdown with MkDocs. It compares the compiled `Syringe`
+XML summary with generated Markdown, visible HTML and JSON-LD, and checks every
+generated API page for one matching reference document. A bounded one-day artifact
+retains the compiler XML, generated Markdown and rendered sample for inspection.
+Full source CI runs the same checks against its existing compiler and site output,
+covering every API package without another build or documentation-generation pass.
+
+The same checks exercise explicit-description precedence, API/version identity,
+introductory-prose selection, safe escaping and unchanged titles/headings. These
+are mechanical contracts; reviewers still need to verify that source prose
+accurately describes the API or guide. JSON-LD correctness does not establish
+Google rich-result eligibility or a ranking benefit.
 
 ## Published versions
 
-Development documentation uses this policy when regenerated. Releases apply it
-when their API Markdown is built. Previously published stable and archived HTML
-is intentionally preserved by the publication workflows, so updating a build hook
-does not rewrite those frozen snapshots.
+Development documentation uses this metadata and structured-data policy when
+regenerated. Releases apply it when their API Markdown is built. Previously
+published stable and archived HTML is intentionally preserved by the publication
+workflows, so updating a build hook does not rewrite those frozen snapshots.
 
 Backfilling descriptions in frozen snapshots is a separate reviewed metadata-only
 maintenance operation. It must derive descriptions from that version's published

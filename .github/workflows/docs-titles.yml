@@ -37,22 +37,44 @@ concurrency:
 
 jobs:
   titles:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - name: Install documentation dependencies
         run: python -m pip install -r docs/requirements.txt
-      - name: Validate rendered documentation titles and descriptions
-        run: python scripts/test-docs-titles.py
       - name: Validate documentation contributor guidance
         shell: pwsh
         run: scripts/test-guidance.ps1
-      - name: Build authored documentation with the metadata policy
+      - name: Setup pinned .NET SDK
+        uses: ./.github/actions/setup-dotnet
+        with:
+          global-json-file: global.json
+      - name: Build compiler XML documentation for the Injection API
+        run: dotnet build src/NexusLabs.Needlr.Injection/NexusLabs.Needlr.Injection.csproj --configuration Release
+      - name: Restore documentation generator
+        run: dotnet tool restore
+      - name: Generate API Markdown from compiler XML and assemblies
+        run: bash scripts/generate-api-docs.sh docs/api/dev --update-index
+      - name: Build documentation with XML-derived API metadata
         run: python -m mkdocs build --strict
+      - name: Validate rendered documentation titles and descriptions
+        run: python scripts/test-docs-titles.py
+      - name: Retain bounded XML-to-JSON-LD evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-schema-evidence-${{ github.run_attempt }}
+          path: |
+            src/NexusLabs.Needlr.Injection/bin/Release/net10.0/NexusLabs.Needlr.Injection.xml
+            docs/api/dev/NexusLabs.Needlr.Injection/Syringe.md
+            site/api/dev/NexusLabs.Needlr.Injection/Syringe/index.html
+          retention-days: 1
+          if-no-files-found: error
       - name: Checkout published API snapshot for read-only validation
         uses: actions/checkout@v4
         with:
