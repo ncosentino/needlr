@@ -21,6 +21,47 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
 jobs:
+  docs-layout:
+    name: Documentation layout
+    needs: [validation-plan, changes]
+    if: (needs.validation-plan.outputs.scope == 'full' || needs.validation-plan.outputs.scope == 'guidance') && needs.changes.outputs.source_required == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Install documentation browser checks
+      run: python -m pip install -r docs/requirements.txt -r scripts/tests/requirements-browser.txt
+    - name: Install Chromium
+      run: python -m playwright install --with-deps chromium
+    - name: Render documentation
+      run: python -m mkdocs build --strict
+    - name: Check deferred-image geometry and footer targets
+      run: python scripts/check-docs-layout.py
+    - name: Capture actual-image review screenshots
+      if: github.event_name == 'workflow_dispatch'
+      run: python scripts/check-docs-layout.py --live-images
+    - name: Enforce retained-evidence size budget
+      if: always() && hashFiles('artifacts/docs-layout/*') != ''
+      id: evidence
+      shell: bash
+      run: |
+        bytes=$(du -sb artifacts/docs-layout | cut -f1)
+        if (( bytes > 20 * 1024 * 1024 )); then
+          echo "::error::Documentation review evidence exceeds 20 MiB."
+          exit 1
+        fi
+        echo "upload=true" >> "$GITHUB_OUTPUT"
+    - name: Retain bounded layout review evidence
+      if: always() && steps.evidence.outputs.upload == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation-layout
+        path: artifacts/docs-layout/
+        retention-days: 1
+        if-no-files-found: error
+
   validation-plan:
     permissions:
       contents: read
@@ -600,6 +641,7 @@ jobs:
       - package-validation
       - aot-console-app
       - aot-web-app
+      - docs-layout
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -619,6 +661,8 @@ jobs:
         PACKAGE_RESULT: ${{ needs.package-validation.result }}
         AOT_CONSOLE_RESULT: ${{ needs.aot-console-app.result }}
         AOT_WEB_RESULT: ${{ needs.aot-web-app.result }}
+        DOCS_LAYOUT_RESULT: ${{ needs.docs-layout.result }}
+        SOURCE_REQUIRED: ${{ needs.changes.outputs.source_required }}
       run: |
         fail() {
           echo "::error::$1"
@@ -644,6 +688,11 @@ jobs:
 
         expect_result "validation-plan" "$PLAN_RESULT" "success"
         expect_result "changes" "$CHANGES_RESULT" "success"
+        if [ "$SOURCE_REQUIRED" = "true" ] && { [ "$SCOPE" = "full" ] || [ "$SCOPE" = "guidance" ]; }; then
+          expect_result "docs-layout" "$DOCS_LAYOUT_RESULT" "success"
+        else
+          expect_result "docs-layout" "$DOCS_LAYOUT_RESULT" "skipped"
+        fi
 
         case "$SCOPE" in
           ready-only)

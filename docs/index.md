@@ -4,13 +4,13 @@ description: Needlr is a source-generation-first dependency injection library fo
 
 # Needlr
 
-![Needlr](assets/needlr.webp){ width="200" }
+![Needlr](assets/needlr.webp){ width="200" height="200" }
 
 **Opinionated fluent dependency injection for .NET with source generation.**
 
-[![CI](https://github.com/ncosentino/needlr/actions/workflows/ci.yml/badge.svg)](https://github.com/ncosentino/needlr/actions/workflows/ci.yml)
-[![Coverage](https://www.devleader.ca/projects/needlr/coverage/badge_linecoverage.svg)](https://www.devleader.ca/projects/needlr/coverage/)
-[![NuGet](https://img.shields.io/nuget/v/NexusLabs.Needlr.svg)](https://www.nuget.org/packages/NexusLabs.Needlr)
+[![CI](https://github.com/ncosentino/needlr/actions/workflows/ci.yml/badge.svg){ .doc-badge width="90" height="20" }](https://github.com/ncosentino/needlr/actions/workflows/ci.yml)
+[![Coverage](https://www.devleader.ca/projects/needlr/coverage/badge_linecoverage.svg){ .doc-badge width="155" height="20" }](https://www.devleader.ca/projects/needlr/coverage/)
+[![NuGet](https://img.shields.io/nuget/v/NexusLabs.Needlr.svg){ .doc-badge width="154" height="20" }](https://www.nuget.org/packages/NexusLabs.Needlr)
 
 ## What is Needlr?
 

@@ -14,11 +14,10 @@ strict: true
 # the href target, so anchor text quality directly drives backlink value.
 copyright: >
   &copy; Nick Cosentino
-  <br>
+  <nav class="doc-footer-links" aria-label="Related sites">
   <a href="https://www.devleader.ca">Dev Leader: software engineering blog and C# tutorials by Nick Cosentino</a>
-  <br>
   <a href="https://links.devleader.ca">Dev Leader links: videos, courses, Discord, and social channels</a>
-  <br>
+  </nav>
 
 theme:
   name: material
@@ -215,6 +214,9 @@ nav:
 plugins:
   - search
   - meta
+
+extra_css:
+  - stylesheets/layout.css
 
 # Scoped to /api/ pages only at runtime (the JS checks window.location.pathname
 # before rendering). mkdocs-material's built-in version provider would
