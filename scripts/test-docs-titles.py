@@ -97,6 +97,7 @@ class DocumentationSchemaAssertions(unittest.TestCase):
         self.assertEqual(reference['@context'], 'https://schema.org')
         self.assertEqual(reference['name'], page.title.strip().removesuffix(' - Needlr'))
         self.assertTrue(page.canonical)
+        self.assertFalse(page.canonical.endswith('/'))
         self.assertEqual(reference['@id'], page.canonical)
         self.assertEqual(reference['url'], page.canonical)
         self.assertEqual(reference['description'], page.meta['description'])
@@ -343,6 +344,14 @@ class DocumentationTitlesTests(DocumentationSchemaAssertions):
             node.get('@type') == 'SoftwareApplication'
             for node in self.read_page('index.md').json_ld
         ))
+
+    def test_api_canonical_normalization_leaves_non_api_urls_unchanged(self):
+        for source, path in (('index.md', ''), ('guides/intro.md', 'guides/intro/')):
+            with self.subTest(source=source):
+                self.assertEqual(
+                    self.read_page(source).canonical,
+                    f'https://example.test/reference/{path}',
+                )
 
 
 class GeneratedApiDocumentationTests(DocumentationSchemaAssertions):
