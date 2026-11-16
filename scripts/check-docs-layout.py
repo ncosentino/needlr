@@ -79,6 +79,7 @@ async def inspect(browser, origin, output, width, theme, live_images):
         await page.wait_for_function(
             '[...document.images].every(img => img.complete && img.naturalWidth > 0)',
         )
+        await page.evaluate('Promise.all([...document.images].map(img => img.decode()))')
         await page.evaluate('new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))')
         after = await page.evaluate(GEOMETRY)
         for old, new in zip(before['images'], after['images'], strict=True):
@@ -105,6 +106,7 @@ async def inspect(browser, origin, output, width, theme, live_images):
             )
         return {
             'case': name, 'viewport': {'width': width, 'height': 900}, 'theme': theme,
+            'color_scheme': await page.get_attribute('body', 'data-md-color-scheme'),
             'images': 'Real source images' if live_images else 'Controlled wide badge fixtures; real local logo',
             'before': before, 'after': after, 'errors': errors,
         }
