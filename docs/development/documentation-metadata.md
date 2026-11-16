@@ -57,6 +57,11 @@ metadata as the HTML and social tags. There is no separate API-description store
 or semantic inference from symbol names. The generic `SoftwareSourceCode` record
 is not emitted for a reference document, and non-API markup is unchanged.
 
+API canonical URLs omit the terminal directory slash to match the public
+documentation host. The metadata hook sets this shared page identity before
+HTML, social metadata, JSON-LD and sitemaps are rendered. Internal directory
+URLs still support relative asset resolution; non-API URL conventions are unchanged.
+
 The hosted Documentation metadata workflow builds the Injection project and its
 dependencies, passes their compiler XML and assemblies through DefaultDocumentation,
 and builds the resulting Markdown with MkDocs. It compares the compiled `Syringe`

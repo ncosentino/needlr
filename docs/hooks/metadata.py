@@ -111,6 +111,8 @@ def on_page_markdown(markdown: str, page, config, files) -> str:
     title = api_title(PurePosixPath(page.file.src_uri))
     if title is not None:
         page.meta['title'] = title
+        if page.canonical_url is not None:
+            page.canonical_url = page.canonical_url.rstrip('/')
     return markdown
 
 
