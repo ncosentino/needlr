@@ -390,7 +390,8 @@ class GeneratedApiDocumentationTests(DocumentationSchemaAssertions):
             with self.subTest(page=path.relative_to(ROOT / 'site').as_posix()):
                 page = self.read_page(path)
                 reference = self.assert_api_reference(page)
-                self.assertTrue(reference['url'].startswith('https://www.devleader.ca/projects/needlr/api/dev/'))
+                relative_url = path.parent.relative_to(ROOT / 'site').as_posix()
+                self.assertEqual(reference['url'], f'https://www.devleader.ca/projects/needlr/{relative_url}')
         print(f'Validated page-specific APIReference JSON-LD on {len(paths)} generated API pages.')
 
 
