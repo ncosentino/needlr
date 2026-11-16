@@ -8,6 +8,7 @@ import re
 import tempfile
 from types import SimpleNamespace
 import unittest
+from urllib.parse import quote
 import xml.etree.ElementTree as ET
 
 from markdown import markdown as render_markdown
@@ -97,6 +98,7 @@ class DocumentationSchemaAssertions(unittest.TestCase):
         self.assertEqual(reference['@context'], 'https://schema.org')
         self.assertEqual(reference['name'], page.title.strip().removesuffix(' - Needlr'))
         self.assertTrue(page.canonical)
+        self.assertFalse(page.canonical.endswith('/'))
         self.assertEqual(reference['@id'], page.canonical)
         self.assertEqual(reference['url'], page.canonical)
         self.assertEqual(reference['description'], page.meta['description'])
@@ -167,6 +169,9 @@ class DocumentationTitlesTests(DocumentationSchemaAssertions):
                 'Use `Factory<T>` &amp; "plugins" and '
                 '`</script><script>window.injected = true</script>`.\n'
             ),
+            'api/dev/NexusLabs.Needlr/Factory_TKey,TValue_.md': (
+                '# Factory&lt;TKey,TValue&gt;\n\n## Factory Class\n'
+            ),
         }
         cls.api_sources = [source for source in pages if source.startswith('api/')]
         for source, markdown in pages.items():
@@ -234,10 +239,16 @@ class DocumentationTitlesTests(DocumentationSchemaAssertions):
                 self.assertEqual(page.headings, ['Plugin'])
 
     def test_generic_type_filename_is_unambiguous_in_metadata(self):
-        self.assert_api_title(
-            'api/dev/NexusLabs.Needlr/Factory_T_.md',
-            'NexusLabs.Needlr.Factory_T_ (Development API)',
-        )
+        for filename in ('Factory_T_', 'Factory_TKey,TValue_'):
+            with self.subTest(filename=filename):
+                page = self.assert_api_title(
+                    f'api/dev/NexusLabs.Needlr/{filename}.md',
+                    f'NexusLabs.Needlr.{filename} (Development API)',
+                )
+                self.assertEqual(
+                    page.canonical,
+                    f'https://example.test/reference/api/dev/NexusLabs.Needlr/{quote(filename)}',
+                )
 
     def test_guide_and_api_catalog_titles_are_unchanged(self):
         for source, expected in (
@@ -344,6 +355,14 @@ class DocumentationTitlesTests(DocumentationSchemaAssertions):
             for node in self.read_page('index.md').json_ld
         ))
 
+    def test_api_canonical_normalization_leaves_non_api_urls_unchanged(self):
+        for source, path in (('index.md', ''), ('guides/intro.md', 'guides/intro/')):
+            with self.subTest(source=source):
+                self.assertEqual(
+                    self.read_page(source).canonical,
+                    f'https://example.test/reference/{path}',
+                )
+
 
 class GeneratedApiDocumentationTests(DocumentationSchemaAssertions):
     def read_page(self, path):
@@ -381,7 +400,8 @@ class GeneratedApiDocumentationTests(DocumentationSchemaAssertions):
             with self.subTest(page=path.relative_to(ROOT / 'site').as_posix()):
                 page = self.read_page(path)
                 reference = self.assert_api_reference(page)
-                self.assertTrue(reference['url'].startswith('https://www.devleader.ca/projects/needlr/api/dev/'))
+                relative_url = quote(path.parent.relative_to(ROOT / 'site').as_posix())
+                self.assertEqual(reference['url'], f'https://www.devleader.ca/projects/needlr/{relative_url}')
         print(f'Validated page-specific APIReference JSON-LD on {len(paths)} generated API pages.')
 
 
