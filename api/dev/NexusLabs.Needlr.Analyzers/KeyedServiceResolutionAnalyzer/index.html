@@ -79,24 +79,6 @@
   
   
   
-  
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    "name": "Needlr API Reference",
-    "codeRepository": "https://github.com/ncosentino/needlr",
-    "programmingLanguage": "C#",
-    "runtimePlatform": ".NET 8, .NET 9, .NET 10",
-    "author": {
-      "@type": "Person",
-      "name": "Nick Cosentino",
-      "url": "https://www.devleader.ca"
-    },
-    "url": "https://www.nuget.org/packages?q=NexusLabs.Needlr"
-  }
-  </script>
-  
 
   </head>
   
@@ -5447,7 +5429,17 @@ Only active when [assembly: GenerateTypeRegistry] is present.</p>
 <p>This analyzer collects all [Keyed("key")] attributes from types in the compilation
 and validates that [FromKeyedServices("key")] parameters reference known keys.</p>
 <p>Keys registered via plugins at runtime cannot be validated at compile time.
-Users can suppress this diagnostic for such cases.</p>
+Users can suppress this diagnostic for such cases.</p><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "APIReference",
+  "@id": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.Analyzers/KeyedServiceResolutionAnalyzer/",
+  "name": "NexusLabs.Needlr.Analyzers.KeyedServiceResolutionAnalyzer (Development API)",
+  "url": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.Analyzers/KeyedServiceResolutionAnalyzer/",
+  "description": "NexusLabs.Needlr.Analyzers.KeyedServiceResolutionAnalyzer (Development API). Analyzer that validates [FromKeyedServices] usage against discovered [Keyed] registrations. Reports Info-level diagnostic when a key is not found in..."
+}
+</script>
+
 
 
 

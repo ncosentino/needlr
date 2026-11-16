@@ -79,24 +79,6 @@
   
   
   
-  
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    "name": "Needlr API Reference",
-    "codeRepository": "https://github.com/ncosentino/needlr",
-    "programmingLanguage": "C#",
-    "runtimePlatform": ".NET 8, .NET 9, .NET 10",
-    "author": {
-      "@type": "Person",
-      "name": "Nick Cosentino",
-      "url": "https://www.devleader.ca"
-    },
-    "url": "https://www.nuget.org/packages?q=NexusLabs.Needlr"
-  }
-  </script>
-  
 
   </head>
   
@@ -5444,7 +5426,17 @@ Implement this interface to add services, configure logging, or modify the build
 <p>Do <b>not</b> apply <a href="../../NexusLabs.Needlr/">NexusLabs.Needlr.DoNotAutoRegisterAttribute</a> directly to an implementing class.
 This interface already carries the attribute to prevent DI registration of the interface itself;
 adding it to the class too is redundant and was historically a silent bug that suppressed plugin
-discovery. Analyzer NDLRCOR016 will warn you if you do this.</p>
+discovery. Analyzer NDLRCOR016 will warn you if you do this.</p><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "APIReference",
+  "@id": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AspNet/IWebApplicationBuilderPlugin/",
+  "name": "NexusLabs.Needlr.AspNet.IWebApplicationBuilderPlugin (Development API)",
+  "url": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.AspNet/IWebApplicationBuilderPlugin/",
+  "description": "NexusLabs.Needlr.AspNet.IWebApplicationBuilderPlugin (Development API). Defines a plugin that configures the Microsoft.AspNetCore.Builder.WebApplicationBuilder before the application is built. Implement this interface to add services,..."
+}
+</script>
+
 
 
 

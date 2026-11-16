@@ -79,24 +79,6 @@
   
   
   
-  
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    "name": "Needlr API Reference",
-    "codeRepository": "https://github.com/ncosentino/needlr",
-    "programmingLanguage": "C#",
-    "runtimePlatform": ".NET 8, .NET 9, .NET 10",
-    "author": {
-      "@type": "Person",
-      "name": "Nick Cosentino",
-      "url": "https://www.devleader.ca"
-    },
-    "url": "https://www.nuget.org/packages?q=NexusLabs.Needlr"
-  }
-  </script>
-  
 
   </head>
   
@@ -5453,7 +5435,17 @@ Scoped services are created once per scope — for example, once per HTTP reques
 <p>Use <code>[Scoped]</code> when a service must share state across multiple calls within the same
 logical operation (e.g., a request), but must not be shared across operations.</p>
 <p>Without this attribute, Needlr registers classes as <b>Singleton</b> by default.
-Apply <code>[Scoped]</code> to override that default.</p>
+Apply <code>[Scoped]</code> to override that default.</p><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "APIReference",
+  "@id": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr/ScopedAttribute/",
+  "name": "NexusLabs.Needlr.ScopedAttribute (Development API)",
+  "url": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr/ScopedAttribute/",
+  "description": "NexusLabs.Needlr.ScopedAttribute (Development API). Specifies that the decorated class should be registered with \\\u003cb>Scoped\\\u003c/b> lifetime. Scoped services are created once per scope — for example, once per HTTP request in ASP.NET Core."
+}
+</script>
+
 
 
 

@@ -79,24 +79,6 @@
   
   
   
-  
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    "name": "Needlr API Reference",
-    "codeRepository": "https://github.com/ncosentino/needlr",
-    "programmingLanguage": "C#",
-    "runtimePlatform": ".NET 8, .NET 9, .NET 10",
-    "author": {
-      "@type": "Person",
-      "name": "Nick Cosentino",
-      "url": "https://www.devleader.ca"
-    },
-    "url": "https://www.nuget.org/packages?q=NexusLabs.Needlr"
-  }
-  </script>
-  
 
   </head>
   
@@ -5453,7 +5435,17 @@ to <code>appsettings.json</code>. The plugin is auto-discovered and configures
 on container disposal. The static <a href="https://learn.microsoft.com/en-us/dotnet/api/serilog.log.logger" title="Serilog.Log.Logger">Serilog.Log.Logger</a> is not set — use
 <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.ilogger-1" title="Microsoft.Extensions.Logging.ILogger`1">Microsoft.Extensions.Logging.ILogger&lt;&gt;</a> injection instead, or use
 <a href="../NeedlrSerilogBootstrapper/" title="NexusLabs.Needlr.Serilog.NeedlrSerilogBootstrapper">NeedlrSerilogBootstrapper</a> for apps that need the static logger
-and two-stage bootstrap lifecycle.</p>
+and two-stage bootstrap lifecycle.</p><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "APIReference",
+  "@id": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.Serilog/SerilogPlugin/",
+  "name": "NexusLabs.Needlr.Serilog.SerilogPlugin (Development API)",
+  "url": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.Serilog/SerilogPlugin/",
+  "description": "NexusLabs.Needlr.Serilog.SerilogPlugin (Development API). Auto-discovered plugin that wires Serilog as the logging provider using configuration from appsettings.json (or any Microsoft.Extensions.Configuration.IConfiguration source..."
+}
+</script>
+
 
 
 

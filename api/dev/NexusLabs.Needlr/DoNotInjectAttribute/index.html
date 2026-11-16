@@ -79,24 +79,6 @@
   
   
   
-  
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    "name": "Needlr API Reference",
-    "codeRepository": "https://github.com/ncosentino/needlr",
-    "programmingLanguage": "C#",
-    "runtimePlatform": ".NET 8, .NET 9, .NET 10",
-    "author": {
-      "@type": "Person",
-      "name": "Nick Cosentino",
-      "url": "https://www.devleader.ca"
-    },
-    "url": "https://www.nuget.org/packages?q=NexusLabs.Needlr"
-  }
-  </script>
-  
 
   </head>
   
@@ -5453,7 +5435,17 @@ Types decorated with this attribute are discovered but excluded from service col
 <p>Use <code>[DoNotInject]</code> when a type should never appear as a resolvable service — for example,
 infrastructure base classes, marker interfaces, or types that are only used as generic constraints.</p>
 <p>Unlike <a href="../DoNotAutoRegisterAttribute/" title="NexusLabs.Needlr.DoNotAutoRegisterAttribute">DoNotAutoRegisterAttribute</a>, which signals "register me some other way",
-<code>[DoNotInject]</code> signals "this type is not a DI service at all".</p>
+<code>[DoNotInject]</code> signals "this type is not a DI service at all".</p><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "APIReference",
+  "@id": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr/DoNotInjectAttribute/",
+  "name": "NexusLabs.Needlr.DoNotInjectAttribute (Development API)",
+  "url": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr/DoNotInjectAttribute/",
+  "description": "NexusLabs.Needlr.DoNotInjectAttribute (Development API). Prevents a class or interface from being injected as a dependency by Needlr. Types decorated with this attribute are discovered but excluded from service collection registration."
+}
+</script>
+
 
 
 

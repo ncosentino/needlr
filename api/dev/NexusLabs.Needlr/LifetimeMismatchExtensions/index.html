@@ -79,24 +79,6 @@
   
   
   
-  
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    "name": "Needlr API Reference",
-    "codeRepository": "https://github.com/ncosentino/needlr",
-    "programmingLanguage": "C#",
-    "runtimePlatform": ".NET 8, .NET 9, .NET 10",
-    "author": {
-      "@type": "Person",
-      "name": "Nick Cosentino",
-      "url": "https://www.devleader.ca"
-    },
-    "url": "https://www.nuget.org/packages?q=NexusLabs.Needlr"
-  }
-  </script>
-  
 
   </head>
   
@@ -5466,7 +5448,17 @@ Thrown when services is null.</p>
 <p>A mismatch occurs when a service with a longer lifetime depends on a service with a shorter lifetime.
 For example, a Singleton depending on a Scoped service will "capture" the scoped instance,
 causing it to live longer than intended.</p>
-<p>Factory registrations cannot be analyzed and are skipped.</p>
+<p>Factory registrations cannot be analyzed and are skipped.</p><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "APIReference",
+  "@id": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr/LifetimeMismatchExtensions/",
+  "name": "NexusLabs.Needlr.LifetimeMismatchExtensions (Development API)",
+  "url": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr/LifetimeMismatchExtensions/",
+  "description": "NexusLabs.Needlr.LifetimeMismatchExtensions (Development API). Extension methods for detecting lifetime mismatches (captive dependencies) in service registrations."
+}
+</script>
+
 
 
 

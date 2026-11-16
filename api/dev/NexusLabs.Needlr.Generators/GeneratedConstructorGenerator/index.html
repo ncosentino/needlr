@@ -79,24 +79,6 @@
   
   
   
-  
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    "name": "Needlr API Reference",
-    "codeRepository": "https://github.com/ncosentino/needlr",
-    "programmingLanguage": "C#",
-    "runtimePlatform": ".NET 8, .NET 9, .NET 10",
-    "author": {
-      "@type": "Person",
-      "name": "Nick Cosentino",
-      "url": "https://www.devleader.ca"
-    },
-    "url": "https://www.nuget.org/packages?q=NexusLabs.Needlr"
-  }
-  </script>
-  
 
   </head>
   
@@ -5452,7 +5434,17 @@ further down the pipeline), and the only cross-type context combined into each
 model is a small, independently-cacheable <a href="../">NexusLabs.Needlr.Generators.Models.GeneratedConstructorEmitContext</a>
 -- never the whole <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.compilation" title="Microsoft.CodeAnalysis.Compilation">Microsoft.CodeAnalysis.Compilation</a>. As a result, editing one type's fields
 recomputes and re-emits only that type; every other eligible type's cached model and
-generated source are reused unchanged.</p>
+generated source are reused unchanged.</p><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "APIReference",
+  "@id": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.Generators/GeneratedConstructorGenerator/",
+  "name": "NexusLabs.Needlr.Generators.GeneratedConstructorGenerator (Development API)",
+  "url": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.Generators/GeneratedConstructorGenerator/",
+  "description": "NexusLabs.Needlr.Generators.GeneratedConstructorGenerator (Development API). Incremental source generator that emits a public constructor for partial classes eligible for generated-constructor generation, either via [GenerateConstructor]..."
+}
+</script>
+
 
 
 

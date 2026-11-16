@@ -79,24 +79,6 @@
   
   
   
-  
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    "name": "Needlr API Reference",
-    "codeRepository": "https://github.com/ncosentino/needlr",
-    "programmingLanguage": "C#",
-    "runtimePlatform": ".NET 8, .NET 9, .NET 10",
-    "author": {
-      "@type": "Person",
-      "name": "Nick Cosentino",
-      "url": "https://www.devleader.ca"
-    },
-    "url": "https://www.nuget.org/packages?q=NexusLabs.Needlr"
-  }
-  </script>
-  
 
   </head>
   
@@ -5446,7 +5428,17 @@ This is a more severe form of captive dependency because the disposed object wil
 <p>This analyzer is conservative to avoid false positives:
 - Only fires when both consumer and dependency have explicit lifetime attributes
 - Only fires when the dependency type itself (not just interface) implements IDisposable/IAsyncDisposable
-- Does not fire for factory patterns (Func\&lt;T&gt;, Lazy\&lt;T&gt;, IServiceScopeFactory)</p>
+- Does not fire for factory patterns (Func\&lt;T&gt;, Lazy\&lt;T&gt;, IServiceScopeFactory)</p><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "APIReference",
+  "@id": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.Analyzers/DisposableCaptiveDependencyAnalyzer/",
+  "name": "NexusLabs.Needlr.Analyzers.DisposableCaptiveDependencyAnalyzer (Development API)",
+  "url": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.Analyzers/DisposableCaptiveDependencyAnalyzer/",
+  "description": "NexusLabs.Needlr.Analyzers.DisposableCaptiveDependencyAnalyzer (Development API). Analyzer that detects when a longer-lived service holds a reference to a shorter-lived IDisposable. This is a more severe form of captive dependency..."
+}
+</script>
+
 
 
 

@@ -79,24 +79,6 @@
   
   
   
-  
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    "name": "Needlr API Reference",
-    "codeRepository": "https://github.com/ncosentino/needlr",
-    "programmingLanguage": "C#",
-    "runtimePlatform": ".NET 8, .NET 9, .NET 10",
-    "author": {
-      "@type": "Person",
-      "name": "Nick Cosentino",
-      "url": "https://www.devleader.ca"
-    },
-    "url": "https://www.nuget.org/packages?q=NexusLabs.Needlr"
-  }
-  </script>
-  
 
   </head>
   
@@ -5446,7 +5428,17 @@ A lifetime mismatch occurs when a longer-lived service depends on a shorter-live
 <p>Examples of mismatches:
 - Singleton depends on Scoped → captive dependency
 - Singleton depends on Transient → captive dependency
-- Scoped depends on Transient → captive dependency</p>
+- Scoped depends on Transient → captive dependency</p><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "APIReference",
+  "@id": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.Analyzers/LifetimeMismatchAnalyzer/",
+  "name": "NexusLabs.Needlr.Analyzers.LifetimeMismatchAnalyzer (Development API)",
+  "url": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr.Analyzers/LifetimeMismatchAnalyzer/",
+  "description": "NexusLabs.Needlr.Analyzers.LifetimeMismatchAnalyzer (Development API). Analyzer that detects lifetime mismatches in service registrations. A lifetime mismatch occurs when a longer-lived service depends on a shorter-lived service."
+}
+</script>
+
 
 
 

@@ -79,24 +79,6 @@
   
   
   
-  
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    "name": "Needlr API Reference",
-    "codeRepository": "https://github.com/ncosentino/needlr",
-    "programmingLanguage": "C#",
-    "runtimePlatform": ".NET 8, .NET 9, .NET 10",
-    "author": {
-      "@type": "Person",
-      "name": "Nick Cosentino",
-      "url": "https://www.devleader.ca"
-    },
-    "url": "https://www.nuget.org/packages?q=NexusLabs.Needlr"
-  }
-  </script>
-  
 
   </head>
   
@@ -5454,7 +5436,17 @@ Singleton services are created once for the lifetime of the application and reus
             when you want to document intent clearly, or when overriding a different default set in your
             Needlr configuration.</p>
 <p>Be careful with Singleton services that depend on Scoped or Transient services — resolving a
-shorter-lived dependency from a Singleton creates a "captive dependency" and can cause bugs.</p>
+shorter-lived dependency from a Singleton creates a "captive dependency" and can cause bugs.</p><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "APIReference",
+  "@id": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr/SingletonAttribute/",
+  "name": "NexusLabs.Needlr.SingletonAttribute (Development API)",
+  "url": "https://www.devleader.ca/projects/needlr/api/dev/NexusLabs.Needlr/SingletonAttribute/",
+  "description": "NexusLabs.Needlr.SingletonAttribute (Development API). Specifies that the decorated class should be registered with \\\u003cb>Singleton\\\u003c/b> lifetime. Singleton services are created once for the lifetime of the application and reused for every..."
+}
+</script>
+
 
 
 

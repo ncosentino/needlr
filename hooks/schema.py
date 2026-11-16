@@ -34,6 +34,16 @@ def on_page_content(html: str, page, config, files) -> str:
     """Inject structured data JSON-LD blocks based on page URL."""
     url = page.url or ''
 
+    if url.startswith('api/'):
+        html += _schema_script({
+            '@context': 'https://schema.org',
+            '@type': 'APIReference',
+            '@id': page.canonical_url,
+            'name': page.meta.get('title', page.title),
+            'url': page.canonical_url,
+            'description': page.meta['description'],
+        })
+
     if url == 'getting-started/':
         html = _inject_howto_schema(html, page)
 
