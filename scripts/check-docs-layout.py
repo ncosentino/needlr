@@ -135,8 +135,6 @@ async def run(args, origin):
     (args.output / f'{mode}-geometry.json').write_text(
         json.dumps(report, indent=2), encoding='utf-8',
     )
-    if sum(path.stat().st_size for path in args.output.iterdir() if path.is_file()) > 20 * 1024 * 1024:
-        raise RuntimeError('Documentation review evidence exceeds its 20 MiB retention budget.')
     for result in results:
         print(result['case'], json.dumps(result['errors']))
     return 1 if any(result['errors'] for result in results) else 0

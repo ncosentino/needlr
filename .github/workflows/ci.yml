@@ -42,8 +42,19 @@ jobs:
     - name: Capture actual-image review screenshots
       if: github.event_name == 'workflow_dispatch'
       run: python scripts/check-docs-layout.py --live-images
-    - name: Retain bounded layout review evidence
+    - name: Enforce retained-evidence size budget
       if: always() && hashFiles('artifacts/docs-layout/*') != ''
+      id: evidence
+      shell: bash
+      run: |
+        bytes=$(du -sb artifacts/docs-layout | cut -f1)
+        if (( bytes > 20 * 1024 * 1024 )); then
+          echo "::error::Documentation review evidence exceeds 20 MiB."
+          exit 1
+        fi
+        echo "upload=true" >> "$GITHUB_OUTPUT"
+    - name: Retain bounded layout review evidence
+      if: always() && steps.evidence.outputs.upload == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: documentation-layout
