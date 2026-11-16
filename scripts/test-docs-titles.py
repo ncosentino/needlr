@@ -10,6 +10,7 @@ from types import SimpleNamespace
 import unittest
 import xml.etree.ElementTree as ET
 
+from markdown import markdown as render_markdown
 from mkdocs.commands.build import build
 from mkdocs.config import load_config
 import yaml
@@ -162,7 +163,7 @@ class DocumentationTitlesTests(DocumentationSchemaAssertions):
                 '## Remarks\n\nDo not use member remarks as a type introduction.\n'
             ),
             'api/dev/NexusLabs.Needlr/Safe_T_.md': (
-                '# Safe<T>\n\n## Safe Class\n\n'
+                '# Safe&lt;T&gt;\n\n## Safe Class\n\n'
                 'Use `Factory<T>` &amp; "plugins" and '
                 '`</script><script>window.injected = true</script>`.\n'
             ),
@@ -324,7 +325,7 @@ class DocumentationTitlesTests(DocumentationSchemaAssertions):
 
     def test_api_reference_description_preserves_code_delimiters_and_quotes(self):
         page = self.read_page('api/dev/NexusLabs.Needlr/Safe_T_.md')
-        reference = next(node for node in page.json_ld if node.get('@type') == 'APIReference')
+        reference = self.assert_api_reference(page)
         self.assertEqual(
             reference['description'],
             'NexusLabs.Needlr.Safe_T_ (Development API). '
@@ -356,6 +357,8 @@ class GeneratedApiDocumentationTests(DocumentationSchemaAssertions):
         self.assertTrue(xml_files, 'Build the documented Injection project before this check.')
         source = Path('api/dev') / package / 'Syringe'
         markdown = (ROOT / 'docs' / source.with_suffix('.md')).read_text(encoding='utf-8')
+        rendered_markdown = MetadataParser()
+        rendered_markdown.feed(render_markdown(markdown))
         page = self.read_page(ROOT / 'site' / source / 'index.html')
         reference = self.assert_api_reference(page)
         member_id = f'T:{package}.Syringe'
@@ -366,7 +369,7 @@ class GeneratedApiDocumentationTests(DocumentationSchemaAssertions):
                 self.assertIsNotNone(summary)
                 text = ' '.join(''.join(summary.itertext()).split())
                 self.assertTrue(text)
-                self.assertIn(text, markdown)
+                self.assertIn(text, rendered_markdown.body_text)
                 self.assertIn(text, page.body_text)
                 self.assertIn(text, reference['description'])
         print(json.dumps({'xml_member': member_id, 'api_reference': reference}, indent=2))
