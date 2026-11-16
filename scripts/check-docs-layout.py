@@ -12,8 +12,6 @@ from urllib.parse import urlsplit
 from playwright.async_api import async_playwright
 
 
-CONTENT_IMAGES = 'article.md-content__inner img'
-FOOTER_LINKS = '.md-copyright__highlight a'
 GEOMETRY = """() => ({
     images: [...document.querySelectorAll('article.md-content__inner img')].map(img => {
         const rect = img.getBoundingClientRect();
@@ -23,7 +21,7 @@ GEOMETRY = """() => ({
         p.getBoundingClientRect().top),
     footer: [...document.querySelectorAll('.md-copyright__highlight a')].map(a => {
         const rect = a.getBoundingClientRect();
-        return {text: a.textContent.trim(), href: a.href,
+        return {text: a.textContent.trim(), href: a.href, top: rect.top, bottom: rect.bottom,
             width: rect.width, height: rect.height};
     }),
     overflow: document.documentElement.scrollWidth > innerWidth
@@ -63,6 +61,12 @@ async def inspect(browser, origin, output, width, theme, live_images):
     try:
         await page.goto(origin, wait_until='domcontentloaded')
         await page.locator('article.md-content__inner h1').wait_for()
+        if theme == 'dark':
+            await page.locator('label[title="Switch to dark mode"]').click()
+        expected_scheme = 'slate' if theme == 'dark' else 'default'
+        await page.wait_for_function(
+            'scheme => document.body.dataset.mdColorScheme === scheme', arg=expected_scheme,
+        )
         if live_images:
             await asyncio.wait_for(page.evaluate('document.fonts.ready.then(() => true)'), 30)
         await page.evaluate('new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))')
@@ -89,6 +93,9 @@ async def inspect(browser, origin, output, width, theme, live_images):
         for link in after['footer']:
             if link['width'] < 44 or link['height'] < 44:
                 errors.append(f"Footer target below 44x44px: {link['text']}: {link['width']}x{link['height']}")
+        for previous, following in zip(after['footer'], after['footer'][1:]):
+            if following['top'] - previous['bottom'] < 4:
+                errors.append('Footer links have less than 4px separation.')
         if after['overflow']:
             errors.append('Horizontal page overflow.')
         if live_images:
@@ -126,6 +133,8 @@ async def run(args, origin):
     (args.output / f'{mode}-geometry.json').write_text(
         json.dumps(report, indent=2), encoding='utf-8',
     )
+    if sum(path.stat().st_size for path in args.output.iterdir() if path.is_file()) > 20 * 1024 * 1024:
+        raise RuntimeError('Documentation review evidence exceeds its 20 MiB retention budget.')
     for result in results:
         print(result['case'], json.dumps(result['errors']))
     return 1 if any(result['errors'] for result in results) else 0
