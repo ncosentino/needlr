@@ -32,8 +32,9 @@ python -m mkdocs build --strict
 
 ### Layout checks and review screenshots
 
-The hosted Documentation layout job checks the actual built homepage at 375px
-and 1440px in both themes. It holds image responses, compares geometry before
+The hosted Documentation layout job covers both full CI and documentation-only
+guidance validation. It checks the actual built homepage at 375px and 1440px in
+both themes. It holds image responses, compares geometry before
 and after release, and requires separate 44px footer targets with 4px gaps.
 The regression checks use deliberately wide synthetic badges so they do not
 depend on external badge services.

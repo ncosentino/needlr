@@ -24,7 +24,7 @@ jobs:
   docs-layout:
     name: Documentation layout
     needs: [validation-plan, changes]
-    if: needs.validation-plan.outputs.scope == 'full' && needs.changes.outputs.source_required == 'true'
+    if: (needs.validation-plan.outputs.scope == 'full' || needs.validation-plan.outputs.scope == 'guidance') && needs.changes.outputs.source_required == 'true'
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -688,7 +688,7 @@ jobs:
 
         expect_result "validation-plan" "$PLAN_RESULT" "success"
         expect_result "changes" "$CHANGES_RESULT" "success"
-        if [ "$SCOPE" = "full" ] && [ "$SOURCE_REQUIRED" = "true" ]; then
+        if [ "$SOURCE_REQUIRED" = "true" ] && { [ "$SCOPE" = "full" ] || [ "$SCOPE" = "guidance" ]; }; then
           expect_result "docs-layout" "$DOCS_LAYOUT_RESULT" "success"
         else
           expect_result "docs-layout" "$DOCS_LAYOUT_RESULT" "skipped"

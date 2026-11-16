@@ -80,6 +80,9 @@ async def inspect(browser, origin, output, width, theme, live_images):
             '[...document.images].every(img => img.complete && img.naturalWidth > 0)',
         )
         await page.evaluate('Promise.all([...document.images].map(img => img.decode()))')
+        await page.wait_for_load_state('load')
+        if live_images:
+            await page.wait_for_load_state('networkidle')
         await page.evaluate('new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))')
         after = await page.evaluate(GEOMETRY)
         for old, new in zip(before['images'], after['images'], strict=True):
