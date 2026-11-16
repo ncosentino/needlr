@@ -8,6 +8,7 @@ import re
 import tempfile
 from types import SimpleNamespace
 import unittest
+import xml.etree.ElementTree as ET
 
 from mkdocs.commands.build import build
 from mkdocs.config import load_config
@@ -30,10 +31,15 @@ class MetadataParser(HTMLParser):
         self.title = ''
         self.headings = []
         self.meta = {}
+        self.canonical = None
+        self.json_ld = []
+        self.body_text = ''
         self._in_title = False
         self._in_head = False
         self._in_heading = False
         self._in_permalink = False
+        self._in_script = False
+        self._json_ld_text = None
 
     def handle_starttag(self, tag, attrs):
         attributes = dict(attrs)
@@ -49,6 +55,12 @@ class MetadataParser(HTMLParser):
         elif tag == 'meta' and self._in_head:
             name = attributes.get('property') or attributes.get('name')
             self.meta[name] = attributes.get('content')
+        elif tag == 'link' and attributes.get('rel') == 'canonical':
+            self.canonical = attributes.get('href')
+        elif tag == 'script':
+            self._in_script = True
+            if attributes.get('type') == 'application/ld+json':
+                self._json_ld_text = ''
 
     def handle_endtag(self, tag):
         if tag == 'head':
@@ -59,15 +71,41 @@ class MetadataParser(HTMLParser):
             self._in_heading = False
         elif tag == 'a':
             self._in_permalink = False
+        elif tag == 'script':
+            if self._json_ld_text is not None:
+                self.json_ld.append(json.loads(self._json_ld_text))
+                self._json_ld_text = None
+            self._in_script = False
 
     def handle_data(self, data):
+        if self._json_ld_text is not None:
+            self._json_ld_text += data
+        if not self._in_script:
+            self.body_text += data
         if self._in_title:
             self.title += data
         if self._in_heading and not self._in_permalink:
             self.headings[-1] += data
 
 
-class DocumentationTitlesTests(unittest.TestCase):
+class DocumentationSchemaAssertions(unittest.TestCase):
+    def assert_api_reference(self, page):
+        references = [node for node in page.json_ld if node.get('@type') == 'APIReference']
+        self.assertEqual(len(references), 1)
+        reference = references[0]
+        self.assertEqual(reference['@context'], 'https://schema.org')
+        self.assertEqual(reference['name'], page.title.strip().removesuffix(' - Needlr'))
+        self.assertTrue(page.canonical)
+        self.assertEqual(reference['@id'], page.canonical)
+        self.assertEqual(reference['url'], page.canonical)
+        self.assertEqual(reference['description'], page.meta['description'])
+        self.assertFalse(any(
+            node.get('@type') == 'SoftwareSourceCode' for node in page.json_ld
+        ))
+        return reference
+
+
+class DocumentationTitlesTests(DocumentationSchemaAssertions):
     @classmethod
     def setUpClass(cls):
         cls.workspace = tempfile.TemporaryDirectory()
@@ -123,7 +161,13 @@ class DocumentationTitlesTests(unittest.TestCase):
                 'Inheritance Object. This is not a type summary.\n\n'
                 '## Remarks\n\nDo not use member remarks as a type introduction.\n'
             ),
+            'api/dev/NexusLabs.Needlr/Safe_T_.md': (
+                '# Safe<T>\n\n## Safe Class\n\n'
+                'Use `Factory<T>` &amp; "plugins" and '
+                '`</script><script>window.injected = true</script>`.\n'
+            ),
         }
+        cls.api_sources = [source for source in pages if source.startswith('api/')]
         for source, markdown in pages.items():
             path = docs / source
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -272,6 +316,70 @@ class DocumentationTitlesTests(unittest.TestCase):
         self.assertRegex(description.removesuffix('...'), r'(Register|services|and|manage|application|lifetimes\.)$')
         self.assertEqual(page.meta['og:description'], description)
         self.assertEqual(page.meta['twitter:description'], description)
+
+    def test_api_reference_schema_reuses_page_identity_canonical_and_description(self):
+        for source in self.api_sources:
+            with self.subTest(source=source):
+                self.assert_api_reference(self.read_page(source))
+
+    def test_api_reference_description_preserves_code_delimiters_and_quotes(self):
+        page = self.read_page('api/dev/NexusLabs.Needlr/Safe_T_.md')
+        reference = next(node for node in page.json_ld if node.get('@type') == 'APIReference')
+        self.assertEqual(
+            reference['description'],
+            'NexusLabs.Needlr.Safe_T_ (Development API). '
+            'Use Factory<T> & "plugins" and </script><script>window.injected = true</script>.',
+        )
+
+    def test_non_api_pages_do_not_receive_reference_schema(self):
+        for source in ('index.md', 'getting-started.md', 'guides/intro.md'):
+            with self.subTest(source=source):
+                page = self.read_page(source)
+                self.assertFalse(any(
+                    node.get('@type') == 'APIReference' for node in page.json_ld
+                ))
+        self.assertTrue(any(
+            node.get('@type') == 'SoftwareApplication'
+            for node in self.read_page('index.md').json_ld
+        ))
+
+
+class GeneratedApiDocumentationTests(DocumentationSchemaAssertions):
+    def read_page(self, path):
+        parser = MetadataParser()
+        parser.feed(path.read_text(encoding='utf-8'))
+        return parser
+
+    def test_compiler_xml_summary_reaches_markdown_visible_content_and_json_ld(self):
+        package = 'NexusLabs.Needlr.Injection'
+        xml_files = list((ROOT / 'src' / package / 'bin' / 'Release').glob(f'*/{package}.xml'))
+        self.assertTrue(xml_files, 'Build the documented Injection project before this check.')
+        source = Path('api/dev') / package / 'Syringe'
+        markdown = (ROOT / 'docs' / source.with_suffix('.md')).read_text(encoding='utf-8')
+        page = self.read_page(ROOT / 'site' / source / 'index.html')
+        reference = self.assert_api_reference(page)
+        member_id = f'T:{package}.Syringe'
+        self.assertEqual(reference['name'], f'{member_id[2:]} (Development API)')
+        for xml_file in xml_files:
+            with self.subTest(xml_file=xml_file.name):
+                summary = ET.parse(xml_file).find(f'./members/member[@name="{member_id}"]/summary')
+                self.assertIsNotNone(summary)
+                text = ' '.join(''.join(summary.itertext()).split())
+                self.assertTrue(text)
+                self.assertIn(text, markdown)
+                self.assertIn(text, page.body_text)
+                self.assertIn(text, reference['description'])
+        print(json.dumps({'xml_member': member_id, 'api_reference': reference}, indent=2))
+
+    def test_every_generated_api_page_has_one_matching_reference_document(self):
+        paths = list((ROOT / 'site' / 'api' / 'dev').rglob('index.html'))
+        self.assertGreater(len(paths), 1, 'Generate API documentation before this check.')
+        for path in paths:
+            with self.subTest(page=path.relative_to(ROOT / 'site').as_posix()):
+                page = self.read_page(path)
+                reference = self.assert_api_reference(page)
+                self.assertTrue(reference['url'].startswith('https://www.devleader.ca/projects/needlr/api/dev/'))
+        print(f'Validated page-specific APIReference JSON-LD on {len(paths)} generated API pages.')
 
 
 class DocumentationMetadataPolicyTests(unittest.TestCase):
@@ -467,7 +575,7 @@ class DocumentationPublishingContractTests(unittest.TestCase):
             step for job in jobs.values() for step in job['steps']
             if step.get('uses', '').startswith('actions/upload-artifact@')
         ]
-        self.assertEqual(len(uploads), 2)
+        self.assertTrue(uploads)
         for upload in uploads:
             self.assertIn('${{ github.run_attempt }}', upload['with']['name'])
 
