@@ -356,6 +356,10 @@ jobs:
       if: needs.changes.outputs.source_required == 'true'
       run: python -m mkdocs build
 
+    - name: Validate XML-derived API structured data
+      if: needs.changes.outputs.source_required == 'true'
+      run: python scripts/test-docs-titles.py
+
     - name: Build sitemap index
       if: needs.changes.outputs.source_required == 'true'
       # mkdocs's default /sitemap.xml is a single flat file containing only

@@ -560,6 +560,14 @@ class DocumentationPublishingContractTests(unittest.TestCase):
             (ROOT / '.github' / 'workflows' / name).read_text(encoding='utf-8'),
         )
 
+    def test_authored_guidance_is_checked_before_generated_api_sources_exist(self):
+        steps = self.workflow('docs-titles.yml')['jobs']['titles']['steps']
+        commands = [step.get('run', '') for step in steps]
+        self.assertLess(
+            commands.index('scripts/test-guidance.ps1'),
+            commands.index('bash scripts/generate-api-docs.sh docs/api/dev --update-index'),
+        )
+
     def test_all_documentation_publishers_share_a_non_cancelling_lock(self):
         publishers = (
             self.workflow('ci.yml')['jobs']['deploy-documentation'],

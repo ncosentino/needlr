@@ -58,11 +58,13 @@ or semantic inference from symbol names. The generic `SoftwareSourceCode` record
 is not emitted for a reference document, and non-API markup is unchanged.
 
 The hosted Documentation metadata workflow builds the Injection project and its
-dependency, passes their compiler XML and assemblies through DefaultDocumentation,
+dependencies, passes their compiler XML and assemblies through DefaultDocumentation,
 and builds the resulting Markdown with MkDocs. It compares the compiled `Syringe`
 XML summary with generated Markdown, visible HTML and JSON-LD, and checks every
 generated API page for one matching reference document. A bounded one-day artifact
 retains the compiler XML, generated Markdown and rendered sample for inspection.
+Full source CI runs the same checks against its existing compiler and site output,
+covering every API package without another build or documentation-generation pass.
 
 The same checks exercise explicit-description precedence, API/version identity,
 introductory-prose selection, safe escaping and unchanged titles/headings. These
