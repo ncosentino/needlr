@@ -8,6 +8,7 @@ import re
 import tempfile
 from types import SimpleNamespace
 import unittest
+from urllib.parse import quote
 import xml.etree.ElementTree as ET
 
 from markdown import markdown as render_markdown
@@ -168,6 +169,9 @@ class DocumentationTitlesTests(DocumentationSchemaAssertions):
                 'Use `Factory<T>` &amp; "plugins" and '
                 '`</script><script>window.injected = true</script>`.\n'
             ),
+            'api/dev/NexusLabs.Needlr/Factory_TKey,TValue_.md': (
+                '# Factory&lt;TKey,TValue&gt;\n\n## Factory Class\n'
+            ),
         }
         cls.api_sources = [source for source in pages if source.startswith('api/')]
         for source, markdown in pages.items():
@@ -235,10 +239,16 @@ class DocumentationTitlesTests(DocumentationSchemaAssertions):
                 self.assertEqual(page.headings, ['Plugin'])
 
     def test_generic_type_filename_is_unambiguous_in_metadata(self):
-        self.assert_api_title(
-            'api/dev/NexusLabs.Needlr/Factory_T_.md',
-            'NexusLabs.Needlr.Factory_T_ (Development API)',
-        )
+        for filename in ('Factory_T_', 'Factory_TKey,TValue_'):
+            with self.subTest(filename=filename):
+                page = self.assert_api_title(
+                    f'api/dev/NexusLabs.Needlr/{filename}.md',
+                    f'NexusLabs.Needlr.{filename} (Development API)',
+                )
+                self.assertEqual(
+                    page.canonical,
+                    f'https://example.test/reference/api/dev/NexusLabs.Needlr/{quote(filename)}',
+                )
 
     def test_guide_and_api_catalog_titles_are_unchanged(self):
         for source, expected in (
@@ -390,7 +400,7 @@ class GeneratedApiDocumentationTests(DocumentationSchemaAssertions):
             with self.subTest(page=path.relative_to(ROOT / 'site').as_posix()):
                 page = self.read_page(path)
                 reference = self.assert_api_reference(page)
-                relative_url = path.parent.relative_to(ROOT / 'site').as_posix()
+                relative_url = quote(path.parent.relative_to(ROOT / 'site').as_posix())
                 self.assertEqual(reference['url'], f'https://www.devleader.ca/projects/needlr/{relative_url}')
         print(f'Validated page-specific APIReference JSON-LD on {len(paths)} generated API pages.')
 
