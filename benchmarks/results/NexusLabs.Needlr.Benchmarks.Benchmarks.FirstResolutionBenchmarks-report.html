@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.FirstResolutionBenchmarks-20261115-031001</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.FirstResolutionBenchmarks-20261122-031041</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,10 +14,10 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.5 LTS (Noble Numbat)
-AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
 .NET SDK 10.0.404
-  [Host]   : .NET 10.0.15 (10.0.1526.53008), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.15 (10.0.1526.53008), X64 RyuJIT AVX2
+  [Host]   : .NET 10.0.15 (10.0.1526.53008), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
+  ShortRun : .NET 10.0.15 (10.0.1526.53008), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
 </code></pre>
 <pre><code>Job=ShortRun  InvocationCount=1  IterationCount=5  
 LaunchCount=1  UnrollFactor=1  WarmupCount=3  
@@ -26,9 +26,9 @@ LaunchCount=1  UnrollFactor=1  WarmupCount=3
 <table>
 <thead><tr><th>Method                          </th><th>Mean </th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_BuildAndResolveFirst</td><td>31.44 &mu;s</td><td>3.044 &mu;s</td><td>0.471 &mu;s</td><td>1.00</td><td>0.02</td><td>1</td><td>-</td><td>NA</td>
-</tr><tr><td>Needlr_Reflection_BuildAndResolveFirst</td><td>6,515.51 &mu;s</td><td>694.158 &mu;s</td><td>180.271 &mu;s</td><td>207.30</td><td>5.96</td><td>3</td><td>1320088 B</td><td>NA</td>
-</tr><tr><td>Needlr_SourceGen_BuildAndResolveFirst</td><td>502.30 &mu;s</td><td>115.881 &mu;s</td><td>17.933 &mu;s</td><td>15.98</td><td>0.55</td><td>2</td><td>217768 B</td><td>NA</td>
+</thead><tbody><tr><td>ManualDI_BuildAndResolveFirst</td><td>20.76 &mu;s</td><td>6.219 &mu;s</td><td>0.962 &mu;s</td><td>1.00</td><td>0.06</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Needlr_Reflection_BuildAndResolveFirst</td><td>4,205.66 &mu;s</td><td>124.657 &mu;s</td><td>19.291 &mu;s</td><td>202.92</td><td>8.40</td><td>3</td><td>1320088 B</td><td>NA</td>
+</tr><tr><td>Needlr_SourceGen_BuildAndResolveFirst</td><td>333.76 &mu;s</td><td>55.464 &mu;s</td><td>14.404 &mu;s</td><td>16.10</td><td>0.92</td><td>2</td><td>217768 B</td><td>NA</td>
 </tr></tbody></table>
 </body>
 </html>

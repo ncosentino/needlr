@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>NexusLabs.Needlr.Benchmarks.Benchmarks.TypeRegistrationBenchmarks-20261115-031530</title>
+<title>NexusLabs.Needlr.Benchmarks.Benchmarks.TypeRegistrationBenchmarks-20261122-031618</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -14,21 +14,21 @@
 <body>
 <pre><code>
 BenchmarkDotNet v0.14.0, Ubuntu 24.04.5 LTS (Noble Numbat)
-AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
+AMD EPYC 9V74, 1 CPU, 4 logical and 2 physical cores
 .NET SDK 10.0.404
-  [Host]   : .NET 10.0.15 (10.0.1526.53008), X64 RyuJIT AVX2
-  ShortRun : .NET 10.0.15 (10.0.1526.53008), X64 RyuJIT AVX2
+  [Host]   : .NET 10.0.15 (10.0.1526.53008), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
+  ShortRun : .NET 10.0.15 (10.0.1526.53008), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
 </code></pre>
 <pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
 WarmupCount=3  
 </code></pre>
 
 <table>
-<thead><tr><th>Method                   </th><th>Mean    </th><th>Error </th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Gen0</th><th>Gen1</th><th>Allocated</th><th>Alloc Ratio</th>
+<thead><tr><th>Method                   </th><th>Mean   </th><th>Error   </th><th>StdDev </th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Gen0</th><th>Gen1</th><th>Allocated</th><th>Alloc Ratio</th>
 </tr>
-</thead><tbody><tr><td>ManualDI_RegisterTypes</td><td>109.4 ns</td><td>1.24 ns</td><td>0.32 ns</td><td>1.00</td><td>0.00</td><td>1</td><td>0.0315</td><td>-</td><td>528 B</td><td>1.00</td>
-</tr><tr><td>Needlr_Reflection_RegisterTypes</td><td>1,236,650.0 ns</td><td>14,548.99 ns</td><td>2,251.47 ns</td><td>11,306.35</td><td>35.60</td><td>3</td><td>35.1563</td><td>-</td><td>589442 B</td><td>1,116.37</td>
-</tr><tr><td>Needlr_SourceGen_RegisterTypes</td><td>18,135.1 ns</td><td>202.40 ns</td><td>52.56 ns</td><td>165.80</td><td>0.63</td><td>2</td><td>1.8311</td><td>0.1221</td><td>30960 B</td><td>58.64</td>
+</thead><tbody><tr><td>ManualDI_RegisterTypes</td><td>77.62 ns</td><td>6.787 ns</td><td>1.763 ns</td><td>1.00</td><td>0.03</td><td>1</td><td>0.0315</td><td>-</td><td>528 B</td><td>1.00</td>
+</tr><tr><td>Needlr_Reflection_RegisterTypes</td><td>924,992.06 ns</td><td>109,455.338 ns</td><td>16,938.335 ns</td><td>11,921.64</td><td>314.91</td><td>3</td><td>35.1563</td><td>-</td><td>589442 B</td><td>1,116.37</td>
+</tr><tr><td>Needlr_SourceGen_RegisterTypes</td><td>11,553.97 ns</td><td>174.331 ns</td><td>26.978 ns</td><td>148.91</td><td>3.11</td><td>2</td><td>1.8463</td><td>0.1526</td><td>30960 B</td><td>58.64</td>
 </tr></tbody></table>
 </body>
 </html>
